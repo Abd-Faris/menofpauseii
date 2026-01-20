@@ -1,23 +1,26 @@
+#pragma once
 /*****************************************************************************/
 /*!
 \file	GameStateManager.h
-\author Abdul Faris, abdulfaris.b, 2502386
-\par	abdulfaris.b\@digipen.edu
-\date	18/1/2026
+\author Men of Pause II
 \brief	This file declares the GSM of the program and controls its flow
-
-Copyright (C) 2026 DigiPen Institute of Technology.
-Reproduction or disclosure of this file or its contents
-without the prior written consent of DigiPen Institute of
-Technology is prohibited.
 */
 /*****************************************************************************/
 
-#pragma once
-
+// Function Pointer Type Declaration
 typedef void(*FP)(void);
-
+// Game State Storage
 extern int current, previous, next;
+
+// Function Pointer Struct
+struct GSFunctions {
+	FP Load;
+	FP Initialize;
+	FP Update;
+	FP Draw;
+	FP Free;
+	FP Upload;
+};
 
 extern FP fpLoad, fpInitialize, fpUpdate, fpDraw, fpFree, fpUnload;
 

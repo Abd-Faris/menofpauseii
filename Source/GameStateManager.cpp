@@ -15,8 +15,7 @@ Technology is prohibited.
 
 #include <iostream>
 
-#include "GameStateManager.h"
-#include "GameStateList.h"
+#include "MasterHeader.h"
 
 int current = 0, previous = 0, next = 0;
 
@@ -41,11 +40,17 @@ void GSM_Initialize(int startingState)
 void GSM_Update()
 {
 	//some unfinished code here
-	printf("GSM:Update\n");
+	//printf("GSM:Update\n");
 	
+	// reset function pointers
+	fpLoad = nullptr, fpInitialize = nullptr, fpUpdate = nullptr, fpDraw = nullptr, fpFree = nullptr, fpUnload = nullptr;
+
 	switch (current)
 	{
-	case GS_LEVEL1:
+	case GS_MAIN_MENU:
+		fpLoad = LoadMainMenu;
+		fpDraw = DrawMainMenu;
+		fpFree = FreeMainMenu;
 		break;
 	case GS_LEVEL2:
 		break;

@@ -1,6 +1,6 @@
 /*****************************************************************************/
 /*!
-\file	Input.cpp
+\file	Main.cpp
 \author Men of Pause II
 \brief	This file defines the beginning of the program and frame based loops
 */
@@ -10,66 +10,60 @@
 //
 
 #include <iostream>
+#include "MasterHeader.h"
 
-#include "GameStateManager.h"
-#include "GameStateList.h"
-
-//Implement the pseudo-code of A1_P1 here
 //-----------------------------------------------------------//
 // This function defines the beginning of the program and
 // implements frame loops in the program.
 //-----------------------------------------------------------//
-int main()
+int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
+    _In_opt_ HINSTANCE hPrevInstance,
+    _In_ LPWSTR    lpCmdLine,
+    _In_ int       nCmdShow)
 {
-    //Systems initialize
-    //System_Initialize();
-    //GSM initialize
-    GSM_Initialize(GS_LEVEL1);
+    // System initialize
+    Initialise_System(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+
+    // GSM initialize
+    GSM_Initialize(GS_MAIN_MENU);
+
+    // Game Loop
     while (current != GS_QUIT)
     {
         if (current != GS_RESTART) {
             GSM_Update();
-            fpLoad();
+            if(fpLoad) fpLoad();
         }
-        else { // if current = GS_QUIT
+        else { // if current = GS_RESTART
             // set all to prev game state
             next = previous;
             current = previous;
         }
         // init game state
-        fpInitialize();
+        if(fpInitialize) fpInitialize();
+
         // the game loop
         while(next == current){
+            AESysFrameStart(); // start of game frame
             //Input_Handle();
-            fpUpdate();
-            fpDraw();
+            if(fpUpdate) fpUpdate();
+            if(fpDraw) fpDraw();
+            AESysFrameEnd(); // end of game frame
         }
 
         // more steps
-        fpFree();
+        if(fpFree) fpFree();
 
         // unloads level
         if (next != GS_RESTART){
-            fpUnload();
+            if(fpUnload) fpUnload();
         }
         // shifts game states over by one
         previous = current;
         current = next;
-        //break;//this break line is temporary here - MUST BE REMOVED
     }
 
     //Systems exit (terminate)
     //System_Exit();
     return 0;
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
