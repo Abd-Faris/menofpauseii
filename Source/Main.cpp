@@ -45,9 +45,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         // the game loop
         while(next == current){
             AESysFrameStart(); // start of game frame
-            //Input_Handle();
+            //input_handler();
             if(fpUpdate) fpUpdate();
             if(fpDraw) fpDraw();
+            Debug_States(); // detect game state change
             AESysFrameEnd(); // end of game frame
         }
 

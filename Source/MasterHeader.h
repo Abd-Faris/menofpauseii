@@ -4,6 +4,7 @@
 #include "System.h"
 #include "AEEngine.h"
 #include <crtdbg.h>
+#include "Input.h"
 
 // Graphics
 #include "Graphics.h"
@@ -14,3 +15,4 @@
 
 // Game States
 #include "MainMenu.h"
+#include "DebugMenus.h"

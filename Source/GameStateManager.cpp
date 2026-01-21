@@ -45,6 +45,7 @@ void GSM_Update()
 	// reset function pointers
 	fpLoad = nullptr, fpInitialize = nullptr, fpUpdate = nullptr, fpDraw = nullptr, fpFree = nullptr, fpUnload = nullptr;
 
+	// Game State Switch Statements
 	switch (current)
 	{
 	case GS_MAIN_MENU:
@@ -52,7 +53,35 @@ void GSM_Update()
 		fpDraw = DrawMainMenu;
 		fpFree = FreeMainMenu;
 		break;
-	case GS_LEVEL2:
+	case DEBUG1:
+		fpLoad = LoadDebug1;
+		fpDraw = DrawDebug1;
+		fpFree = FreeDebug1;
+		break;
+	case DEBUG2:
+		fpLoad = LoadDebug2;
+		fpDraw = DrawDebug2;
+		fpFree = FreeDebug2;
+		break;
+	case DEBUG3:
+		fpLoad = LoadDebug3;
+		fpDraw = DrawDebug3;
+		fpFree = FreeDebug3;
+		break;
+	case DEBUG4:
+		fpLoad = LoadDebug4;
+		fpDraw = DrawDebug4;
+		fpFree = FreeDebug4;
+		break;
+	case DEBUG5:
+		fpLoad = LoadDebug5;
+		fpDraw = DrawDebug5;
+		fpFree = FreeDebug5;
+		break;
+	case DEBUG6:
+		fpLoad = LoadDebug6;
+		fpDraw = DrawDebug6;
+		fpFree = FreeDebug6;
 		break;
 	case GS_RESTART:
 		break;
