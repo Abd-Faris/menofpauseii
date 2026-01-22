@@ -5,7 +5,7 @@ namespace {
 	s8 boldPixels;
 	enum {NUM_OF_TEXTS = 1};
 	gfxtext texts[NUM_OF_TEXTS] = {
-		{"Debug 2", 0, 0, 1, 255, 255, 255, 255}
+		{"Player + Shooting", 0, 0, 1, 255, 255, 255, 255}
 	};
 }
 
