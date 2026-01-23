@@ -117,10 +117,49 @@ void DrawDebug2() {
 		AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);
 
 		// draw protrusion
+
+		//get mouse position
+		s32 mousex, mousey;
+		AEInputGetCursorPosition(&mousex, &mousey);
+
+		float windowh = 900.0f;
+		float windoww = 1600.0f;
+
+		float mouseposx = (float)mousex - windoww / 2.0f;
+		float mouseposy = windowh / 2.0f - (float)mousey;
+
+		//distance between mouse and player
+		float distxpm = mouseposx - circle.pos_x;
+		float distypm = mouseposy - circle.pos_y;
+
+		float angle = atan2f(distypm, distxpm) - 1.5708f; // arctangent find angle 1.5708f is half of pi
+
+
 		AEGfxSetColorToMultiply(0.8f, 0.2f, 0.2f, 1.0f);
-		static float rotateangle{};
-		float rotatespeed = 5.0f;
-		rotateangle = dt * rotatespeed;
+
+		AEMtx33 transformProtrusion, scaleProtrusion, translateProtrusion, transProtrusionmove, rotateProtrusion;
+		AEMtx33Identity(&transformProtrusion);
+		AEMtx33 interval;
+
+		float protrusionlen = 300.0f;
+		float protrusionwid = 30.0f;
+		AEMtx33Scale(&scaleProtrusion, protrusionwid, protrusionlen);
+
+		AEMtx33Trans(&transProtrusionmove, 0.0f, protrusionlen / 2);
+
+		AEMtx33Rot(&rotateProtrusion, angle);
+
+		AEMtx33Concat(&interval	, &transProtrusionmove, &scaleProtrusion);
+		AEMtx33Concat(&interval, &rotateProtrusion, &interval);
+		AEMtx33Concat(&transformProtrusion, &translateSquare, &interval);
+
+		AEGfxSetTransform(transformProtrusion.m);
+		AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);
+
+
+
+
+
 		
 		//draw circle
 		AEGfxSetColorToMultiply(0.0f, 0.5f, 1.0f, 1.0f); //Blue Circle
