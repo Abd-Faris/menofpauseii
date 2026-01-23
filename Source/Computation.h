@@ -5,6 +5,6 @@ struct Point {
 	f32 x, y;
 };
 
-namespace MOPMath {
+namespace Computation {
 	f32 calcSquaredDistance(Point a, Point b);
 }
