@@ -9,6 +9,13 @@ void FreeDebug1();
 void LoadDebug2();
 void DrawDebug2();
 void FreeDebug2();
+typedef struct shape {
+
+	f32 scale;			//scale
+	f32 pos_x, pos_y;	// x and y positions
+
+	AEMtx33 transform;  // Final transformation matrix for rendering
+};
 
 // debug3.cpp
 void LoadDebug3();
