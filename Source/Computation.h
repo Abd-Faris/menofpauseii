@@ -1,9 +1,5 @@
 #pragma once
-#include "AEEngine.h"
-
-struct Point {
-	f32 x, y;
-};
+#include "MasterHeader.h"
 
 namespace Computation {
 	f32 calcSquaredDistance(Point a, Point b);

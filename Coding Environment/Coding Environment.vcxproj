@@ -120,6 +120,7 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="..\Source\Input.h" />
     <ClInclude Include="..\Source\MainMenu.h" />
     <ClInclude Include="..\Source\MasterHeader.h" />
+    <ClInclude Include="..\Source\Structs.h" />
     <ClInclude Include="..\Source\System.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

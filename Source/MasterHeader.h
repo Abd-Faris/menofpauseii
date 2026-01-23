@@ -1,12 +1,20 @@
 #pragma once // prevents multiple inclusions
 
+// Alpha Engine Headers
+#include "AEEngine.h"
+#include "AEGraphics.h"
+#include "AEMath.h"
+
+// Library Headers
+#include <crtdbg.h>
+#include <cmath>
+
 // System Headers
 #include "System.h"
-#include "AEEngine.h"
-#include <crtdbg.h>
 #include "Input.h"
 
-// Namespaces
+// Namespaces, Structs
+#include "Structs.h"
 #include "Graphics.h"
 #include "Computation.h"
 
@@ -17,3 +25,4 @@
 // Game States
 #include "MainMenu.h"
 #include "DebugMenus.h"
+

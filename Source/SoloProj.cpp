@@ -278,17 +278,17 @@ int APIENTRY wWinMain2(_In_ HINSTANCE hInstance,
 		if (percent > 0){
 			Object& rectangle{ object[5] };
 			switch (static_cast<int>(percent / 10 + EPSILON)) {
-			case 10: [[fallthrough]];
-			case 9: drawRect(rectangle, 9, rectMesh); [[fallthrough]];
-			case 8: drawRect(rectangle, 8, rectMesh); [[fallthrough]];
-			case 7: drawRect(rectangle, 7, rectMesh); [[fallthrough]];
-			case 6: drawRect(rectangle, 6, rectMesh); [[fallthrough]];
-			case 5: drawRect(rectangle, 5, rectMesh); [[fallthrough]];
-			case 4: drawRect(rectangle, 4, rectMesh); [[fallthrough]];
-			case 3: drawRect(rectangle, 3, rectMesh); [[fallthrough]];
-			case 2: drawRect(rectangle, 2, rectMesh); [[fallthrough]];
-			case 1: drawRect(rectangle, 1, rectMesh); [[fallthrough]];
-			case 0: drawRect(rectangle, 0, rectMesh); [[fallthrough]];
+			case 10:
+			case 9: drawRect(rectangle, 9, rectMesh);
+			case 8: drawRect(rectangle, 8, rectMesh);
+			case 7: drawRect(rectangle, 7, rectMesh);
+			case 6: drawRect(rectangle, 6, rectMesh);
+			case 5: drawRect(rectangle, 5, rectMesh);
+			case 4: drawRect(rectangle, 4, rectMesh);
+			case 3: drawRect(rectangle, 3, rectMesh);
+			case 2: drawRect(rectangle, 2, rectMesh);
+			case 1: drawRect(rectangle, 1, rectMesh);
+			case 0: drawRect(rectangle, 0, rectMesh);
 			default: break;
 			}
 		}
