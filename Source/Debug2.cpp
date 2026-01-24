@@ -145,13 +145,13 @@ void DrawDebug2() {
 		float protrusionwid = 30.0f;
 		AEMtx33Scale(&scaleProtrusion, protrusionwid, protrusionlen);
 
-		AEMtx33Trans(&transProtrusionmove, 0.0f, protrusionlen / 2);
+		AEMtx33Trans(&transProtrusionmove, 0.0f, protrusionlen / 2);// move the base of the protrusion to the base
 
-		AEMtx33Rot(&rotateProtrusion, angle);
+		AEMtx33Rot(&rotateProtrusion, angle); // rotate reference
 
-		AEMtx33Concat(&interval	, &transProtrusionmove, &scaleProtrusion);
+		AEMtx33Concat(&interval	, &transProtrusionmove, &scaleProtrusion); // attachment
 		AEMtx33Concat(&interval, &rotateProtrusion, &interval);
-		AEMtx33Concat(&transformProtrusion, &translateSquare, &interval);
+		AEMtx33Concat(&transformProtrusion, &translateSquare, &interval); //playerposition*(rotation*offset*scale)
 
 		AEGfxSetTransform(transformProtrusion.m);
 		AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);
