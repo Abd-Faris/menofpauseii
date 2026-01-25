@@ -33,7 +33,7 @@
     <ClCompile Include="..\Source\Graphics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\Debug1.cpp">
+    <ClCompile Include="..\Source\Debug XP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\Debug2.cpp">

@@ -2,6 +2,7 @@
 
 // debug1.cpp
 void LoadDebug1();
+void UpdateDebug1();
 void DrawDebug1();
 void FreeDebug1();
 

@@ -55,6 +55,7 @@ void GSM_Update()
 		break;
 	case DEBUG1:
 		fpLoad = LoadDebug1;
+		fpUpdate = UpdateDebug1;
 		fpDraw = DrawDebug1;
 		fpFree = FreeDebug1;
 		break;
