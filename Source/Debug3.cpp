@@ -33,8 +33,8 @@ void DrawEnemyMesh() {
 }
 
 void InitEnemies(Enemies *enemy) {
-	enemy->pos_x = 0; //static_cast<float>((AERandFloat() * AEGfxGetWindowWidth()) - AEGfxGetWindowWidth()/2);
-	enemy->pos_y = 0; // static_cast<float>((AERandFloat() * AEGfxGetWindowHeight()) - AEGfxGetWindowHeight() / 2);
+	enemy->pos_x = 67676767; // spawn way outside player boundary
+	enemy->pos_y = 67676767; // spawn way outside player boundary
 	enemy->scale = 0;
 	enemy->xp = 0;
 	enemy->rotation = 0;//static_cast<float>(AERandFloat() * 360);
@@ -78,13 +78,13 @@ void DrawDebug3() {
 	AEGfxSetColorToMultiply(0.8f, 0.2f, 0.2f, 1.0f);
 
 
-	if (dt >= 2) {
+	if (dt >= 1) {
 		if (AERandFloat() * 10 >= 2) {
 			for (int i = 0; i < 20; i++) {
 
 				if (!maxenemy[i].alive) {
-				SpawnEnemies(&maxenemy[i]);
-				break;
+					SpawnEnemies(&maxenemy[i]);
+					break;
 				}
 			}
 		}
@@ -92,11 +92,13 @@ void DrawDebug3() {
 		dt = 0;
 	}
 	for (int i = 0; i < 20; i++) {
+
+		if (maxenemy[i].alive) {
 		AEMtx33 transformSquare, scaleSquare, translateSquare, rotateSquare;
 		AEMtx33Identity(&transformSquare);
 
 
-		
+
 		AEMtx33Scale(&scaleSquare, maxenemy[i].scale, maxenemy[i].scale);
 
 		AEMtx33RotDeg(&rotateSquare, maxenemy[i].rotation);
@@ -111,7 +113,8 @@ void DrawDebug3() {
 
 		AEGfxSetTransform(transformSquare.m);
 		AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);
-	}
+		}
+}
 
 
 
