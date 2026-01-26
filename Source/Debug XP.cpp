@@ -3,6 +3,8 @@
 #include "AEEngine.h"
 #include "AEGraphics.h"
 
+//EVERYTHING USES WORLD COORDINATES
+//TEXTS USE NORMALISED
 
 namespace {
 	//for font
