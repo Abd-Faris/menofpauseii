@@ -7,12 +7,11 @@ struct gfxtext {
 };
 
 // OLD: USE native AEVec2 instead
-struct Point {
-	f32 x, y;
-};
+//struct Point {
+//	f32 x, y;
+//};
 
 struct shape {
-
 	f32 scale;			//scale
 	f32 pos_x, pos_y;	// x and y positions
 	f32 currentAngle;

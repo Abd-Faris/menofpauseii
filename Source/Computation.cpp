@@ -38,17 +38,21 @@ namespace Computation {
 		x.y = (x.y / (AEGfxGetWindowHeight() / 2)) * 1.f;
 	}
 
-	// calculates squared distance between 2 points
-	f32 calcSquaredDistance(Point a, Point b) {
-		f32 sqDist{ ((a.x - b.x) * (a.x - b.x)) + ((a.y - b.y) * (a.y - b.y)) };
-		return sqDist;
-	}
-
 	// detects collision between point and rectangle
-	void collsionPointRect(Point mousepos, Point rect, f32 size) {
-		f32 half = size / 2;
-		f32 left = rect.x - half;
-		f32 top = rect.y;
+	bool collsionPointRect(AEVec2 mousepos, AEVec2 rect, f32 sizex, f32 sizey) {
+		// calculates half of width and height
+		f32 halfx = sizex / 2;
+		f32 halfy = sizey / 2;
+		// determines limits (x and y) for the rectangle
+		f32 left = rect.x - halfx;
+		f32 right = rect.x + halfx;
+		f32 top = rect.y + halfy;
+		f32 bottom = rect.y - halfy;
+		// AABB collision
+		if (mousepos.x < left || mousepos.x > right || mousepos.y > top || mousepos.y < bottom) {
+			return false;
+		}
+		return true;
 	}
 }
 
