@@ -4,6 +4,8 @@ f64 dt{};
 
 Enemies maxenemy[20]{};
 
+f32 maxspeed = 50;
+f32 friction = 0.92;
 namespace {
 	s8 boldPixels;
 	enum {NUM_OF_TEXTS = 1};
@@ -15,8 +17,6 @@ namespace {
 }
 
 void DrawEnemyMesh() {
-	
-	
 
 	AEGfxMeshStart();
 	AEGfxTriAdd(
@@ -30,11 +30,12 @@ void DrawEnemyMesh() {
 		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
 	// Saving the mesh (list of triangles) in MeshRect
 	MeshRect = AEGfxMeshEnd();
+
 }
 
 void InitEnemies(Enemies *enemy) {
-	enemy->pos_x = 67676767; // spawn way outside player boundary
-	enemy->pos_y = 67676767; // spawn way outside player boundary
+	enemy->pos.x = 67676767; // spawn way outside player boundary
+	enemy->pos.y = 67676767; // spawn way outside player boundary
 	enemy->scale = 0;
 	enemy->xp = 0;
 	enemy->rotation = 0;//static_cast<float>(AERandFloat() * 360);
@@ -42,10 +43,81 @@ void InitEnemies(Enemies *enemy) {
 	enemy->hp = 0;
 }
 
+void separateEnemies() {
+	const float separationForce = 0.5f;
+
+	for (size_t i = 0; i < 20; i++) {
+		if (!maxenemy[i].alive) continue;
+
+		for (size_t j = i + 1; j < 20; j++) {
+			if (!maxenemy[j].alive) continue;
+
+			AEVec2 delta;
+			AEVec2Sub(&delta, &maxenemy[j].pos, &maxenemy[i].pos);
+			
+			float dist = AEVec2Length (&delta);
+			float minDist = maxenemy[i].scale + maxenemy[j].scale;
+
+			if (dist < minDist && dist > 0) {
+				AEVec2 pushDir;
+				AEVec2Normalize(&pushDir, &delta);
+				float overlap = minDist - dist;
+				AEVec2 pushforce;
+				AEVec2Scale(&pushforce, &pushDir, (overlap * 0.5f));
+				
+				AEVec2Sub(&maxenemy[i].pos, &maxenemy[i].pos, &pushforce);
+				AEVec2Add(&maxenemy[j].pos, &maxenemy[j].pos, &pushforce);
+		
+			}
+		}
+	}
+}
+
+void updateEnemyPhysics(float dt) {
+	for (auto& enemy : maxenemy) {
+		if (!enemy.alive) continue;
+
+		// Apply friction/damping for natural deceleration
+
+		AEVec2Scale(&enemy.velocity, &enemy.velocity, friction);
+
+		// Clamp to max speed
+		float speed = AEVec2Length(&enemy.velocity);
+		if (speed > maxspeed) {
+			AEVec2 normal;
+			AEVec2Normalize(&normal, &enemy.velocity);
+			AEVec2Scale(&enemy.velocity, &normal, maxspeed);
+			
+		}
+
+		// Update position
+		enemy.pos = enemy.pos + enemy.velocity * dt;
+
+		// Keep enemies on screen (with bounce)
+		if (enemy.pos.x < enemy.radius) {
+			enemy.pos.x = enemy.radius;
+			enemy.velocity.x *= -0.5f;
+		}
+		else if (enemy.pos.x > screenWidth - enemy.radius) {
+			enemy.pos.x = screenWidth - enemy.radius;
+			enemy.velocity.x *= -0.5f;
+		}
+
+		if (enemy.pos.y < enemy.radius) {
+			enemy.pos.y = enemy.radius;
+			enemy.velocity.y *= -0.5f;
+		}
+		else if (enemy.pos.y > screenHeight - enemy.radius) {
+			enemy.pos.y = screenHeight - enemy.radius;
+			enemy.velocity.y *= -0.5f;
+		}
+	}
+}
+
 void SpawnEnemies(Enemies* enemy) {
-	enemy->pos_x = static_cast<float>((AERandFloat() * AEGfxGetWindowWidth()) - AEGfxGetWindowWidth()/2);
-	enemy->pos_y = static_cast<float>((AERandFloat() * AEGfxGetWindowHeight()) - AEGfxGetWindowHeight() / 2);
-	enemy->scale = 100;
+	enemy->pos.x = static_cast<float>((AERandFloat() * AEGfxGetWindowWidth()) - AEGfxGetWindowWidth()/2);
+	enemy->pos.y = static_cast<float>((AERandFloat() * AEGfxGetWindowHeight()) - AEGfxGetWindowHeight() / 2);
+	enemy->scale = 67;
 	enemy->xp = 5;
 	enemy->rotation = static_cast<float>(AERandFloat() * 360);
 	enemy->alive = true;
@@ -84,6 +156,7 @@ void DrawDebug3() {
 
 				if (!maxenemy[i].alive) {
 					SpawnEnemies(&maxenemy[i]);
+					//AEGfxSetCamPosition(maxenemy[i].pos_x, maxenemy[i].pos_y);
 					break;
 				}
 			}
@@ -103,7 +176,7 @@ void DrawDebug3() {
 
 		AEMtx33RotDeg(&rotateSquare, maxenemy[i].rotation);
 
-		AEMtx33Trans(&translateSquare, maxenemy[i].pos_x, maxenemy[i].pos_y);
+		AEMtx33Trans(&translateSquare, maxenemy[i].pos.x, maxenemy[i].pos.y);
 
 
 
@@ -114,9 +187,13 @@ void DrawDebug3() {
 		AEGfxSetTransform(transformSquare.m);
 		AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);
 		}
+
+		//if () {
+
+		//}
 }
 
-
+	separateEnemies();
 
 	
 }
