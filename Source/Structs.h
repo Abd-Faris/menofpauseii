@@ -19,8 +19,7 @@ struct shape {
 };
 
 typedef struct Enemies {
-	float pos_x;
-	float pos_y;
+	AEVec2 pos;
 	int xp;
 	float scale;
 	float rotation;
