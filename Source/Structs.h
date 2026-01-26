@@ -21,6 +21,7 @@ struct shape {
 
 typedef struct Enemies {
 	AEVec2 pos;
+	AEVec2 velocity;
 	int xp;
 	float scale;
 	float rotation;
