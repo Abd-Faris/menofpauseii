@@ -168,6 +168,8 @@ void SpawnEnemies(Enemies* enemy) {
 	enemy->rotation = static_cast<float>(AERandFloat() * 360);
 	enemy->alive = true;
 	enemy->hp = 5;
+	enemy->velocity.x = 1;
+	enemy->velocity.y = 1;
 }
 
 void LoadDebug3() {

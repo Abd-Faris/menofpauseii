@@ -45,7 +45,7 @@ namespace Computation {
 	}
 
 	// detects collision between point and rectangle
-	f32 collsionPointRect(Point mousepos, Point rect, f32 size) {
+	void collsionPointRect(Point mousepos, Point rect, f32 size) {
 		f32 half = size / 2;
 		f32 left = rect.x - half;
 		f32 top = rect.y;
