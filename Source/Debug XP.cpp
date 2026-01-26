@@ -3,16 +3,6 @@
 #include "AEEngine.h"
 #include "AEGraphics.h"
 
-//player base stats
-struct PlayerStats {
-	float baseHp;
-	float baseDmg;
-	float baseSpeed;
-	float baseFireRate;
-	float baseXpGain;
-	//number of times it can upgrade
-	int upgradeLevels[5];
-};
 
 namespace {
 	s8 boldPixels;

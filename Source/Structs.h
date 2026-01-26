@@ -17,3 +17,24 @@ struct shape {
 
 	AEMtx33 transform;  // Final transformation matrix for rendering
 };
+
+typedef struct Enemies {
+	float pos_x;
+	float pos_y;
+	int xp;
+	float scale;
+	float rotation;
+	bool alive = false;
+	int hp;
+};
+
+//player base stats
+struct PlayerStats {
+	float baseHp;
+	float baseDmg;
+	float baseSpeed;
+	float baseFireRate;
+	float baseXpGain;
+	//number of times it can upgrade
+	int upgradeLevels[5];
+};

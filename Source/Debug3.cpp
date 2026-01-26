@@ -1,15 +1,5 @@
 #include "MasterHeader.h"
 
-typedef struct Enemies {
-	float pos_x;
-	float pos_y;
-	int xp;
-	float scale;
-	float rotation;
-	bool alive = false;
-	int hp;
-};
-
 f64 dt{};
 
 Enemies maxenemy[20]{};
