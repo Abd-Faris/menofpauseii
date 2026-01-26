@@ -1,6 +1,6 @@
 #pragma once
 
-// debug1.cpp
+// debugxp.cpp
 void LoadDebug1();
 void UpdateDebug1();
 void DrawDebug1();
