@@ -6,6 +6,7 @@ struct gfxtext {
 	f32 x, y, scale, r, g, b, a;
 };
 
+// OLD: USE native AEVec2 instead
 struct Point {
 	f32 x, y;
 };

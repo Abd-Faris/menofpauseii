@@ -1,11 +1,12 @@
 #pragma once
 #include "MasterHeader.h"
 
-namespace Computation {
-	f32 denormalizePoint(f32& x, f32& y);
-	f32 denormalizePoint(Point &x);
-	f32 screenToWorld(f32& x, f32& y);
-	f32 screenToWorld(Point & x);
+namespace comp {
+	void denormalizePoint(f32& x, f32& y);
+	void denormalizePoint(AEVec2 &x);
+	void screenToWorld(f32& x, f32& y);
+	void screenToWorld(AEVec2 &x);
+	void normalizePoint(f32& x, f32& y);
+	void normalizePoint(AEVec2& x);
 	f32 calcSquaredDistance(Point a, Point b);
-	//f32 collisionAABB(Point a, Point b);
 }
