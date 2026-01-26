@@ -28,13 +28,20 @@ typedef struct Enemies {
 	int hp;
 };
 
-//player base stats
 struct PlayerStats {
+	//player base stats
 	float baseHp;
 	float baseDmg;
 	float baseSpeed;
 	float baseFireRate;
 	float baseXpGain;
-	//number of times it can upgrade
+	//how many times you can level up
 	int upgradeLevels[5];
+	//variables for xp logic
+	float current_xp;
+	float initial_xp;
+	int player_level;
+	//for skill points
+	int skill_point;
+	bool menu_open;
 };

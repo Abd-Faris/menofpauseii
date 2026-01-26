@@ -5,17 +5,50 @@
 
 
 namespace {
+	//for font
 	s8 boldPixels;
 	//to create the mesh
 	AEGfxVertexList* pBlackRectMesh = nullptr;
 	AEGfxVertexList* pWhiteRectMesh = nullptr; 
 	AEGfxVertexList* pGreenRectMesh = nullptr;
-	//initialise the player stats
+	AEGfxVertexList* pRedRectMesh = nullptr;
+	AEGfxVertexList* pYellowRectMesh = nullptr;
+
+	//helper to create mesh typedef unsigned int 
+	AEGfxVertexList* createmesh(uint32_t color) {
+		AEGfxMeshStart();
+		AEGfxTriAdd(
+			-0.5f, -0.5f, color, 0.0f, 0.0f,
+			0.5f, -0.5f, color, 0.0f, 0.0f,
+			-0.5f, 0.5f, color, 0.0f, 0.0f);
+		AEGfxTriAdd(
+			0.5f, -0.5f, color, 0.0f, 0.0f,
+			0.5f, 0.5f, color, 0.0f, 0.0f,
+			-0.5f, 0.5f, color, 0.0f, 0.0f);
+		return AEGfxMeshEnd();
+	}
+
+	//helper to draw mesh
+	void drawmesh(AEGfxVertexList* mesh, float x, float y, float scale_x, float scale_y, float r = 1, float g = 1, float b = 1) {
+		AEMtx33 scale, trans, final;
+		AEMtx33Scale(&scale, scale_x, scale_y);
+		AEMtx33Trans(&trans, x, y);
+		AEMtx33Concat(&final, &trans, &scale);
+		AEGfxSetTransform(final.m);
+		AEGfxSetColorToMultiply(r, g, b, 1.0f);
+		AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
+	}
+
+	//initialise player struct
 	PlayerStats player = {
-		//base values
+		//base stats
 		100.0f, 10.0f, 5.0f, 1.0f, 1.0f,
-		//initial upgrade value
-		{ 0, 0, 0, 0, 0 }                
+		//initial upgrade amount
+		{ 0, 0, 0, 0, 0 },
+		//initial xp stats
+		0.0f, 0.0f, 0,
+		//initial skill point, and menu state
+		0, false
 	};
 }
 
@@ -23,197 +56,165 @@ void LoadDebug1() {
 	// load font
 	boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 
-	//create black mesh
-	AEGfxMeshStart();
-	AEGfxTriAdd(
-		-0.5f, -0.5f, 0xFF000000, 0.0f, 0.0f,
-		0.5f, -0.5f, 0xFF000000, 0.0f, 0.0f,
-		-0.5f, 0.5f, 0xFF000000, 0.0f, 0.0f);
-	AEGfxTriAdd(0.5f, -0.5f, 0xFF000000, 0.0f, 0.0f,
-		0.5f, 0.5f, 0xFF000000, 0.0f, 0.0f,
-		-0.5f, 0.5f, 0xFF000000, 0.0f, 0.0f);
-	pBlackRectMesh = AEGfxMeshEnd();
-
-	//create white mesh
-	AEGfxMeshStart();
-	AEGfxTriAdd(
-		-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 0.0f,
-		0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 0.0f,
-		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-	AEGfxTriAdd(
-		0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 0.0f,
-		0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f,
-		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-	pWhiteRectMesh = AEGfxMeshEnd();
-
-	//create green mesh
-	AEGfxMeshStart();
-	AEGfxTriAdd(
-		-0.5f, -0.5f, 0xFF00FF00, 0.0f, 0.0f,
-		0.5f, -0.5f, 0xFF00FF00, 0.0f, 0.0f,
-		-0.5f, 0.5f, 0xFF00FF00, 0.0f, 0.0f);
-	AEGfxTriAdd(
-		0.5f, -0.5f, 0xFF00FF00, 0.0f, 0.0f,
-		0.5f, 0.5f, 0xFF00FF00, 0.0f, 0.0f,
-		-0.5f, 0.5f, 0xFF00FF00, 0.0f, 0.0f);
-	pGreenRectMesh = AEGfxMeshEnd();
+	//call helper to load mesh
+	pBlackRectMesh = createmesh(0xFF000000);
+	pWhiteRectMesh = createmesh(0xFFFFFFFF);
+	pGreenRectMesh = createmesh(0xFF00FF00);
+	pRedRectMesh = createmesh(0xFFFF0000);
+	pYellowRectMesh = createmesh(0xFFFFFF00);
 }
 
 void UpdateDebug1() {
-	//typedef
-	s32 screenX, screenY;
-	//get cursor pos.
-	AEInputGetCursorPosition(&screenX, &screenY);
-	//window width and height
-	s32 winWidth = AEGfxGetWindowWidth();
-	s32 winHeight = AEGfxGetWindowHeight();
+	//xp needed for each level
+	float xp_needed = 100.0f + (player.player_level * 50.0f);
 
-	//convert screen coords to world coords (0,0 in the middle)
-	float mouseX = (float)screenX - (winWidth / 2.0f);
-	float mouseY = (winHeight / 2.0f) - (float)screenY;
+	//logic for levelling up
+	if (player.current_xp >= xp_needed) {
+		player.current_xp -= xp_needed; //ensures the excess xp gets carried over
+		player.player_level++; //add level
+		player.skill_point++; //add 1 sp
+		player.menu_open = true; //opens menu --> then draws the menu
+	}
 
-	if (AEInputCheckTriggered(AEVK_LBUTTON)) {
-		//initialise the geometry for the white buttons (on the right)
-		float startY = 200.0f; //vertical anchor
-		float spacingY = 100.0f; //vertical gap between rows
-		float sideOffset = 260.0f; //horizontal distance from the centre
-		float squareSize = 60.0f; //scale
-		float halfSq = squareSize / 2.0f;
+	if (player.menu_open) {
+		//condition to close menu
+		if (player.skill_point <= 0 && AEInputCheckTriggered(AEVK_ESCAPE)) {
+			player.menu_open = false;
+		}
 
-		//for loop for vertical offset
-		for (int i = 0; i < 5; ++i) {
-			float currentY = startY - (i * spacingY);
-			//the AABB collision logic (to detect mouse click)
-			if (mouseX >= (sideOffset - halfSq) && mouseX <= (sideOffset + halfSq) &&
-				mouseY >= (currentY - halfSq) && mouseY <= (currentY + halfSq))
-			{
-				//increment the array by 1 in player struct
-				if (player.upgradeLevels[i] < 5) {
-					player.upgradeLevels[i]++;
+		if (AEInputCheckTriggered(AEVK_LBUTTON)) {
+			s32 screenX, screenY; //typedef
+			AEInputGetCursorPosition(&screenX, &screenY); //get cursor pos.
+
+			//get window width & height
+			s32 winWidth = AEGfxGetWindowWidth(); 
+			s32 winHeight = AEGfxGetWindowHeight();
+
+			//convert screen coords to world coords (0,0 in the middle)
+			float mouseX = (float)screenX - (winWidth / 2.0f);
+			float mouseY = (winHeight / 2.0f) - (float)screenY;
+
+			//initialise the geometry for the white buttons (on the right)
+			float start_y = 200.0f; //y coordinate for first button
+			float spacing_y = 100.0f; //vertical gap between buttons
+			float offset_middle = 260.0f; //horizontal distance from the centre
+			float squaresize = 60.0f; //size of sq
+			float middle_to_edge = squaresize / 2.0f; //distance from centre to edge of the sq
+
+			//loop for 5 buttons
+			for (int i = 0; i < 5; ++i) {
+				float currentY = start_y - (i * spacing_y); //calculates centre point of each button
+				//the AABB collision logic (to detect mouse click)
+				if (mouseX >= (offset_middle - middle_to_edge) && mouseX <= (offset_middle + middle_to_edge) &&
+					mouseY >= (currentY - middle_to_edge) && mouseY <= (currentY + middle_to_edge))
+				{
+					//skill point check
+					if (player.skill_point > 0 && player.upgradeLevels[i] < 5) {
+						//add one upgrade, then - 1 skill point
+						player.upgradeLevels[i]++;
+						player.skill_point--;
+					}
 				}
 			}
 		}
+	}		
+	//resume state
+	else {
+		//gain exp while pressing E
+		if (AEInputCheckCurr(AEVK_E)) {
+		float xp_multiplier = 1.0f + (player.upgradeLevels[4] * 0.5f); //get total multiplier for xp
+		player.current_xp += 2.0f * xp_multiplier; //calculate player xp
+		}
 	}
 }
-
+			
 void DrawDebug1() {
-	//set bg
-	AEGfxSetBackgroundColor(0.82f, 0.82f, 0.82f);
-	//set render mode
-	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-	//define the matrix
-	AEMtx33 scaleMtx, transMtx, finalMtx;
+	AEGfxSetBackgroundColor(0.82f, 0.82f, 0.82f); //bg
+	AEGfxSetRenderMode(AE_GFX_RM_COLOR); //render mode
+	AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); //reset colors
 
-	//draw the menubg (black)
-	AEMtx33Scale(&scaleMtx, 800.0f, 600.0f);
-	AEMtx33Trans(&transMtx, 0.0f, 0.0f);
-	AEMtx33Concat(&finalMtx, &transMtx, &scaleMtx);
-	AEGfxSetTransform(finalMtx.m);
-	AEGfxSetColorToMultiply(0.0f, 0.0f, 0.0f, 1.0f);
-	AEGfxMeshDraw(pBlackRectMesh, AE_GFX_MDM_TRIANGLES);
+	//draws hud at the bottom
+	drawmesh(pBlackRectMesh, 0.0f, -410.0f, 310.0f, 52.0f); 
+	drawmesh(pRedRectMesh, 0.0f, -403.0f, 300.0f, 25.0f);
 
-	// IMPORTANT: needs to be the same as the ones initialised in update function
-	float startY = 200.0f; //vertical anchor
-	float spacingY = 100.0f; //vertical gap between rows
-	float sideOffset = 260.0f; //horizontal distance from the centre
-	float squareSize = 60.0f; //scale
+	//xp bar logic
+	float xp_needed = 100.0f + (player.player_level * 50.0f); //base xp amount + level
+	float xp_perc = player.current_xp / xp_needed; // percentage
+	//anchors
+	if (xp_perc > 1.0f) {
+		xp_perc = 1.0f;
+	}
+	if (xp_perc < 0.0f) {
+		xp_perc = 0.0f;
+	}
+	
+	float current_w = 300.0f * xp_perc; //current width of bar
+	drawmesh(pYellowRectMesh, (current_w - 300.0f) / 2.0f, -425.0f, current_w, 10.0f); //draw bar
 
-	//main rectangle loop for each stat
+	//storing different data into arrays
+	const char* stats[] = { "HP", "DMG", "SPEED", "FIRE RATE", "XP GAIN" };
+
+	float multiplier[] = { 20.0f, 5.0f, 0.5f, 0.2f, 3.0f }; //***** IMPORTANT: CHANGE MULTIPLIERS HERE *****
+
+	float base_stats[] = { player.baseHp, player.baseDmg, player.baseSpeed, player.baseFireRate, player.baseXpGain };
+
+	//print level and xp progress
+	char hud[64];
+	sprintf_s(hud, "LEVEL: %d (press E for XP): %.1f/%.0f", player.player_level, player.current_xp, xp_needed);
+	AEGfxPrint(boldPixels, hud, 0.35f, -0.85f, 0.4f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+	//prints the 5 main stats (can be removed)
 	for (int i = 0; i < 5; ++i) {
-		//calculates the vertical pos for each row
-		float currentY = startY - (i * spacingY);
-
-		//draw white container
-		AEMtx33Scale(&scaleMtx, 400.0f, 60.0f);
-		AEMtx33Trans(&transMtx, 0.0f, currentY);
-		AEMtx33Concat(&finalMtx, &transMtx, &scaleMtx);
-		AEGfxSetTransform(finalMtx.m);
-		AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
-		AEGfxMeshDraw(pWhiteRectMesh, AE_GFX_MDM_TRIANGLES);
-
-		//draw progress segments
-		float segmentWidth = 70.0f; //horizontal width of a segment
-		float segmentGap = 78.0f; //distance between the centres of each segment
-		float leftStart = -156.0f; //the x of the first segment
-
-		//loop for green and grey segments
-		for (int s = 0; s < 5; ++s) {
-			AEMtx33Scale(&scaleMtx, segmentWidth, 50.0f);
-			//multiply the gaps based on index s
-			AEMtx33Trans(&transMtx, leftStart + (s * segmentGap), currentY);
-			AEMtx33Concat(&finalMtx, &transMtx, &scaleMtx);
-			AEGfxSetTransform(finalMtx.m);
-
-			//to fill with green by comparing index s with upgrade level array in player struct
-			//if less than, then fill it with green
-			if (s < player.upgradeLevels[i]) {
-				AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
-				AEGfxMeshDraw(pGreenRectMesh, AE_GFX_MDM_TRIANGLES);
-			}
-			// else fill with grey
-			else {
-				AEGfxSetColorToMultiply(0.8f, 0.8f, 0.8f, 1.0f);
-				AEGfxMeshDraw(pWhiteRectMesh, AE_GFX_MDM_TRIANGLES);
-			}
-		}
-
-		//draw side squares
-		AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
-		//left squares (to put textures of different stats on the mesh)
-		AEMtx33Scale(&scaleMtx, squareSize, squareSize);
-		AEMtx33Trans(&transMtx, -sideOffset, currentY);
-		AEMtx33Concat(&finalMtx, &transMtx, &scaleMtx);
-		AEGfxSetTransform(finalMtx.m);
-		AEGfxMeshDraw(pWhiteRectMesh, AE_GFX_MDM_TRIANGLES);
-
-		//right squares (to upgrade the stats)
-		AEMtx33Scale(&scaleMtx, squareSize, squareSize);
-		AEMtx33Trans(&transMtx, sideOffset, currentY);
-		AEMtx33Concat(&finalMtx, &transMtx, &scaleMtx);
-		AEGfxSetTransform(finalMtx.m);
-		AEGfxMeshDraw(pWhiteRectMesh, AE_GFX_MDM_TRIANGLES);
+		char buff[64];
+		float finalStat = base_stats[i] + (player.upgradeLevels[i] * multiplier[i]);
+		sprintf_s(buff, "%s: %.1f", stats[i], finalStat);
+		AEGfxPrint(boldPixels, buff, -0.95f, 0.90f - (i * 0.08f), 0.4f, 0, 0, 0, 1);
 	}
 
-	//to show the stats on the top left
-	const char* statNames[5] = { "HP", "DMG", "SPEED", "FIRE RATE", "XP GAIN" };
+	//condition: open menu when leveled up
+	if (player.menu_open) {
+		drawmesh(pBlackRectMesh, 0.0f, 0.0f, 900.0f, 650.0f); //menu bg
 
-	//calculating upgraded stats (can be modified)
-	for (int i = 0; i < 5; ++i) {
-		char buffer[64];
-		float finalStat = 0.0f;
+		//initialise geometry for the rows (same as in update loop)
+		float start_y = 200.0f, spacing_y = 100.0f, offset_middle = 260.0f; 
 
-		//switch for all the stats
-		switch (i) {
-		case 0: //hp
-			finalStat = player.baseHp + (player.upgradeLevels[i] * 20.0f);
-			break;
-		case 1: //dmg
-			finalStat = player.baseDmg + (player.upgradeLevels[i] * 5.0f);
-			break;
-		case 2: //speed
-			finalStat = player.baseSpeed + (player.upgradeLevels[i] * 0.5f);
-			break;
-		case 3: //fire rate
-			finalStat = player.baseFireRate + (player.upgradeLevels[i] * 0.2f);
-			break;
-		case 4: //xp gain
-			finalStat = player.baseXpGain + (player.upgradeLevels[i] * 0.1f);
-			break;
+		for (int i = 0; i < 5; ++i) {
+			float actual_y = start_y - (i * spacing_y); //calculate centre point of the rows
+
+			//draws rows
+			drawmesh(pWhiteRectMesh, 0.0f, actual_y, 400.0f, 60.0f); //long white rectangle
+			drawmesh(pWhiteRectMesh, -offset_middle, actual_y, 60.0f, 60.0f); //right sq
+			drawmesh(pWhiteRectMesh, offset_middle, actual_y, 60.0f, 60.0f); //left sq
+
+			//logic for filling up grey boxes 
+			for (int s = 0; s < 5; ++s) {
+				//if less then current level, turn green otherwise its grey
+				if (s < player.upgradeLevels[i]) {
+					//uses whitemesh and turns it into green
+					drawmesh(pWhiteRectMesh, -156.0f + (s * 78.0f), actual_y, 70.0f, 50.0f, 0.0f, 1.0f, 0.0f); 
+				}
+				else {
+					//uses whitemesh and turns it to grey
+					drawmesh(pWhiteRectMesh, -156.0f + (s * 78.0f), actual_y, 70.0f, 50.0f, 0.8f, 0.8f, 0.8f);
+				}
+			}
 		}
 
-		//print text (to be removed later just added for clarity)
-		sprintf_s(buffer, "%s: %.1f", statNames[i], finalStat);
-
-		float textX = -0.95f;
-		float textY = 0.90f - (i * 0.1f);
-
-		AEGfxPrint(boldPixels, buffer, textX, textY, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f);
+		//condition texts on menu
+		if (player.skill_point > 0) {
+			AEGfxPrint(boldPixels, "SPEND POINT TO CONTINUE!", -0.23f, -0.63f, 0.4f, 1.0f, 1.0f, 1.0f, 1.0f);
+		}
+		else {
+			AEGfxPrint(boldPixels, "PRESS ESC TO CLOSE!", -0.18f, -0.63f, 0.4f, 1.0f, 1.0f, 1.0f, 1.0f);
+		}
 	}
 }
 
 void FreeDebug1() {
-	// free font
+	//free font
 	AEGfxDestroyFont(boldPixels);
+
+	//free mesh
 	if (pBlackRectMesh) {
 		AEGfxMeshFree(pBlackRectMesh);
 		pBlackRectMesh = nullptr;
@@ -225,5 +226,13 @@ void FreeDebug1() {
 	if (pGreenRectMesh) { 
 		AEGfxMeshFree(pGreenRectMesh); 
 		pGreenRectMesh = nullptr;
+	}
+	if (pRedRectMesh) {
+		AEGfxMeshFree(pRedRectMesh);
+		pRedRectMesh = nullptr;
+	}
+	if (pYellowRectMesh) {
+		AEGfxMeshFree(pYellowRectMesh);
+		pYellowRectMesh = nullptr;
 	}
 }
