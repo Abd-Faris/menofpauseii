@@ -132,7 +132,27 @@ void DrawDebug2() {
 		float distxpm = mouseposx - circle.pos_x;
 		float distypm = mouseposy - circle.pos_y;
 
-		float angle = atan2f(distypm, distxpm) - 1.5708f; // arctangent find angle 1.5708f is half of pi
+		if ((distxpm * distxpm + distypm * distypm) > 1.0f)
+		{
+			float rotationSpeed = 0.1f;
+			float targetangle = atan2f(distypm, distxpm) - 1.5708f; // arctangent find angle 1.5708f is half of pi
+			float diffangle = targetangle - circle.currentAngle;
+
+			while (diffangle > 3.1415f)
+			{
+				diffangle -= 6.2831f;
+			}
+			while (diffangle < -3.1415f)
+			{
+				diffangle += 6.2831f;
+			}
+
+			// Smoothly update the persistent angle
+			circle.currentAngle += diffangle * rotationSpeed;
+		}
+
+		// Use circle.currentAngle in your AEMtx33Rot call
+		
 
 
 		AEGfxSetColorToMultiply(0.8f, 0.2f, 0.2f, 1.0f);
@@ -147,11 +167,13 @@ void DrawDebug2() {
 
 		AEMtx33Trans(&transProtrusionmove, 0.0f, protrusionlen / 2);// move the base of the protrusion to the base
 
-		AEMtx33Rot(&rotateProtrusion, angle); // rotate reference
+		//AEMtx33Rot(&rotateProtrusion, angle); // rotate reference
+		AEMtx33Rot(&rotateProtrusion, circle.currentAngle);
+		AEMtx33Trans(&translateProtrusion, circle.pos_x, circle.pos_y);
 
 		AEMtx33Concat(&interval	, &transProtrusionmove, &scaleProtrusion); // attachment
 		AEMtx33Concat(&interval, &rotateProtrusion, &interval);
-		AEMtx33Concat(&transformProtrusion, &translateSquare, &interval); //playerposition*(rotation*offset*scale)
+		AEMtx33Concat(&transformProtrusion, &translateProtrusion, &interval); //playerposition*(rotation*offset*scale)
 
 		AEGfxSetTransform(transformProtrusion.m);
 		AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);

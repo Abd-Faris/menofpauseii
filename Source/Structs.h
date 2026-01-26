@@ -14,7 +14,7 @@ struct shape {
 
 	f32 scale;			//scale
 	f32 pos_x, pos_y;	// x and y positions
-
+	f32 currentAngle;
 	AEMtx33 transform;  // Final transformation matrix for rendering
 };
 
