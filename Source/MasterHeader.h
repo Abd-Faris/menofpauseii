@@ -8,6 +8,7 @@
 // Library Headers
 #include <crtdbg.h>
 #include <cmath>
+#include <string>
 
 // System Headers
 #include "System.h"
