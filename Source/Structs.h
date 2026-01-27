@@ -44,4 +44,6 @@ struct PlayerStats {
 	//for skill points
 	int skill_point;
 	bool menu_open;
+	//for hp stats
+	float current_hp;
 };

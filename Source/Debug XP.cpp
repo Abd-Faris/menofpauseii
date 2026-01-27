@@ -43,16 +43,21 @@ namespace {
 
 	//initialise player struct
 	PlayerStats player = {
-		//base stats
-		100.0f, 10.0f, 5.0f, 1.0f, 1.0f,
-		//initial upgrade amount
-		{ 0, 0, 0, 0, 0 },
-		//initial xp stats
-		0.0f, 0.0f, 0,
-		//initial skill point, and menu state
-		0, false
+		100.0f, 10.0f, 5.0f, 1.0f, 1.0f, //base stats
+		
+		{ 0, 0, 0, 0, 0 },   //initial upgrade amount
+		
+		0.0f, 0.0f, 0,    //initial xp stats
+		
+		0, false,  //initial skill point, and menu state
+		
+		player.baseHp     //set current_hp to base hp
 	};
+
+	float multiplier[] = { 20.0f, 5.0f, 0.5f, 0.2f, 3.0f }; //***** IMPORTANT: CHANGE MULTIPLIERS HERE *****
+
 }
+
 
 void LoadDebug1() {
 	// load font
@@ -66,11 +71,17 @@ void LoadDebug1() {
 	pYellowRectMesh = createmesh(0xFFFFFF00);
 }
 
+
+
 void UpdateDebug1() {
-	//xp needed for each level
+
+	//total xp needed for each level (linear)
 	float xp_needed = 100.0f + (player.player_level * 50.0f);
 
-	//logic for levelling up
+	//maximum hp the player can get
+	float max_hp = player.baseHp + (player.upgradeLevels[0] * 20.0f);
+
+	//---- LEVEL UP LOGIC ----
 	if (player.current_xp >= xp_needed) {
 		player.current_xp -= xp_needed; //ensures the excess xp gets carried over
 		player.player_level++; //add level
@@ -78,8 +89,9 @@ void UpdateDebug1() {
 		player.menu_open = true; //opens menu --> then draws the menu
 	}
 
+	//---- UPGRADE MENU AND SKILL POINT LOGIC ----
 	if (player.menu_open) {
-		//condition to close menu
+		//condition to close the menu
 		if (player.skill_point <= 0 && AEInputCheckTriggered(AEVK_ESCAPE)) {
 			player.menu_open = false;
 		}
@@ -106,7 +118,7 @@ void UpdateDebug1() {
 			//loop for 5 buttons
 			for (int i = 0; i < 5; ++i) {
 				float currentY = start_y - (i * spacing_y); //calculates centre point of each button
-				//the AABB collision logic (to detect mouse click)
+				//point to rectangle collision (to detect mouse click)
 				if (mouseX >= (offset_middle - middle_to_edge) && mouseX <= (offset_middle + middle_to_edge) &&
 					mouseY >= (currentY - middle_to_edge) && mouseY <= (currentY + middle_to_edge))
 				{
@@ -115,14 +127,35 @@ void UpdateDebug1() {
 						//add one upgrade, then - 1 skill point
 						player.upgradeLevels[i]++;
 						player.skill_point--;
+
+						//if skill point is added to HP, add the multplier
+						if (i == 0) {
+							player.current_hp += multiplier[0];
+						}
 					}
 				}
 			}
 		}
 	}		
-	//resume state
-	else {
-		//gain exp while pressing E
+
+	//---- RESUME STATE ----
+
+	else { 
+		//heal hp with R
+		if (AEInputCheckTriggered(AEVK_R)) {
+			player.current_hp += 10.0f;
+			if (player.current_hp > max_hp) 
+				player.current_hp = max_hp;
+		}
+
+		//lose hp with T
+		if (AEInputCheckTriggered(AEVK_T)) {
+			player.current_hp -= 10.0f;
+			if (player.current_hp < 0.0f) 
+				player.current_hp = 0.0f;
+		}
+
+		//press E for xp
 		if (AEInputCheckCurr(AEVK_E)) {
 		float xp_multiplier = 1.0f + (player.upgradeLevels[4] * 0.5f); //get total multiplier for xp
 		player.current_xp += 2.0f * xp_multiplier; //calculate player xp
@@ -130,14 +163,36 @@ void UpdateDebug1() {
 	}
 }
 			
-void DrawDebug1() {
-	AEGfxSetBackgroundColor(0.82f, 0.82f, 0.82f); //bg
-	AEGfxSetRenderMode(AE_GFX_RM_COLOR); //render mode
-	AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); //reset colors
 
-	//draws hud at the bottom
-	drawmesh(pBlackRectMesh, 0.0f, -410.0f, 310.0f, 52.0f); 
-	drawmesh(pRedRectMesh, 0.0f, -403.0f, 300.0f, 25.0f);
+void DrawDebug1() {
+	AEGfxSetBackgroundColor(0.82f, 0.82f, 0.82f);
+	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+	AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+
+	//storing into arrays (mainly for printing)
+	const char* stats[] = { "HP", "DMG", "SPEED", "FIRE RATE", "XP GAIN" };
+	float base_stats[] = { player.baseHp, player.baseDmg, player.baseSpeed, player.baseFireRate, player.baseXpGain };
+
+	//----- DRAW HUD AT THE BOTTOM (ALWAYS ON SCREEN) -----
+	drawmesh(pBlackRectMesh, 0.0f, -410.0f, 310.0f, 52.0f); //draws hud bg
+
+	//max width for both bars
+	float max_bar_w = 300.0f;
+
+	//hp bar logic
+	float max_hp = player.baseHp + (player.upgradeLevels[0] * multiplier[0]);
+	float hp_perc = player.current_hp / max_hp;
+	//anchors
+	if (hp_perc > 1.0f) {
+		hp_perc = 1.0f;
+	}
+	if (hp_perc < 0.0f) {
+		hp_perc = 0.0f;
+	}
+	
+	float current_hp_w = max_bar_w * hp_perc;
+	float hp_left_align = (max_bar_w - current_hp_w) / 2.0f; //anchor it to the left
+	drawmesh(pRedRectMesh, 0.0f - hp_left_align, -403.0f, current_hp_w, 25.0f); //draw bar
 
 	//xp bar logic
 	float xp_needed = 100.0f + (player.player_level * 50.0f); //base xp amount + level
@@ -150,20 +205,16 @@ void DrawDebug1() {
 		xp_perc = 0.0f;
 	}
 	
-	float current_w = 300.0f * xp_perc; //current width of bar
-	drawmesh(pYellowRectMesh, (current_w - 300.0f) / 2.0f, -425.0f, current_w, 10.0f); //draw bar
+	float current_xp_w = max_bar_w * xp_perc; //current width of bar
+	drawmesh(pYellowRectMesh, (current_xp_w - 300.0f) / 2.0f, -425.0f, current_xp_w, 10.0f); //draw bar
 
-	//storing different data into arrays
-	const char* stats[] = { "HP", "DMG", "SPEED", "FIRE RATE", "XP GAIN" };
-
-	float multiplier[] = { 20.0f, 5.0f, 0.5f, 0.2f, 3.0f }; //***** IMPORTANT: CHANGE MULTIPLIERS HERE *****
-
-	float base_stats[] = { player.baseHp, player.baseDmg, player.baseSpeed, player.baseFireRate, player.baseXpGain };
-
-	//print level and xp progress
+	//print HP and XP stats
 	char hud[64];
+	char hud2[64];
 	sprintf_s(hud, "LEVEL: %d (press E for XP): %.1f/%.0f", player.player_level, player.current_xp, xp_needed);
+	sprintf_s(hud2, " %.0f / %.0f (R to heal, T to lose hp)", player.current_hp, max_hp);
 	AEGfxPrint(boldPixels, hud, 0.35f, -0.85f, 0.4f, 0.0f, 0.0f, 0.0f, 1.0f);
+	AEGfxPrint(boldPixels, hud2, 0.35f, -0.9f, 0.4f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 	//prints the 5 main stats (can be removed)
 	for (int i = 0; i < 5; ++i) {
@@ -173,7 +224,8 @@ void DrawDebug1() {
 		AEGfxPrint(boldPixels, buff, -0.95f, 0.90f - (i * 0.08f), 0.4f, 0, 0, 0, 1);
 	}
 
-	//condition: open menu when leveled up
+	//----- DRAW MENU HUD (ONLY DURING LEVEL UP) -----
+
 	if (player.menu_open) {
 		drawmesh(pBlackRectMesh, 0.0f, 0.0f, 900.0f, 650.0f); //menu bg
 
@@ -211,6 +263,7 @@ void DrawDebug1() {
 		}
 	}
 }
+
 
 void FreeDebug1() {
 	//free font
