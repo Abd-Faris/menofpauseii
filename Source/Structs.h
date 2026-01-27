@@ -18,7 +18,7 @@ struct shape {
 	AEMtx33 transform;  // Final transformation matrix for rendering
 };
 
-typedef struct Enemies {
+struct Enemies {
 	AEVec2 pos;
 	AEVec2 velocity;
 	int xp;
