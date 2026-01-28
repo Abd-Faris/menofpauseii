@@ -69,6 +69,24 @@ namespace Graphics {
 		return AEGfxMeshEnd();
 	}
 
+	// Prints a mesh using TRS
+	void printMesh(Card &card) {
+		if (!card.mesh) return;
+		// Translate Matrix
+		AEMtx33 translate{ 0 };
+		AEMtx33Trans(&translate, card.xpos, card.ypos);
+		// Scale Matrix
+		AEMtx33 scale{ 0 };
+		AEMtx33Scale(&scale, card.sizex, card.sizey);
+		// Resultant Transformation
+		AEMtx33 transform{ 0 };
+		AEMtx33Concat(&transform, &translate, &scale);
+		// Apply transformation to mesh
+		AEGfxSetTransform(transform.m);
+		// Printing
+		AEGfxMeshDraw(card.mesh, AE_GFX_MDM_TRIANGLES);
+	}
+
 	void printText(gfxtext &text, s8 font) {
 		// Normalise Coordinates
 		f32 x = text.x / 800.f;

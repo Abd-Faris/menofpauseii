@@ -1,9 +1,7 @@
 /*****************************************************************************/
 /*!
 \file	GameStateManager.cpp
-\author Abdul Faris, abdulfaris.b, 2502386
-\par	abdulfaris.b\@digipen.edu
-\date	18/1/2026
+\author Men of Pause II
 \brief	This file defines the GSM of the program and controls its flow
 
 Copyright (C) 2026 DigiPen Institute of Technology.

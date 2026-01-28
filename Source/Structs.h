@@ -38,7 +38,7 @@ struct Card {
 		type = static_cast<int>(AERandFloat() * Type::NUM_OF_TYPES);
 		// alter percentage based on rarity
 		switch (rarity) {
-		case Rarity::COMMON: // 10-30%, range 20%
+		case Rarity::COMMON: // 10-30%, range 20
 			val = 10 + static_cast<int>(AERandFloat() * 20);
 			break;
 		default: break;
