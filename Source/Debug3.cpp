@@ -2,7 +2,8 @@
 
 f64 dt{};
 f64 timer{};
-Enemies maxenemy[20]{};
+enum { MAX_ENEMIES = 50 };
+Enemies maxenemy[MAX_ENEMIES]{};
 
 f32 maxspeed = 50;
 f32 friction = 0.92;
@@ -78,12 +79,12 @@ void applyPhysicsSeparation(float dt) {
 	const float separationStrength = 500.0f;
 	const float separationRange = 1.5f; // Multiplier for when to start separating
 
-	for (size_t i = 0; i < 20; i++) {
+	for (size_t i = 0; i < MAX_ENEMIES; i++) {
 		if (!maxenemy[i].alive) continue;
 
 		AEVec2 separationForce = { 0,0 };
 
-		for (size_t j = 0; j < 20; j++) {
+		for (size_t j = 0; j < MAX_ENEMIES; j++) {
 			if (i == j || !maxenemy[j].alive) continue;
 
 			AEVec2 delta;
@@ -161,8 +162,21 @@ void updateEnemyPhysics(float dt) {
 }
 
 void SpawnEnemies(Enemies* enemy) {
-	enemy->pos.x = static_cast<float>((AERandFloat() * AEGfxGetWindowWidth()) - AEGfxGetWindowWidth()/2);
-	enemy->pos.y = static_cast<float>((AERandFloat() * AEGfxGetWindowHeight()) - AEGfxGetWindowHeight() / 2);
+	float setscale = 67;
+
+	float posx = static_cast<float>((AERandFloat() * AEGfxGetWindowWidth()) - AEGfxGetWindowWidth() / 2) - setscale;
+	if (posx < (-AEGfxGetWindowWidth() / 2) + setscale) {
+		posx = (-AEGfxGetWindowWidth() / 2) + setscale;
+	}
+
+	float posy = static_cast<float>((AERandFloat() * AEGfxGetWindowHeight()) - AEGfxGetWindowHeight() / 2) - setscale;
+	if (posy < (-AEGfxGetWindowHeight() / 2) + setscale) {
+		posy = (-AEGfxGetWindowHeight() / 2) + setscale;
+	}
+
+
+	enemy->pos.x = posx;
+	enemy->pos.y = posy;
 	enemy->scale = 67;
 	enemy->xp = 5;
 	enemy->rotation = static_cast<float>(AERandFloat() * 360);
@@ -178,7 +192,7 @@ void LoadDebug3() {
 	DrawEnemyMesh();
 	
 	for (int i = 0; i < 20; i++) {
-		InitEnemies(&maxenemy[i]);
+		SpawnEnemies(&maxenemy[i]);
 	}
 
 }
@@ -192,16 +206,17 @@ void DrawDebug3() {
 	}
 
 	dt = AEFrameRateControllerGetFrameTime();
-	timer += AEFrameRateControllerGetFrameTime();
+	timer += dt;
 
 	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
 	AEGfxSetColorToMultiply(0.8f, 0.2f, 0.2f, 1.0f);
 
 
+
 	if (timer >= 1) {
 		if (AERandFloat() * 10 >= 2) {
-			for (int i = 0; i < 20; i++) {
+			for (int i = 0; i < MAX_ENEMIES; i++) {
 
 				if (!maxenemy[i].alive) {
 					SpawnEnemies(&maxenemy[i]);
@@ -213,7 +228,7 @@ void DrawDebug3() {
 
 		timer = 0;
 	}
-	for (int i = 0; i < 20; i++) {
+	for (int i = 0; i < MAX_ENEMIES; i++) {
 
 		if (maxenemy[i].alive) {
 		AEMtx33 transformSquare, scaleSquare, translateSquare, rotateSquare;
