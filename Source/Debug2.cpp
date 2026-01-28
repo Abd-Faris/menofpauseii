@@ -146,36 +146,37 @@ void DrawDebug2() {
 					}
 				}
 			}
-			for (int i = 0; i < MAX_BULLETS; i++) {
-				if (bulleting[i].active) {
+		}
+		for (int i = 0; i < MAX_BULLETS; i++) {
+			if (bulleting[i].active) {
 
-					bulleting[i].x += bulleting[i].directx * bulleting[i].speed * dt;
-					bulleting[i].y += bulleting[i].directy * bulleting[i].speed * dt;
+				bulleting[i].x += bulleting[i].directx * bulleting[i].speed * dt;
+				bulleting[i].y += bulleting[i].directy * bulleting[i].speed * dt;
 
-					if ((abs(bulleting[i].x) > 1200) || (abs(bulleting[i].y) > 800)) {
+				if ((abs(bulleting[i].x) > 1200) || (abs(bulleting[i].y) > 800)) {
 						bulleting[i].active = false;
-					}
-				}
-			}
-
-			for (int i = 0; i < MAX_BULLETS; i++) {
-				if (bulleting[i].active) {
-					AEGfxSetColorToMultiply(1.0f, 1.0f, 0.0f, 1.0f); //yellow Circle
-					AEMtx33 transformbullet;
-					AEMtx33Identity(&transformbullet);
-					AEMtx33 scalebullet;
-					AEMtx33Scale(&scalebullet, bulletsize, bulletsize);
-					AEMtx33 translatebullet;
-					AEMtx33Trans(&translatebullet, bulleting[i].x, bulleting[i].y);
-					AEMtx33Concat(&transformbullet, &translatebullet, &scalebullet);
-
-					// Choose the transform to use
-					AEGfxSetTransform(transformbullet.m);
-					// Actually drawing the mesh 
-					AEGfxMeshDraw(MeshCircle, AE_GFX_MDM_TRIANGLES);
 				}
 			}
 		}
+
+		for (int i = 0; i < MAX_BULLETS; i++) {
+			if (bulleting[i].active) {
+				AEGfxSetColorToMultiply(1.0f, 1.0f, 0.0f, 1.0f); //yellow Circle
+				AEMtx33 transformbullet;
+				AEMtx33Identity(&transformbullet);
+				AEMtx33 scalebullet;
+				AEMtx33Scale(&scalebullet, bulletsize, bulletsize);
+				AEMtx33 translatebullet;
+				AEMtx33Trans(&translatebullet, bulleting[i].x, bulleting[i].y);
+				AEMtx33Concat(&transformbullet, &translatebullet, &scalebullet);
+
+				// Choose the transform to use
+				AEGfxSetTransform(transformbullet.m);
+				// Actually drawing the mesh 
+				AEGfxMeshDraw(MeshCircle, AE_GFX_MDM_TRIANGLES);
+			}
+		}
+		
 
 		// draw protrusion
 
