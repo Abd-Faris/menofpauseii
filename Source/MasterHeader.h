@@ -9,6 +9,7 @@
 #include <crtdbg.h>
 #include <cmath>
 #include <string>
+#include <array>
 
 // System Headers
 #include "System.h"
