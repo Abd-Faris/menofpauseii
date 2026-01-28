@@ -14,6 +14,10 @@ void LoadDebug4() {
 	boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 }
 
+void InitializeDebug4() {
+	
+}
+
 void DrawDebug4() {
 	// gray bg
 	AEGfxSetBackgroundColor(0.82f, 0.82f, 0.82f);
