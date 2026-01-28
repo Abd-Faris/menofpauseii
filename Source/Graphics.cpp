@@ -42,7 +42,7 @@ namespace {
 }
 
 namespace Graphics {
-	AEGfxVertexList* createRectMesh(u32 colour, std::string alignment) {
+	AEGfxVertexList* createRectMesh(std::string alignment, u32 colour) {
 		if (alignment == "center") return ::rectMeshCenter(colour);
 		if (alignment == "left")   return ::rectMeshLeft(colour);
 		if (alignment == "right")  return ::rectMeshRight(colour);
