@@ -10,6 +10,7 @@
 #include <cmath>
 #include <string>
 #include <array>
+#include <iostream>
 
 // System Headers
 #include "System.h"
