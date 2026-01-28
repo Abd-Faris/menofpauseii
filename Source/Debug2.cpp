@@ -125,53 +125,55 @@ void DrawDebug2() {
 		AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);
 
 		//draw bullets
-		bullettimer -= dt;
-		if (bullettimer <= 0) {
+		if (AEInputCheckCurr(AEVK_SPACE)) {
+			bullettimer -= dt;
+			if (bullettimer <= 0) {
+				for (int i = 0; i < MAX_BULLETS; i++) {
+					if (!bulleting[i].active) {
+						bulleting[i].active = true;
+						bulleting[i].directx = cosf(circle.currentAngle + 1.5708f);
+						bulleting[i].directy = sinf(circle.currentAngle + 1.5708f);
+						f32 dirx = bulleting[i].directx;
+						f32 diry = bulleting[i].directy;
+
+						bulleting[i].x = circle.pos_x + (dirx * protrusionlen);
+						bulleting[i].y = circle.pos_y + (diry * protrusionlen);
+						bulleting[i].speed = 500.0f;
+
+
+						bullettimer = bulletinterval;
+						break;
+					}
+				}
+			}
 			for (int i = 0; i < MAX_BULLETS; i++) {
-				if (!bulleting[i].active) {
-					bulleting[i].active = true;
-					bulleting[i].directx = cosf(circle.currentAngle + 1.5708f);
-					bulleting[i].directy = sinf(circle.currentAngle + 1.5708f);
-					f32 dirx = bulleting[i].directx;
-					f32 diry = bulleting[i].directy;
+				if (bulleting[i].active) {
 
-					bulleting[i].x = circle.pos_x + (dirx * protrusionlen);
-					bulleting[i].y = circle.pos_y + (diry * protrusionlen);
-					bulleting[i].speed = 500.0f;
+					bulleting[i].x += bulleting[i].directx * bulleting[i].speed * dt;
+					bulleting[i].y += bulleting[i].directy * bulleting[i].speed * dt;
 
-
-					bullettimer = bulletinterval;
-					break;
+					if ((abs(bulleting[i].x) > 1200) || (abs(bulleting[i].y) > 800)) {
+						bulleting[i].active = false;
+					}
 				}
 			}
-		}
-		for (int i = 0; i < MAX_BULLETS; i++) {
-			if (bulleting[i].active) {
-				
-				bulleting[i].x += bulleting[i].directx * bulleting[i].speed * dt;
-				bulleting[i].y += bulleting[i].directy * bulleting[i].speed * dt;
 
-				if ((abs(bulleting[i].x) > 1200) || (abs(bulleting[i].y) > 800)) {
-					bulleting[i].active = false;
+			for (int i = 0; i < MAX_BULLETS; i++) {
+				if (bulleting[i].active) {
+					AEGfxSetColorToMultiply(1.0f, 1.0f, 0.0f, 1.0f); //yellow Circle
+					AEMtx33 transformbullet;
+					AEMtx33Identity(&transformbullet);
+					AEMtx33 scalebullet;
+					AEMtx33Scale(&scalebullet, bulletsize, bulletsize);
+					AEMtx33 translatebullet;
+					AEMtx33Trans(&translatebullet, bulleting[i].x, bulleting[i].y);
+					AEMtx33Concat(&transformbullet, &translatebullet, &scalebullet);
+
+					// Choose the transform to use
+					AEGfxSetTransform(transformbullet.m);
+					// Actually drawing the mesh 
+					AEGfxMeshDraw(MeshCircle, AE_GFX_MDM_TRIANGLES);
 				}
-			}
-		}
-		
-		for (int i = 0; i < MAX_BULLETS; i++) {
-			if (bulleting[i].active) {
-				AEGfxSetColorToMultiply(1.0f, 1.0f, 0.0f, 1.0f); //yellow Circle
-				AEMtx33 transformbullet;
-				AEMtx33Identity(&transformbullet);
-				AEMtx33 scalebullet;
-				AEMtx33Scale(&scalebullet, bulletsize, bulletsize);
-				AEMtx33 translatebullet;
-				AEMtx33Trans(&translatebullet, bulleting[i].x, bulleting[i].y);
-				AEMtx33Concat(&transformbullet, &translatebullet, &scalebullet);
-
-				// Choose the transform to use
-				AEGfxSetTransform(transformbullet.m);
-				// Actually drawing the mesh 
-				AEGfxMeshDraw(MeshCircle, AE_GFX_MDM_TRIANGLES);
 			}
 		}
 
