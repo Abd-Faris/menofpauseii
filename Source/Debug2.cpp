@@ -15,6 +15,14 @@ namespace {
 	AEGfxVertexList* MeshCircle{};
 	AEGfxVertexList* MeshRect{};
 	shape circle = { 0 };
+	const int MAX_BULLETS = 1000; 
+	bullets bulleting[MAX_BULLETS];
+	float protrusionlen = 300.0f;
+	float protrusionwid = 30.0f;
+	float bullettimer = 0.0f;
+	float bulletinterval = 0.05f;
+	float bulletsize = 15.0f;
+
 
 }
 
@@ -104,7 +112,7 @@ void DrawDebug2() {
 		AEMtx33Identity(&transformSquare);
 
 		
-		float squareSize = 100.0f;
+		float squareSize = 150.0f;
 		AEMtx33Scale(&scaleSquare, squareSize, squareSize);
 
 		
@@ -115,6 +123,57 @@ void DrawDebug2() {
 
 		AEGfxSetTransform(transformSquare.m);
 		AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);
+
+		//draw bullets
+		bullettimer -= dt;
+		if (bullettimer <= 0) {
+			for (int i = 0; i < MAX_BULLETS; i++) {
+				if (!bulleting[i].active) {
+					bulleting[i].active = true;
+					bulleting[i].directx = cosf(circle.currentAngle + 1.5708f);
+					bulleting[i].directy = sinf(circle.currentAngle + 1.5708f);
+					f32 dirx = bulleting[i].directx;
+					f32 diry = bulleting[i].directy;
+
+					bulleting[i].x = circle.pos_x + (dirx * protrusionlen);
+					bulleting[i].y = circle.pos_y + (diry * protrusionlen);
+					bulleting[i].speed = 500.0f;
+
+
+					bullettimer = bulletinterval;
+					break;
+				}
+			}
+		}
+		for (int i = 0; i < MAX_BULLETS; i++) {
+			if (bulleting[i].active) {
+				
+				bulleting[i].x += bulleting[i].directx * bulleting[i].speed * dt;
+				bulleting[i].y += bulleting[i].directy * bulleting[i].speed * dt;
+
+				if ((abs(bulleting[i].x) > 1200) || (abs(bulleting[i].y) > 800)) {
+					bulleting[i].active = false;
+				}
+			}
+		}
+		
+		for (int i = 0; i < MAX_BULLETS; i++) {
+			if (bulleting[i].active) {
+				AEGfxSetColorToMultiply(1.0f, 1.0f, 0.0f, 1.0f); //yellow Circle
+				AEMtx33 transformbullet;
+				AEMtx33Identity(&transformbullet);
+				AEMtx33 scalebullet;
+				AEMtx33Scale(&scalebullet, bulletsize, bulletsize);
+				AEMtx33 translatebullet;
+				AEMtx33Trans(&translatebullet, bulleting[i].x, bulleting[i].y);
+				AEMtx33Concat(&transformbullet, &translatebullet, &scalebullet);
+
+				// Choose the transform to use
+				AEGfxSetTransform(transformbullet.m);
+				// Actually drawing the mesh 
+				AEGfxMeshDraw(MeshCircle, AE_GFX_MDM_TRIANGLES);
+			}
+		}
 
 		// draw protrusion
 
@@ -161,8 +220,7 @@ void DrawDebug2() {
 		AEMtx33Identity(&transformProtrusion);
 		AEMtx33 interval;
 
-		float protrusionlen = 300.0f;
-		float protrusionwid = 30.0f;
+		
 		AEMtx33Scale(&scaleProtrusion, protrusionwid, protrusionlen);
 
 		AEMtx33Trans(&transProtrusionmove, 0.0f, protrusionlen / 2);// move the base of the protrusion to the base
@@ -185,18 +243,10 @@ void DrawDebug2() {
 		
 		//draw circle
 		AEGfxSetColorToMultiply(0.0f, 0.5f, 1.0f, 1.0f); //Blue Circle
-
-		
 		AEMtx33 transform;
 		AEMtx33Identity(&transform);
-
-
-
 		AEMtx33 scale;
 		AEMtx33Scale(&scale, circle.scale, circle.scale);
-
-
-
 		AEMtx33 translate;
 		AEMtx33Trans(&translate, circle.pos_x, circle.pos_y);
 		AEMtx33Concat(&transform, &translate, &scale);

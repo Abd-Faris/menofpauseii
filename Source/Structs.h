@@ -6,18 +6,19 @@ struct gfxtext {
 	f32 x, y, scale, r, g, b, a;
 };
 
-struct Point {
-	f32 x, y;
-};
+// OLD: USE native AEVec2 instead
+//struct Point {
+//	f32 x, y;
+//};
 
 struct shape {
-
 	f32 scale;			//scale
 	f32 pos_x, pos_y;	// x and y positions
 	f32 currentAngle;
 	AEMtx33 transform;  // Final transformation matrix for rendering
 };
 
+<<<<<<< HEAD
 struct bullets {
 	f32 x, y;// x an y coordinates
 	f32 directx, directy;// direction x and y
@@ -28,6 +29,11 @@ struct bullets {
 typedef struct Enemies {
 	float pos_x;
 	float pos_y;
+=======
+struct Enemies {
+	AEVec2 pos;
+	AEVec2 velocity;
+>>>>>>> f798c3b5f6de52af1dc79cf01d74c5b6e480ebe1
 	int xp;
 	float scale;
 	float rotation;
@@ -35,13 +41,22 @@ typedef struct Enemies {
 	int hp;
 };
 
-//player base stats
 struct PlayerStats {
+	//player base stats
 	float baseHp;
 	float baseDmg;
 	float baseSpeed;
 	float baseFireRate;
 	float baseXpGain;
-	//number of times it can upgrade
+	//how many times you can level up
 	int upgradeLevels[5];
+	//variables for xp logic
+	float current_xp;
+	float initial_xp;
+	int player_level;
+	//for skill points
+	int skill_point;
+	bool menu_open;
+	//for hp stats
+	float current_hp;
 };
