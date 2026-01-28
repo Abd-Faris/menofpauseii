@@ -18,7 +18,7 @@ struct shape {
 	AEMtx33 transform;  // Final transformation matrix for rendering
 };
 
-<<<<<<< HEAD
+
 struct bullets {
 	f32 x, y;// x an y coordinates
 	f32 directx, directy;// direction x and y
@@ -26,14 +26,10 @@ struct bullets {
 	f32 speed;
 };
 
-typedef struct Enemies {
-	float pos_x;
-	float pos_y;
-=======
+
 struct Enemies {
 	AEVec2 pos;
 	AEVec2 velocity;
->>>>>>> f798c3b5f6de52af1dc79cf01d74c5b6e480ebe1
 	int xp;
 	float scale;
 	float rotation;
