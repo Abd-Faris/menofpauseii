@@ -94,6 +94,11 @@ void level_up(float xp_needed) {
 		player.player_level++; //add level
 		player.skill_point++; //add 1 sp
 		player.menu_open = true; //opens menu
+
+		//reset player hp for each level up
+		float max_hp = calculate_max_stats(0);
+		player.reset_player_hp(max_hp);
+
 	}
 }
 
@@ -222,14 +227,19 @@ void draw_upgrade_rows() {
 void UpdateDebug1() {
 	//updates levels, and maxhp 
 	float xp_needed = 100.0f + (player.player_level * 50.0f);
-	float max_hp = player.baseHp + (player.upgradeLevels[0] * multiplier[0]);
+	float max_hp = calculate_max_stats(0);
+	float max_dmg = calculate_max_stats(1);
+	float max_speed = calculate_max_stats(2);
+	float max_fire_rate = calculate_max_stats(3);
 
 	//calls level up for logic
 	level_up(xp_needed);
 
+	//resume
 	if (player.menu_open) {
 		handle_menu_input();
 	}
+	//pause
 	else {
 		debug_inputs(max_hp);
 	}
