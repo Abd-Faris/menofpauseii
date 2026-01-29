@@ -258,7 +258,7 @@ void DrawDebug2() {
 		AEGfxSetTransform(transform.m);
 		// Actually drawing the mesh 
 		AEGfxMeshDraw(MeshCircle, AE_GFX_MDM_TRIANGLES);
-	
+		
 }
 
 void FreeDebug2() {
