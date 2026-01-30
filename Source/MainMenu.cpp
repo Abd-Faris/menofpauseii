@@ -3,10 +3,13 @@
 
 namespace {
 	s8 boldPixels;
-	enum {NUM_OF_TEXTS = 1};
+	enum {NUM_OF_TEXTS = 3};
 	gfxtext texts[NUM_OF_TEXTS] = {
-		{"Main Menu", 0, 0, 1, 255, 255, 255, 255}
+		{"Play", -400, 0, 1, 255, 255, 255, 255},
+		{"Credits", 0, 0, 1, 255, 255, 255, 255},
+		{"Exit", 400, 0, 1, 255, 255, 255, 255}
 	};
+
 }
 
 void LoadMainMenu() {

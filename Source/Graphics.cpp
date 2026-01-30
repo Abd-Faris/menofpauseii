@@ -104,7 +104,11 @@ namespace Graphics {
 		f32 g = text.g / 255.f;
 		f32 b = text.b / 255.f;
 		f32 a = text.a / 255.f;
-		AEGfxPrint(font, text.text, x, y, text.scale, r, g, b, a);
+		// Calculates offset to "center align" text
+		f32 width, height;
+		AEGfxGetPrintSize(font, text.text, 1.f, &width, &height);
+		// Prints text
+		AEGfxPrint(font, text.text, (-width / 2) + x, (-height / 2) + y, text.scale, r, g, b, a);
 	}
 
 	void printButton(gfxbutton button) {
