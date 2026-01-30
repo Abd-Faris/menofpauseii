@@ -43,8 +43,8 @@ void InitEnemies(Enemies *enemy) {
 	enemy->rotation = 0;//static_cast<float>(AERandFloat() * 360);
 	enemy->alive = false;
 	enemy->hp = 0;
-	enemy->velocity.x = 1.f;
-	enemy->velocity.y = 1.f;
+	enemy->velocity.x = 0.f;
+	enemy->velocity.y = 0.f;
 }
 
 void separateEnemies() {
@@ -76,7 +76,7 @@ void separateEnemies() {
 		}
 	}
 }
-void applyPhysicsSeparation(float dt, std::array <Enemies, MAX_ENEMIES> maxenemy, int size) {
+void applyPhysicsSeparation(float dt, std::array<Enemies, MAX_ENEMIES>& maxenemy, int size) {
 	const float separationStrength = 500.0f;
 	const float separationRange = 1.5f; // Multiplier for when to start separating
 
@@ -118,7 +118,7 @@ void applyPhysicsSeparation(float dt, std::array <Enemies, MAX_ENEMIES> maxenemy
 	}
 }
 
-void PlayerPhysicsSeparation(float dt, std::array <Enemies, MAX_ENEMIES> maxenemy, int size, shape Player) {
+void PlayerPhysicsSeparation(float dt, std::array <Enemies, MAX_ENEMIES> &maxenemy, int size, shape Player) {
 	const float separationStrength = 500.0f;
 	const float separationRange = 1.5f; // Multiplier for when to start separating
 
@@ -158,7 +158,7 @@ void PlayerPhysicsSeparation(float dt, std::array <Enemies, MAX_ENEMIES> maxenem
 		//maxenemy[i].velocity = maxenemy[i].velocity + acceleration;
 	}
 }
-void updateEnemyPhysics(float dt, std::array <Enemies, MAX_ENEMIES> maxenemy, int size) {
+void updateEnemyPhysics(float dt, std::array <Enemies, MAX_ENEMIES> &maxenemy, int size) {
 	for (int i{}; i < size; i++) {
 		if (!maxenemy[i].alive) continue;
 
@@ -224,8 +224,8 @@ void SpawnEnemies(Enemies* enemy) {
 	enemy->rotation = static_cast<float>(AERandFloat() * 360);
 	enemy->alive = true;
 	enemy->hp = 15;
-	enemy->velocity.x = 1;
-	enemy->velocity.y = 1;
+	enemy->velocity.x = 0;
+	enemy->velocity.y = 0;
 }
 
 void SpawnBigEnemies(Enemies* enemy) {
@@ -275,6 +275,11 @@ void LoadDebug3() {
 	for (int i = 0; i < 20; i++) {
 		SpawnEnemies(&maxenemy[i]);
 	}
+
+	applyPhysicsSeparation(dt, maxenemy, MAX_ENEMIES);
+
+	// Update enemy positions and velocities
+	updateEnemyPhysics(dt, maxenemy, MAX_ENEMIES);
 
 }
 
