@@ -72,7 +72,12 @@ namespace Graphics {
 
 	// Prints a mesh using TRS
 	void printMesh(AEGfxVertexList *mesh, f32 posx, f32 posy, f32 sizex, f32 sizey) {
+		// if no mesh, return
 		if (!mesh) return;
+		// object drawing settings
+		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+		AEGfxSetTransparency(1.f);
 		// Translate Matrix
 		AEMtx33 translate{ 0 };
 		AEMtx33Trans(&translate, posx, posy);
@@ -81,7 +86,7 @@ namespace Graphics {
 		AEMtx33Scale(&scale, sizex, sizey);
 		// Resultant Transformation
 		AEMtx33 transform{ 0 };
-		AEMtx33Concat(&transform, &translate, &scale);
+		AEMtx33Concat(&transform, &translate, &scale);	
 		// Apply transformation to mesh
 		AEGfxSetTransform(transform.m);
 		// Printing
@@ -90,13 +95,14 @@ namespace Graphics {
 
 	// overload for card printing
 	void printMesh(Card& card) {
-		if (!card.mesh) return;
 		printMesh(card.mesh, card.xpos, card.ypos, card.sizex, card.sizey);
 	}
 
 	// prints text
 	void printText(gfxtext &text, s8 font) {
 		// Normalise Coordinates
+		//f32 x = text.x / 800.f;
+		//f32 y = text.y / 800.f;
 		f32 x = text.x / 800.f;
 		f32 y = text.y / 800.f;
 		// Normalise RGBA
@@ -106,12 +112,15 @@ namespace Graphics {
 		f32 a = text.a / 255.f;
 		// Calculates offset to "center align" text
 		f32 width, height;
-		AEGfxGetPrintSize(font, text.text, 1.f, &width, &height);
+		AEGfxGetPrintSize(font, text.text, text.scale, &width, &height);
+		// Subtract normalised (width/height) / 2 from normalised pos
+		f32 drawX = x - (width / 2.f);
+		f32 drawY = y - (height / 2.f);
 		// Prints text
-		AEGfxPrint(font, text.text, (-width / 2) + x, (-height / 2) + y, text.scale, r, g, b, a);
+		AEGfxPrint(font, text.text, drawX, drawY, text.scale, r, g, b, a);
 	}
 
-	void printButton(gfxbutton button) {
+	void printButton(gfxbutton &button) {
 		gfxtext& text = button.text;
 		printMesh(button.mesh, text.x, text.y, button.sizex, button.sizey);
 	}
