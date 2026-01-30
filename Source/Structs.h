@@ -23,6 +23,12 @@ struct gfxtext {
 	f32 x, y, scale, r, g, b, a;
 };
 
+struct gfxbutton {
+	AEGfxVertexList* mesh{};
+	f32 sizex, sizey;
+	gfxtext text{};
+};
+
 struct Card {
 	bool exists = false;
 	AEGfxVertexList* mesh{};
