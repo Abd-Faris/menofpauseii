@@ -42,6 +42,7 @@ namespace {
 }
 
 namespace Graphics {
+
 	AEGfxVertexList* createRectMesh(std::string alignment, u32 colour) {
 		if (alignment == "center") return ::rectMeshCenter(colour);
 		if (alignment == "left")   return ::rectMeshLeft(colour);
@@ -70,23 +71,30 @@ namespace Graphics {
 	}
 
 	// Prints a mesh using TRS
-	void printMesh(Card &card) {
-		if (!card.mesh) return;
+	void printMesh(AEGfxVertexList *mesh, f32 posx, f32 posy, f32 sizex, f32 sizey) {
+		if (!mesh) return;
 		// Translate Matrix
 		AEMtx33 translate{ 0 };
-		AEMtx33Trans(&translate, card.xpos, card.ypos);
+		AEMtx33Trans(&translate, posx, posy);
 		// Scale Matrix
 		AEMtx33 scale{ 0 };
-		AEMtx33Scale(&scale, card.sizex, card.sizey);
+		AEMtx33Scale(&scale, sizex, sizey);
 		// Resultant Transformation
 		AEMtx33 transform{ 0 };
 		AEMtx33Concat(&transform, &translate, &scale);
 		// Apply transformation to mesh
 		AEGfxSetTransform(transform.m);
 		// Printing
-		AEGfxMeshDraw(card.mesh, AE_GFX_MDM_TRIANGLES);
+		AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 	}
 
+	// overload for card printing
+	void printMesh(Card& card) {
+		if (!card.mesh) return;
+		printMesh(card.mesh, card.xpos, card.ypos, card.sizex, card.sizey);
+	}
+
+	// prints text
 	void printText(gfxtext &text, s8 font) {
 		// Normalise Coordinates
 		f32 x = text.x / 800.f;
@@ -97,6 +105,11 @@ namespace Graphics {
 		f32 b = text.b / 255.f;
 		f32 a = text.a / 255.f;
 		AEGfxPrint(font, text.text, x, y, text.scale, r, g, b, a);
+	}
+
+	void printButton(gfxbutton button) {
+		gfxtext& text = button.text;
+		printMesh(button.mesh, text.x, text.y, button.sizex, button.sizey);
 	}
 }
 
