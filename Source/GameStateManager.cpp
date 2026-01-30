@@ -48,6 +48,7 @@ void GSM_Update()
 	{
 	case GS_MAIN_MENU:
 		fpLoad = LoadMainMenu;
+		fpInitialize = InitializeMainMenu;
 		fpDraw = DrawMainMenu;
 		fpFree = FreeMainMenu;
 		break;
