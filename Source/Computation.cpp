@@ -2,6 +2,14 @@
 
 namespace Computation {
 
+	// normalizes rgba
+	void normalizeRGBA(f32 &r, f32 &g, f32 &b, f32 &a) {
+		r = r / 255.f;
+		g = g / 255.f;
+		b = b / 255.f;
+		a = a / 255.f;
+	}
+	
 	// converts normalised to world coords
 	// overload f32, f32
 	void denormalizePoint(f32 &x, f32 &y) {
@@ -39,7 +47,7 @@ namespace Computation {
 	}
 
 	// detects collision between point and rectangle
-	bool collsionPointRect(AEVec2 mousepos, AEVec2 rect, f32 sizex, f32 sizey) {
+	bool collisionPointRect(AEVec2 mousepos, AEVec2 rect, f32 sizex, f32 sizey) {
 		// calculates half of width and height
 		f32 halfx = sizex / 2;
 		f32 halfy = sizey / 2;

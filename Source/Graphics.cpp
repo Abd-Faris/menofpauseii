@@ -101,15 +101,11 @@ namespace Graphics {
 	// prints text
 	void printText(gfxtext &text, s8 font) {
 		// Normalise Coordinates
-		//f32 x = text.x / 800.f;
-		//f32 y = text.y / 800.f;
-		f32 x = text.x / 800.f;
-		f32 y = text.y / 800.f;
+		f32 x{ text.x }, y{ text.y };
+		Comp::normalizePoint(x, y);
 		// Normalise RGBA
-		f32 r = text.r / 255.f;
-		f32 g = text.g / 255.f;
-		f32 b = text.b / 255.f;
-		f32 a = text.a / 255.f;
+		f32 r{ text.r }, g{ text.g }, b{ text.b }, a{ text.a };
+		Comp::normalizeRGBA(r, g, b, a);
 		// Calculates offset to "center align" text
 		f32 width, height;
 		AEGfxGetPrintSize(font, text.text, text.scale, &width, &height);
