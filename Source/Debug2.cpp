@@ -206,8 +206,8 @@ void DrawDebug2() {
 		s32 mousex, mousey;
 		AEInputGetCursorPosition(&mousex, &mousey);
 
-		float windowh = 900.0f;
-		float windoww = 1600.0f;
+		float windowh = (float)AEGfxGetWindowHeight();
+		float windoww = (float)AEGfxGetWindowWidth();
 
 		float mouseposx = (float)mousex - windoww / 2.0f;
 		float mouseposy = windowh / 2.0f - (float)mousey;
