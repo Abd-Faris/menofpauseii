@@ -94,3 +94,6 @@ struct PlayerStats {
 	//for hp stats
 	float current_hp;
 };
+
+// Externs
+extern PlayerStats player_init;

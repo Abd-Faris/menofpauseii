@@ -2,9 +2,22 @@
 #include "MasterHeader.h"
 #include "AEEngine.h"
 #include "AEGraphics.h"
+#include "Structs.h"
 
 //EVERYTHING USES WORLD COORDINATES
 //TEXTS USE NORMALISED
+	
+//initialise player struct
+PlayerStats	player_init = {
+	100.0f, 10.0f, 300.0f, 0.25f, 1.0f, //base stats
+
+	{ 0, 0, 0, 0, 0 },   //initial upgrade amount
+
+	0.0f, 0.0f, 0,    //initial xp stats
+
+	0, false,  //initial skill point, and menu state
+
+};
 
 namespace {
 	//for font
@@ -32,6 +45,9 @@ namespace {
 
 	//helper to draw mesh
 	void drawmesh(AEGfxVertexList* mesh, float x, float y, float scale_x, float scale_y, float r = 1, float g = 1, float b = 1) {
+		if (mesh == nullptr) {
+			return;
+		}
 		AEMtx33 scale, trans, final;
 		AEMtx33Scale(&scale, scale_x, scale_y);
 		AEMtx33Trans(&trans, x, y);
@@ -41,27 +57,16 @@ namespace {
 		AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 	}
 
-	//initialise player struct
-	PlayerStats player = {
-		100.0f, 10.0f, 5.0f, 1.0f, 1.0f, //base stats
-		
-		{ 0, 0, 0, 0, 0 },   //initial upgrade amount
-		
-		0.0f, 0.0f, 0,    //initial xp stats
-		
-		0, false,  //initial skill point, and menu state
-	
-	};
 
 	//***** IMPORTANT: CHANGE MULTIPLIERS HERE *****
 	// HP , DMG , MV SPEED , FIRE RATE , XP GAIN //
-	float multiplier[] = { 20.0f, 5.0f, 0.5f, 0.2f, 3.0f }; 
+	float multiplier[] = { 25.0f, 4.0f, 30.0f, 0.04f, 0.5f }; 
 
 	//storing into arrays (mainly for printing)
 	const char* stats[] = { "HP", "DMG", "SPEED", "FIRE RATE", "XP GAIN" };
 
 	//to put into update loop for implementation of cards
-	float base_stats[] = { player.baseHp, player.baseDmg, player.baseSpeed, player.baseFireRate, player.baseXpGain };
+	float base_stats[] = { player_init.baseHp, player_init.baseDmg, player_init.baseSpeed, player_init.baseFireRate, player_init.baseXpGain };
 }
 
 
@@ -77,90 +82,94 @@ void LoadDebug1() {
 	pYellowRectMesh = createmesh(0xFFFFFF00);
 
 	//resets player hp to current hp
-	player.current_hp = player.baseHp;
+	player_init.current_hp = player_init.baseHp;
 }
 
 
 void reset_game() {
 	//reset player stats
-	player.player_level = 0;
-	player.current_xp = 0;
-	player.skill_point = 0;
-	player.menu_open = false;
+	player_init.player_level = 0;
+	player_init.current_xp = 0;
+	player_init.skill_point = 0;
+	player_init.menu_open = false;
 
 	//fill upgrade with 0
 	for (int i = 0; i < 5; ++i) {
-		player.upgradeLevels[i] = 0;
+		player_init.upgradeLevels[i] = 0;
 	}
-	player.current_hp = player.baseHp; //set base hp to current hp
+	player_init.current_hp = player_init.baseHp; //set base hp to current hp
 }
 
 
 float calculate_max_stats(int i) {
 	//base stats + upgrade amount * multiplier
-	return base_stats[i] + (player.upgradeLevels[i] * multiplier[i]);
+	switch (i) {
+	case 0: return player_init.baseHp + (player_init.upgradeLevels[0] * multiplier[0]);
+	case 1: return player_init.baseDmg + (player_init.upgradeLevels[1] * multiplier[1]);
+	case 2: return player_init.baseSpeed + (player_init.upgradeLevels[2] * multiplier[2]);
+	case 3: return player_init.baseFireRate - (player_init.upgradeLevels[3] * multiplier[3]);
+	case 4: return player_init.baseXpGain + (player_init.upgradeLevels[4] * multiplier[4]);
+	default: return 0.0f;
+	}
 }
 
 
 //---- LEVEL UP LOGIC ----
 void level_up(float xp_needed) {
-	if (player.current_xp >= xp_needed) { //if xp threshold reached
-		player.current_xp -= xp_needed; //ensures the excess xp gets carried over
-		player.player_level++; //add level
-		player.skill_point++; //add 1 sp
-		player.menu_open = true; //opens menu
+	if (player_init.current_xp >= xp_needed) { //if xp threshold reached
+		player_init.current_xp -= xp_needed; //ensures the excess xp gets carried over
+		player_init.player_level++; //add level
+		player_init.skill_point++; //add 1 sp
+		player_init.menu_open = true; //opens menu
 
 		//heal player hp every level up
 		float max_hp = calculate_max_stats(0);
-		player.current_hp += max_hp * 0.2f;
+		player_init.current_hp += max_hp * 0.2f;
+
+		if (player_init.current_hp > max_hp) {
+			player_init.current_hp = max_hp;
+		}
 	}
 }
 
 
-void handle_menu_input() {
-	//condition to close upgrade menu
-	if (player.skill_point <= 0 && AEInputCheckTriggered(AEVK_ESCAPE)) {
-		player.menu_open = false;
+void handle_menu_input(float camX, float camY) {
+	if (player_init.skill_point <= 0 && AEInputCheckTriggered(AEVK_ESCAPE)) {
+		player_init.menu_open = false;
 		return;
 	}
 
-	//logic to detect mouse click only at the right squares
 	if (AEInputCheckTriggered(AEVK_LBUTTON)) {
-		s32 screenX, screenY; //typedef
-		AEInputGetCursorPosition(&screenX, &screenY); //get cursor pos.
+		s32 screenX, screenY;
+		AEInputGetCursorPosition(&screenX, &screenY);
 
-		//get window width & height
 		s32 winWidth = AEGfxGetWindowWidth();
 		s32 winHeight = AEGfxGetWindowHeight();
 
-		//convert screen coords to world coords (0,0 in the middle)
+		// This is your mouse relative to the center of the screen (e.g., 0,0 is center)
 		float mouseX = (float)screenX - (winWidth / 2.0f);
 		float mouseY = (winHeight / 2.0f) - (float)screenY;
 
-		//initialise the geometry for the white buttons (on the right)
-		float start_y = 200.0f; //y coordinate for first button
-		float spacing_y = 100.0f; //vertical gap between buttons
-		float offset_middle = 260.0f; //horizontal distance from the centre
-		float squaresize = 60.0f; //size of sq
-		float middle_to_edge = squaresize / 2.0f; //distance from centre to edge of the sq
+		float start_y = 200.0f;
+		float spacing_y = 100.0f;
+		float offset_middle = 260.0f;
+		float squaresize = 60.0f;
+		float middle_to_edge = squaresize / 2.0f;
 
-		//loop for 5 buttons
 		for (int i = 0; i < 5; ++i) {
-			float currentY = start_y - (i * spacing_y); //calculates centre point of each button
-			//point to rectangle collision (to detect mouse click)
-			if (mouseX >= (offset_middle - middle_to_edge) && mouseX <= (offset_middle + middle_to_edge) &&
-				mouseY >= (currentY - middle_to_edge) && mouseY <= (currentY + middle_to_edge))
-			{
-				//what happens after the click
-				if (player.skill_point > 0 && player.upgradeLevels[i] < 5) {
-					//add one upgrade, then - 1 skill point
-					player.upgradeLevels[i]++;
-					player.skill_point--;
+			// DO NOT add camX/camY here. 
+			// We want the STATIC screen position of the buttons.
+			float buttonX = offset_middle;
+			float buttonY = start_y - (i * spacing_y);
 
-					//if skill point is added to HP, add the multplier
-					if (i == 0) {
-						player.current_hp += multiplier[0];
-					}
+			// Compare screen-relative mouse to screen-relative button
+			if (mouseX >= (buttonX - middle_to_edge) && mouseX <= (buttonX + middle_to_edge) &&
+				mouseY >= (buttonY - middle_to_edge) && mouseY <= (buttonY + middle_to_edge))
+			{
+				if (player_init.skill_point > 0 && player_init.upgradeLevels[i] < 5) {
+					player_init.upgradeLevels[i]++;
+					player_init.skill_point--;
+					if (i == 0) player_init.current_hp += multiplier[0];
 				}
 			}
 		}
@@ -170,42 +179,43 @@ void handle_menu_input() {
 
 void debug_inputs(float max_hp) {
 	if (AEInputCheckTriggered(AEVK_R)) {
-		player.current_hp += 10.0f;
-		if (player.current_hp > max_hp)
-			player.current_hp = max_hp;
+		player_init.current_hp += 10.0f;
+		if (player_init.current_hp > max_hp)
+			player_init.current_hp = max_hp;
 	}
 
 	//lose hp with T
 	if (AEInputCheckTriggered(AEVK_T)) {
-		player.current_hp -= 10.0f;
-		if (player.current_hp < 0.0f)
-			player.current_hp = 0.0f;
+		player_init.current_hp -= 10.0f;
+		if (player_init.current_hp < 0.0f)
+			player_init.current_hp = 0.0f;
 	}
 
 	//press E for xp
 	if (AEInputCheckCurr(AEVK_E)) {
-		float xp_multiplier = 1.0f + (player.upgradeLevels[4] * 0.5f); //get total multiplier for xp
-		player.current_xp += 5.0f * xp_multiplier; //calculate player xp
+		float xp_multiplier = 1.0f + (player_init.upgradeLevels[4] * 0.5f); //get total multiplier for xp
+		player_init.current_xp += 5.0f * xp_multiplier; //calculate player xp
 	}
 }
 
 
-void draw_hud_bar(AEGfxVertexList* mesh, float current, float max, float y_pos, float bar_height, float max_width) {
-	//get %
+void draw_hud_bar(AEGfxVertexList* mesh, float current, float max, float anchorX, float anchorY, float relativeY, float bar_height, float max_width) {
 	float perc = current / max;
-	//anchor
 	if (perc > 1.0f) perc = 1.0f;
 	if (perc < 0.0f) perc = 0.0f;
 
-	//calculate actual w of the bars
 	float actual_w = max_width * perc;
-	//calculate offset to centre to align it to the left
-	float offset = (max_width - actual_w) / 2.0f;
-	drawmesh(mesh, 0.0f - offset, y_pos, actual_w, bar_height);
+
+	float shiftRight = (max_width - actual_w) / 2.0f;
+
+	float finalX = anchorX - shiftRight;
+	float finalY = anchorY + relativeY;
+
+	drawmesh(mesh, finalX, finalY, actual_w, bar_height);
 }
 
 
-void draw_upgrade_rows() {
+void draw_upgrade_rows(float camX, float camY) {
 	//initalise white container variables
 	float start_y = 200.0f, spacing_y = 100.0f, offset_middle = 260.0f;
 	//initialise segment inside container variables
@@ -216,22 +226,22 @@ void draw_upgrade_rows() {
 	//draws each row 5 times
 	for (int i = 0; i < 5; ++i) {
 		float actual_y = start_y - (i * spacing_y); //formula to calculate the centre point
-		drawmesh(pWhiteRectMesh, 0.0f, actual_y, 400.0f, 60.0f);
-		drawmesh(pWhiteRectMesh, -offset_middle, actual_y, 60.0f, 60.0f);
-		drawmesh(pWhiteRectMesh, offset_middle, actual_y, 60.0f, 60.0f);
+		drawmesh(pWhiteRectMesh, 0.0f + camX, actual_y + camY, 400.0f, 60.0f);
+		drawmesh(pWhiteRectMesh, -offset_middle + camX, actual_y + camY, 60.0f, 60.0f);
+		drawmesh(pWhiteRectMesh, offset_middle + camX, actual_y + camY, 60.0f, 60.0f);
 
 		for (int j = 0; j < 5; ++j) {
 			//draw a box at start_x, then move right by total segment distance, repeat 4 times
 			float current_x = start_x + (j * total_segment_dist);
 
 			//compares segment index with upgraded levels
-			if (j < player.upgradeLevels[i]) {
+			if (j < player_init.upgradeLevels[i]) {
 				//draw green
-				drawmesh(pWhiteRectMesh, current_x, actual_y, segment_w, 50.0f, 0.0f, 1.0f, 0.0f);
+				drawmesh(pWhiteRectMesh, current_x + camX, actual_y + camY, segment_w, 50.0f, 0.0f, 1.0f, 0.0f);
 			}
 			else {
 				//draw grey
-				drawmesh(pWhiteRectMesh, current_x, actual_y, segment_w, 50.0f, 0.8f, 0.8f, 0.8f);
+				drawmesh(pWhiteRectMesh, current_x + camX, actual_y + camY, segment_w, 50.0f, 0.8f, 0.8f, 0.8f);
 			}
 		}
 	}
@@ -239,12 +249,15 @@ void draw_upgrade_rows() {
 
 
 void UpdateDebug1() {
-	if (player.current_hp <= 0) {
+	if (player_init.current_hp <= 0) {
 		reset_game();
 	}
 
+	float camX, camY;
+	AEGfxGetCamPosition(&camX, &camY);
+
 	//updates levels, and maxhp 
-	float xp_needed = 100.0f + (player.player_level * 50.0f);
+	float xp_needed = 100.0f + (player_init.player_level * 50.0f);
 	float max_hp = calculate_max_stats(0);
 	float max_dmg = calculate_max_stats(1);
 	float max_speed = calculate_max_stats(2);
@@ -254,8 +267,8 @@ void UpdateDebug1() {
 	level_up(xp_needed);
 
 	//resume
-	if (player.menu_open) {
-		handle_menu_input();
+	if (player_init.menu_open) {
+		handle_menu_input(camX, camY);
 	}
 	//pause
 	else {
@@ -266,40 +279,44 @@ void UpdateDebug1() {
 
 void DrawDebug1() {
 
-	AEGfxSetBackgroundColor(0.82f, 0.82f, 0.82f);
-	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-	AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+	float camX, camY;
+	AEGfxGetCamPosition(&camX, &camY);
 
-	//draw hub bg
-	drawmesh(pBlackRectMesh, 0.0f, -410.0f, 310.0f, 52.0f);
+	float hudX = camX + 0.0f;
+	float hudY = camY - 410.0f;
 
-	//draws hp and xp bar
-	float max_hp = player.baseHp + (player.upgradeLevels[0] * multiplier[0]);
-	float xp_needed = 100.0f + (player.player_level * 50.0f);
+	float max_width = 300.0f;
+	float max_hp = calculate_max_stats(0);
+	float xp_needed = 100.0f + (player_init.player_level * 50.0f);
 
-	draw_hud_bar(pRedRectMesh, player.current_hp, max_hp, -403.0f, 25.0f, 300.0f);
-	draw_hud_bar(pYellowRectMesh, player.current_xp, xp_needed, -425.0f, 10.0f, 300.0f);
+	// --- DRAW HUD ---
+	drawmesh(pBlackRectMesh, hudX, hudY, max_width + 10.0f, 52.0f);
+	draw_hud_bar(pRedRectMesh, player_init.current_hp, max_hp, hudX, hudY, 7.0f, 25.0f, max_width);
+	draw_hud_bar(pYellowRectMesh, player_init.current_xp, xp_needed, hudX, hudY, -15.0f, 10.0f, max_width);
 
 	//print hp and xp stats
 	char hud[64];
 	char hud2[64];
-	sprintf_s(hud, "LEVEL: %d (press E for XP): %.1f/%.0f", player.player_level, player.current_xp, xp_needed);
-	sprintf_s(hud2, " %.0f / %.0f (R to heal, T to lose hp)", player.current_hp, max_hp);
+	sprintf_s(hud, "LEVEL: %d (press E for XP): %.1f/%.0f", player_init.player_level, player_init.current_xp, xp_needed);
+	sprintf_s(hud2, " %.0f / %.0f (R to heal, T to lose hp)", player_init.current_hp, max_hp);
 	AEGfxPrint(boldPixels, hud, 0.35f, -0.85f, 0.4f, 0.0f, 0.0f, 0.0f, 1.0f);
 	AEGfxPrint(boldPixels, hud2, 0.35f, -0.9f, 0.4f, 0.0f, 0.0f, 0.0f, 1.0f);
 
-	//prints the 5 main stats (can be removed)
+	//print the 5 main stats
 	for (int i = 0; i < 5; ++i) {
 		char buff[64];
-		float finalStat = base_stats[i] + (player.upgradeLevels[i] * multiplier[i]);
+		float finalStat = calculate_max_stats(i);
 		sprintf_s(buff, "%s: %.1f", stats[i], finalStat);
 		AEGfxPrint(boldPixels, buff, -0.95f, 0.90f - (i * 0.08f), 0.4f, 0, 0, 0, 1);
 	}
 
-	if (player.menu_open) {
-		drawmesh(pBlackRectMesh, 0.0f, 0.0f, 900.0f, 650.0f); //menu bg
-		draw_upgrade_rows();
-		if (player.skill_point > 0) {
+	//draw upgrade menu
+	if (player_init.menu_open) {
+		//menu bg
+		drawmesh(pBlackRectMesh, 0.0f + camX, 0.0f + camY, 900.0f, 650.0f);
+		draw_upgrade_rows(camX, camY);
+
+		if (player_init.skill_point > 0) {
 			AEGfxPrint(boldPixels, "SPEND POINT TO CONTINUE!", -0.23f, -0.63f, 0.4f, 1.0f, 1.0f, 1.0f, 1.0f);
 		}
 		else {

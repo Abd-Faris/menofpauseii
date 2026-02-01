@@ -1,4 +1,6 @@
 #include "MasterHeader.h"
+#include "DebugMenus.h"
+#include "Structs.h"
 #include "AEEngine.h"
 #include "AEGraphics.h"
 #include "AEMath.h"
@@ -122,10 +124,19 @@ void circlerectcollision() {
             // 0.6f is the "Goldilocks" number: 0.5 misses corners, 0.7 hits empty air.
             float collisionRadius = (currentEnemy.scale * 0.6f) + boolet.size;
 
+            float currentdmg = calculate_max_stats(1);
             // If closer than radius, it's a hit
             if (distanceSquared < (collisionRadius * collisionRadius)) {
-                currentEnemy.hp -= 15;    // Ouch
+                currentEnemy.hp -= (int)currentdmg;   // Ouch
                 boolet.isActive = false;  // Bullet disappears on impact
+
+                if (currentEnemy.hp <= 0 && currentEnemy.alive) {
+                    // Award XP
+                    float xp_multiplier = 2.0f + calculate_max_stats(4);
+                    float reward = (currentEnemy.scale > 50 ? 50.0f : 20.0f) * xp_multiplier;
+
+                    player_init.current_xp += reward;
+                }
             }
         }
     }
@@ -136,6 +147,9 @@ void circlerectcollision() {
 // Initializes assets and resets the game state (so restarting works).
 // ===========================================================================
 void LoadGame() {
+
+    LoadDebug1();
+
     // 1. Load the font
     boldPixelsFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 
@@ -183,141 +197,146 @@ void LoadGame() {
 void DrawGame() {
     float deltaTime = (float)AEFrameRateControllerGetFrameTime();
 
-    // -----------------------------------------------------------------------
-    // PART A: LOGIC & PHYSICS
-    // -----------------------------------------------------------------------
+    if (!player_init.menu_open) {
+        // -----------------------------------------------------------------------
+        // PART A: LOGIC & PHYSICS
+        // -----------------------------------------------------------------------
 
-    // 1. Move Player (Standard WASD)
-    float playerSpeed = 500.0f;
-    if (AEInputCheckCurr(AEVK_W)) player.pos_y += playerSpeed * deltaTime;
-    if (AEInputCheckCurr(AEVK_S)) player.pos_y -= playerSpeed * deltaTime;
-    if (AEInputCheckCurr(AEVK_A)) player.pos_x -= playerSpeed * deltaTime;
-    if (AEInputCheckCurr(AEVK_D)) player.pos_x += playerSpeed * deltaTime;
+        // 1. Move Player (Standard WASD)
+        float playerSpeed = calculate_max_stats(2);
+        if (AEInputCheckCurr(AEVK_W)) player.pos_y += playerSpeed * deltaTime;
+        if (AEInputCheckCurr(AEVK_S)) player.pos_y -= playerSpeed * deltaTime;
+        if (AEInputCheckCurr(AEVK_A)) player.pos_x -= playerSpeed * deltaTime;
+        if (AEInputCheckCurr(AEVK_D)) player.pos_x += playerSpeed * deltaTime;
 
-    // 2. Rotate Player (Aim at Mouse)
-    s32 mouseX, mouseY;
-    AEInputGetCursorPosition(&mouseX, &mouseY);
+        // 2. Rotate Player (Aim at Mouse)
+        s32 mouseX, mouseY;
+        AEInputGetCursorPosition(&mouseX, &mouseY);
 
-    // Convert screen coordinates (Top-Left 0,0) to World Coordinates (Center 0,0)
-    float windowWidth = (float)AEGfxGetWindowWidth();
-    float windowHeight = (float)AEGfxGetWindowHeight();
-    float mouseRelativeX = (float)mouseX - windowWidth / 2.0f;
-    float mouseRelativeY = windowHeight / 2.0f - (float)mouseY;
+        // Convert screen coordinates (Top-Left 0,0) to World Coordinates (Center 0,0)
+        float windowWidth = (float)AEGfxGetWindowWidth();
+        float windowHeight = (float)AEGfxGetWindowHeight();
+        float mouseRelativeX = (float)mouseX - windowWidth / 2.0f;
+        float mouseRelativeY = windowHeight / 2.0f - (float)mouseY;
 
-    // Logic: Only rotate if the mouse is slightly away from center (prevents jittering)
-    if ((mouseRelativeX * mouseRelativeX) + (mouseRelativeY * mouseRelativeY) > 1.0f) {
-        float targetAngle = atan2f(mouseRelativeY, mouseRelativeX) - 1.5708f; // -90 deg offset because art points Up
-        float angleDifference = targetAngle - player.currentAngle;
+        // Logic: Only rotate if the mouse is slightly away from center (prevents jittering)
+        if ((mouseRelativeX * mouseRelativeX) + (mouseRelativeY * mouseRelativeY) > 1.0f) {
+            float targetAngle = atan2f(mouseRelativeY, mouseRelativeX) - 1.5708f; // -90 deg offset because art points Up
+            float angleDifference = targetAngle - player.currentAngle;
 
-        // Math magic to make sure we turn the shortest direction (left vs right)
-        while (angleDifference > 3.1415f) angleDifference -= 6.2831f;
-        while (angleDifference < -3.1415f) angleDifference += 6.2831f;
+            // Math magic to make sure we turn the shortest direction (left vs right)
+            while (angleDifference > 3.1415f) angleDifference -= 6.2831f;
+            while (angleDifference < -3.1415f) angleDifference += 6.2831f;
 
-        // 0.1f creates a smooth turning delay (lag)
-        player.currentAngle += angleDifference * 0.1f;
-    }
+            // 0.1f creates a smooth turning delay (lag)
+            player.currentAngle += angleDifference * 0.1f;
+        }
 
-    // 3. Shooting
-    if (AEInputCheckCurr(AEVK_SPACE)) {
-        bulletFireTimer -= deltaTime;
+        // 3. Shooting
+        if (AEInputCheckCurr(AEVK_SPACE)) {
+            bulletFireTimer -= deltaTime;
 
-        // Only fire if cooldown is finished
-        if (bulletFireTimer <= 0) {
-            // Find the first "sleeping" bullet in our list and wake it up
-            for (auto& boolet : bulletList) {
-                if (!boolet.isActive) {
-                    boolet.isActive = true;
-                    // Calculate vector based on player angle (+90 deg offset)
-                    boolet.directionX = cosf(player.currentAngle + 1.5708f);
-                    boolet.directionY = sinf(player.currentAngle + 1.5708f);
+            // Only fire if cooldown is finished
+            if (bulletFireTimer <= 0) {
+                // Find the first "sleeping" bullet in our list and wake it up
+                for (auto& boolet : bulletList) {
+                    if (!boolet.isActive) {
+                        boolet.isActive = true;
+                        // Calculate vector based on player angle (+90 deg offset)
+                        boolet.directionX = cosf(player.currentAngle + 1.5708f);
+                        boolet.directionY = sinf(player.currentAngle + 1.5708f);
 
-                    // Spawn it at the tip of the barrel, not inside the tank
-                    boolet.posX = player.pos_x + boolet.directionX * TANK_BARREL_LENGTH;
-                    boolet.posY = player.pos_y + boolet.directionY * TANK_BARREL_LENGTH;
-                    boolet.speed = 800.0f;
-                    boolet.size = 15.0f;
+                        // Spawn it at the tip of the barrel, not inside the tank
+                        boolet.posX = player.pos_x + boolet.directionX * TANK_BARREL_LENGTH;
+                        boolet.posY = player.pos_y + boolet.directionY * TANK_BARREL_LENGTH;
+                        boolet.speed = 800.0f;
+                        boolet.size = 15.0f;
 
-                    bulletFireTimer = 0.15f; // Set cooldown
-                    break; // We fired one, so stop looking
+                        float fire_rate = calculate_max_stats(3);
+                        bulletFireTimer = fire_rate; // Set cooldown
+                        break; // We fired one, so stop looking
+                    }
                 }
             }
         }
-    }
 
-    // 4. Move Bullets
-    for (auto& boolet : bulletList) {
-        if (boolet.isActive) {
-            boolet.posX += boolet.directionX * boolet.speed * deltaTime;
-            boolet.posY += boolet.directionY * boolet.speed * deltaTime;
+        // 4. Move Bullets
+        for (auto& boolet : bulletList) {
+            if (boolet.isActive) {
+                boolet.posX += boolet.directionX * boolet.speed * deltaTime;
+                boolet.posY += boolet.directionY * boolet.speed * deltaTime;
 
-            // Clean up bullets that fly too far off screen
-            float diffX = boolet.posX - player.pos_x;
-            float diffY = boolet.posY - player.pos_y;
-            // 2500^2 is a massive range, basically keeps them until well off screen
-            if ((diffX * diffX + diffY * diffY) > 2500 * 2500) {
-                boolet.isActive = false;
-            }
-        }
-    }
-
-    // 5. Spawn Enemies periodically
-    enemySpawnTimer += deltaTime;
-    if (enemySpawnTimer >= 3.0) {
-        // Roll dice: 40% chance for a big enemy
-        bool spawnBig = (AERandFloat() * 10.0f) < 4.0f;
-        SpawnOneEnemy(spawnBig);
-        enemySpawnTimer = 0;
-    }
-
-    // 6. Enemy Physics (The "Boids" Logic)
-    for (auto& currentEnemy : enemyPool) {
-        if (!currentEnemy.alive) continue;
-
-        // -- Separation Force --
-        // This loop ensures enemies push away from each other so they don't stack
-        AEVec2 separationForce = { 0,0 };
-        for (auto& otherEnemy : enemyPool) {
-            if (&currentEnemy == &otherEnemy || !otherEnemy.alive) continue;
-
-            float diffX = currentEnemy.pos.x - otherEnemy.pos.x;
-            float diffY = currentEnemy.pos.y - otherEnemy.pos.y;
-            float distance = sqrt(diffX * diffX + diffY * diffY);
-
-            float minDistance = (currentEnemy.scale + otherEnemy.scale) * 0.6f;
-
-            // If they are touching...
-            if (distance < minDistance && distance > 0.1f) {
-                // Calculate how hard to push (closer = harder push)
-                float pushStrength = (minDistance - distance) / minDistance * 500.0f;
-                separationForce.x += (diffX / distance) * pushStrength;
-                separationForce.y += (diffY / distance) * pushStrength;
+                // Clean up bullets that fly too far off screen
+                float diffX = boolet.posX - player.pos_x;
+                float diffY = boolet.posY - player.pos_y;
+                // 2500^2 is a massive range, basically keeps them until well off screen
+                if ((diffX * diffX + diffY * diffY) > 2500 * 2500) {
+                    boolet.isActive = false;
+                }
             }
         }
 
-        // Apply the separation push
-        currentEnemy.velocity.x += separationForce.x * deltaTime;
-        currentEnemy.velocity.y += separationForce.y * deltaTime;
+        // 5. Spawn Enemies periodically
+        enemySpawnTimer += deltaTime;
+        if (enemySpawnTimer >= 3.0) {
+            // Roll dice: 40% chance for a big enemy
+            bool spawnBig = (AERandFloat() * 10.0f) < 4.0f;
+            SpawnOneEnemy(spawnBig);
+            enemySpawnTimer = 0;
+        }
 
-        // Apply friction so they don't slide forever like on ice
-        currentEnemy.velocity.x *= 0.92f;
-        currentEnemy.velocity.y *= 0.92f;
+        // 6. Enemy Physics (The "Boids" Logic)
+        for (auto& currentEnemy : enemyPool) {
+            if (!currentEnemy.alive) continue;
 
-        // Actually move them
-        currentEnemy.pos.x += currentEnemy.velocity.x * deltaTime;
-        currentEnemy.pos.y += currentEnemy.velocity.y * deltaTime;
+            // -- Separation Force --
+            // This loop ensures enemies push away from each other so they don't stack
+            AEVec2 separationForce = { 0,0 };
+            for (auto& otherEnemy : enemyPool) {
+                if (&currentEnemy == &otherEnemy || !otherEnemy.alive) continue;
 
-        // -- Death Animation --
-        // If HP is 0, shrink them until they vanish
-        if (currentEnemy.hp <= 0) {
-            currentEnemy.scale -= 100 * deltaTime;
-            if (currentEnemy.scale <= 0) {
-                ResetEnemy(&currentEnemy);
+                float diffX = currentEnemy.pos.x - otherEnemy.pos.x;
+                float diffY = currentEnemy.pos.y - otherEnemy.pos.y;
+                float distance = sqrt(diffX * diffX + diffY * diffY);
+
+                float minDistance = (currentEnemy.scale + otherEnemy.scale) * 0.6f;
+
+                // If they are touching...
+                if (distance < minDistance && distance > 0.1f) {
+                    // Calculate how hard to push (closer = harder push)
+                    float pushStrength = (minDistance - distance) / minDistance * 500.0f;
+                    separationForce.x += (diffX / distance) * pushStrength;
+                    separationForce.y += (diffY / distance) * pushStrength;
+                }
+            }
+
+            // Apply the separation push
+            currentEnemy.velocity.x += separationForce.x * deltaTime;
+            currentEnemy.velocity.y += separationForce.y * deltaTime;
+
+            // Apply friction so they don't slide forever like on ice
+            currentEnemy.velocity.x *= 0.92f;
+            currentEnemy.velocity.y *= 0.92f;
+
+            // Actually move them
+            currentEnemy.pos.x += currentEnemy.velocity.x * deltaTime;
+            currentEnemy.pos.y += currentEnemy.velocity.y * deltaTime;
+
+            // -- Death Animation --
+            // If HP is 0, shrink them until they vanish
+            if (currentEnemy.hp <= 0) {
+                currentEnemy.scale -= 100 * deltaTime;
+                if (currentEnemy.scale <= 0) {
+                    ResetEnemy(&currentEnemy);
+                }
             }
         }
+
+        // 7. Check hits
+        circlerectcollision();
+
     }
 
-    // 7. Check hits
-    circlerectcollision();
 
 
     // -----------------------------------------------------------------------
@@ -327,6 +346,7 @@ void DrawGame() {
     AEGfxSetBackgroundColor(0.2f, 0.2f, 0.2f); // Dark Grey Ground
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     AEGfxSetCamPosition(player.pos_x, player.pos_y); // Camera follows player
+
 
     // -- Draw Bullets --
     AEGfxSetColorToMultiply(1.0f, 1.0f, 0.0f, 1.0f); // Yellow
@@ -419,6 +439,12 @@ void DrawGame() {
             AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);
         }
     }
+
+
+    // -- Get Camera Data For UI --
+    UpdateDebug1();
+    // -- Draws After Update --
+    DrawDebug1();
 }
 
 // ===========================================================================

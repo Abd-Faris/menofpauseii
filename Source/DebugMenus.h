@@ -5,6 +5,7 @@ void LoadDebug1();
 void UpdateDebug1();
 void DrawDebug1();
 void FreeDebug1();
+float calculate_max_stats(int i);
 
 // debug2.cpp
 void LoadDebug2();
