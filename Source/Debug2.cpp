@@ -107,31 +107,6 @@ void DrawDebug2() {
 		}
 
 
-		f32 dt = (f32)AEFrameRateControllerGetFrameTime();
-		f32 moveSpeed = 500.0f;
-		f32 turnSpeed = 4.0f;
-
-		// Rotate Body (A/D)
-		if (AEInputCheckCurr(AEVK_A)) circle.currentAngle += turnSpeed * dt;
-		if (AEInputCheckCurr(AEVK_D)) circle.currentAngle -= turnSpeed * dt;
-
-		// Move Body Forward/Back (W/S)
-		float thrust = 0.0f;
-		if (AEInputCheckCurr(AEVK_W)) thrust = moveSpeed;
-		if (AEInputCheckCurr(AEVK_S)) thrust = -moveSpeed;
-
-		if (thrust != 0.0f) {
-			// Move in the direction the CAR is facing
-			float movex = cosf(circle.currentAngle + 1.5708f);
-			float movey = sinf(circle.currentAngle + 1.5708f);
-			circle.pos_x += dirX * thrust * dt;
-			circle.pos_y += dirY * thrust * dt;
-		}
-
-
-
-
-
 		//test enemy
 		AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); // Red Color
 
