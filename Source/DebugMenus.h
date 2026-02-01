@@ -27,8 +27,3 @@ void LoadDebug5();
 void DrawDebug5();
 void FreeDebug5();
 
-// debug6.cpp
-void LoadDebug6();
-void DrawDebug6();
-void FreeDebug6();
-

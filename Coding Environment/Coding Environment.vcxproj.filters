@@ -48,7 +48,7 @@
     <ClCompile Include="..\Source\Debug5.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\Debug6.cpp">
+    <ClCompile Include="..\Source\Game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\Input.cpp">
@@ -87,6 +87,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\Structs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

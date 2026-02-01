@@ -52,6 +52,15 @@ void GSM_Update()
 		fpDraw = DrawMainMenu;
 		fpFree = FreeMainMenu;
 		break;
+	case GS_GAME:
+		fpLoad = LoadGame;
+		fpDraw = DrawGame;
+		fpFree = FreeGame;
+		break;
+	case GS_RESTART:
+		break;
+	case GS_QUIT:
+		break;
 	case DEBUG1:
 		fpLoad = LoadDebug1;
 		fpUpdate = UpdateDebug1;
@@ -78,15 +87,6 @@ void GSM_Update()
 		fpLoad = LoadDebug5;
 		fpDraw = DrawDebug5;
 		fpFree = FreeDebug5;
-		break;
-	case DEBUG6:
-		fpLoad = LoadDebug6;
-		fpDraw = DrawDebug6;
-		fpFree = FreeDebug6;
-		break;
-	case GS_RESTART:
-		break;
-	case GS_QUIT:
 		break;
 	default:
 		break;

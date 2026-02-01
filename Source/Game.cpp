@@ -5,16 +5,16 @@ namespace {
 	s8 boldPixels;
 	enum {NUM_OF_TEXTS = 1};
 	gfxtext texts[NUM_OF_TEXTS] = {
-		{"Debug 6", 0, 0, 1, 255, 255, 255, 255}
+		{"Game", 0, 0, 1, 255, 255, 255, 255}
 	};
 }
 
-void LoadDebug6() {
+void LoadGame() {
 	// load font
 	boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 }
 
-void DrawDebug6() {
+void DrawGame() {
 
 	// gray bg
 	AEGfxSetBackgroundColor(0.82f, 0.82f, 0.82f);
@@ -23,7 +23,7 @@ void DrawDebug6() {
 	}
 }
 
-void FreeDebug6() {
+void FreeGame() {
 	// free font
 	AEGfxDestroyFont(boldPixels);
 }

@@ -27,5 +27,6 @@
 
 // Game States
 #include "MainMenu.h"
+#include "Game.h"
 #include "DebugMenus.h"
 

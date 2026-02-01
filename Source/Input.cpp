@@ -8,5 +8,5 @@ void Debug_States() {
 	else if (AEInputCheckCurr(AEVK_3)) next = DEBUG3;
 	else if (AEInputCheckCurr(AEVK_4)) next = DEBUG4;
 	else if (AEInputCheckCurr(AEVK_5)) next = DEBUG5;
-	else if (AEInputCheckCurr(AEVK_6)) next = DEBUG6;
+	else if (AEInputCheckCurr(AEVK_6)) next = GS_GAME;
 }
