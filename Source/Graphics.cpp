@@ -95,7 +95,7 @@ namespace Graphics {
 
 	// overload for card printing
 	void printMesh(Card& card) {
-		printMesh(card.mesh, card.xpos, card.ypos, card.sizex, card.sizey);
+		printMesh(card.mesh, card.pos, card.size);
 	}
 
 	// prints text
@@ -118,7 +118,7 @@ namespace Graphics {
 
 	void printButton(gfxbutton &button) {
 		gfxtext& text = button.text;
-		printMesh(button.mesh, text.x, text.y, button.sizex, button.sizey);
+		printMesh(button.mesh, { text.x, text.y }, button.size);
 	}
 }
 

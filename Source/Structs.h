@@ -8,9 +8,46 @@ struct gfxtext;
 struct gfxbutton;
 
 // Card Enums and Structs
-enum Rarity;
-enum Type;
-struct Card;
+enum Rarity {
+	COMMON = 0,
+	RARE,
+	EPIC,
+	UNIQUE,
+	NUM_OF_RARITIES
+};
+
+enum Type {
+	HP = 0,
+	DMG,
+	FIRE_RATE,
+	MOVE_SPEED,
+	XP,
+	NUM_OF_TYPES
+};
+
+struct Card {
+	// MEMBERS
+	bool print{ true };
+	AEVec2 pos; // world coords
+	AEVec2 size{ 250, 350 };
+	int type{}, val{}, rarity{ Rarity::COMMON };
+	AEGfxVertexList* mesh{};
+
+	// MEMBER FUNCTIONS
+
+	// generates new card and assigns to 
+	void generateCard() {
+		// randomise type
+		type = static_cast<int>(AERandFloat() * Type::NUM_OF_TYPES);
+		// alter percentage based on rarity
+		switch (rarity) {
+		case Rarity::COMMON: // 10-30%, range 20
+			val = 10 + static_cast<int>(AERandFloat() * 20);
+			break;
+		default: break;
+		};
+	}
+};
 
 struct shape {
 	f32 scale;			//scale

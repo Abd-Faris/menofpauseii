@@ -23,6 +23,7 @@ void InitializeMainMenu() {
 	for (int i{}; i < NUM_OF_BUTTONS; ++i) {
 		buttons[i].mesh = Gfx::createRectMesh();
 		buttons[i].text = texts[i];
+		buttons[i].pos = {texts[i].x, texts[i].y};
 		buttons[i].size = {300.f, 100.f};
 	}
 }
