@@ -105,7 +105,54 @@ void DrawDebug2() {
 		if (AEInputCheckCurr(AEVK_A)) {
 			circle.pos_x -= dt * move;
 		}
+
+
+		f32 dt = (f32)AEFrameRateControllerGetFrameTime();
+		f32 moveSpeed = 500.0f;
+		f32 turnSpeed = 4.0f;
+
+		// Rotate Body (A/D)
+		if (AEInputCheckCurr(AEVK_A)) circle.currentAngle += turnSpeed * dt;
+		if (AEInputCheckCurr(AEVK_D)) circle.currentAngle -= turnSpeed * dt;
+
+		// Move Body Forward/Back (W/S)
+		float thrust = 0.0f;
+		if (AEInputCheckCurr(AEVK_W)) thrust = moveSpeed;
+		if (AEInputCheckCurr(AEVK_S)) thrust = -moveSpeed;
+
+		if (thrust != 0.0f) {
+			// Move in the direction the CAR is facing
+			float movex = cosf(circle.currentAngle + 1.5708f);
+			float movey = sinf(circle.currentAngle + 1.5708f);
+			circle.pos_x += dirX * thrust * dt;
+			circle.pos_y += dirY * thrust * dt;
+		}
+
+
+
+
+
+		//test enemy
+		AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); // Red Color
+
+		AEMtx33 enemyScale, enemyTrans, enemyFinal;
+		// Make it a 60x60 square
+		AEMtx33Scale(&enemyScale, 60.f, 60.f);
+		// Place it at fixed world coordinates (400, 300)
+		AEMtx33Trans(&enemyTrans, 400.f, 300.f);
+
+		// Combine scale and translation
+		AEMtx33Concat(&enemyFinal, &enemyTrans, &enemyScale);
+
+		// Draw it using your existing Square mesh
+		AEGfxSetTransform(enemyFinal.m);
+		AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);
+		// end enemy
+
+		AEGfxSetCamPosition(circle.pos_x, circle.pos_y);
 		//Draw square
+
+
 		AEGfxSetColorToMultiply(0.8f, 0.2f, 0.2f, 1.0f);
 
 		AEMtx33 transformSquare, scaleSquare, translateSquare;
@@ -190,9 +237,12 @@ void DrawDebug2() {
 		float mouseposx = (float)mousex - windoww / 2.0f;
 		float mouseposy = windowh / 2.0f - (float)mousey;
 
+		float finalmousex = mouseposx + circle.pos_x;
+		float finalmousey = mouseposy + circle.pos_y;
+
 		//distance between mouse and player
-		float distxpm = mouseposx - circle.pos_x;
-		float distypm = mouseposy - circle.pos_y;
+		float distxpm = finalmousex - circle.pos_x;
+		float distypm = finalmousey - circle.pos_y;
 
 		if ((distxpm * distxpm + distypm * distypm) > 1.0f)
 		{
