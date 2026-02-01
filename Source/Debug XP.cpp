@@ -81,6 +81,21 @@ void LoadDebug1() {
 }
 
 
+void reset_game() {
+	//reset player stats
+	player.player_level = 0;
+	player.current_xp = 0;
+	player.skill_point = 0;
+	player.menu_open = false;
+
+	//fill upgrade with 0
+	for (int i = 0; i < 5; ++i) {
+		player.upgradeLevels[i] = 0;
+	}
+	player.current_hp = player.baseHp; //set base hp to current hp
+}
+
+
 float calculate_max_stats(int i) {
 	//base stats + upgrade amount * multiplier
 	return base_stats[i] + (player.upgradeLevels[i] * multiplier[i]);
@@ -95,10 +110,9 @@ void level_up(float xp_needed) {
 		player.skill_point++; //add 1 sp
 		player.menu_open = true; //opens menu
 
-		//reset player hp for each level up
+		//heal player hp every level up
 		float max_hp = calculate_max_stats(0);
-		player.reset_player_hp(max_hp);
-
+		player.current_hp += max_hp * 0.2f;
 	}
 }
 
@@ -171,7 +185,7 @@ void debug_inputs(float max_hp) {
 	//press E for xp
 	if (AEInputCheckCurr(AEVK_E)) {
 		float xp_multiplier = 1.0f + (player.upgradeLevels[4] * 0.5f); //get total multiplier for xp
-		player.current_xp += 2.0f * xp_multiplier; //calculate player xp
+		player.current_xp += 5.0f * xp_multiplier; //calculate player xp
 	}
 }
 
@@ -225,6 +239,10 @@ void draw_upgrade_rows() {
 
 
 void UpdateDebug1() {
+	if (player.current_hp <= 0) {
+		reset_game();
+	}
+
 	//updates levels, and maxhp 
 	float xp_needed = 100.0f + (player.player_level * 50.0f);
 	float max_hp = calculate_max_stats(0);
