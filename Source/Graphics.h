@@ -8,10 +8,10 @@ struct gfxtext {
 };
 
 struct gfxbutton {
-	AEGfxVertexList* mesh{};
 	AEVec2 pos;
 	AEVec2 size;
-	gfxtext text{};
+	gfxtext text{};			 // optional
+	AEGfxVertexList* mesh{}; // only assigned in initialize
 };
 
 namespace Graphics {

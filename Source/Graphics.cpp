@@ -71,7 +71,7 @@ namespace Graphics {
 	}
 
 	// Prints a mesh using TRS
-	void printMesh(AEGfxVertexList *mesh, f32 posx, f32 posy, f32 sizex, f32 sizey) {
+	void printMesh(AEGfxVertexList *mesh, AEVec2 pos, AEVec2 size) {
 		// if no mesh, return
 		if (!mesh) return;
 		// object drawing settings
@@ -80,10 +80,10 @@ namespace Graphics {
 		AEGfxSetTransparency(1.f);
 		// Translate Matrix
 		AEMtx33 translate{ 0 };
-		AEMtx33Trans(&translate, posx, posy);
+		AEMtx33Trans(&translate, pos.x, pos.y);
 		// Scale Matrix
 		AEMtx33 scale{ 0 };
-		AEMtx33Scale(&scale, sizex, sizey);
+		AEMtx33Scale(&scale, size.x, size.y);
 		// Resultant Transformation
 		AEMtx33 transform{ 0 };
 		AEMtx33Concat(&transform, &translate, &scale);	

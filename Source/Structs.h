@@ -3,49 +3,14 @@
 
 // To view, Right-Click Struct Name -> Go to Definition
 
-// Definitions in Graphics.h
+// Graphics.h Structs
 struct gfxtext;
 struct gfxbutton;
 
-enum Rarity {
-	COMMON = 0,
-	RARE,
-	EPIC,
-	UNIQUE,
-	NUM_OF_RARITIES
-};
-
-enum Type {
-	HP = 0,
-	DMG,
-	FIRE_RATE,
-	MOVE_SPEED,
-	XP,
-	NUM_OF_TYPES
-};
-
-struct Card {
-	bool exists = false;
-	AEGfxVertexList* mesh{};
-	int type{}, val{}; // card stats
-	f32 xpos{}, ypos{}; // card position (world coords)
-	f32 sizex{ 250 }, sizey{ 350 }; // card size
-	// lowest priority for implementation
-	int rarity{ Rarity::COMMON };
-
-	// generates new card and assigns to 
-	void generateCard() {
-		// randomise type
-		type = static_cast<int>(AERandFloat() * Type::NUM_OF_TYPES);
-		// alter percentage based on rarity
-		switch (rarity) {
-		case Rarity::COMMON: // 10-30%, range 20
-			val = 10 + static_cast<int>(AERandFloat() * 20);
-			break;
-		default: break;
-		};
-	}
-};
+// Card Enums and Structs
+enum Rarity;
+enum Type;
+struct Card;
 
 struct shape {
 	f32 scale;			//scale
