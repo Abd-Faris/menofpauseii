@@ -93,7 +93,4 @@ struct PlayerStats {
 	bool menu_open;
 	//for hp stats
 	float current_hp;
-	void reset_player_hp(float max_hp) {
-		current_hp = max_hp;
-	}
 };
