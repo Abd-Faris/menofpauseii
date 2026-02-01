@@ -1,6 +1,12 @@
 #pragma once
 #include "AEEngine.h"
 
+// To view, Right-Click Struct Name -> Go to Definition
+
+// Definitions in Graphics.h
+struct gfxtext;
+struct gfxbutton;
+
 enum Rarity {
 	COMMON = 0,
 	RARE,
@@ -16,17 +22,6 @@ enum Type {
 	MOVE_SPEED,
 	XP,
 	NUM_OF_TYPES
-};
-
-struct gfxtext {
-	const char* text;
-	f32 x, y, scale, r, g, b, a;
-};
-
-struct gfxbutton {
-	AEGfxVertexList* mesh{};
-	f32 sizex, sizey;
-	gfxtext text{};
 };
 
 struct Card {
