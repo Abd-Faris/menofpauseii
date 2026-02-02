@@ -132,10 +132,9 @@ void circlerectcollision() {
 
                 if (currentEnemy.hp <= 0 && currentEnemy.alive) {
                     // Award XP
-                    float xp_multiplier = 2.0f + calculate_max_stats(4);
-                    float reward = (currentEnemy.scale > 50 ? 50.0f : 20.0f) * xp_multiplier;
 
-                    player_init.current_xp += reward;
+                    
+                  
                 }
             }
         }
@@ -327,6 +326,10 @@ void DrawGame() {
             if (currentEnemy.hp <= 0) {
                 currentEnemy.scale -= 100 * deltaTime;
                 if (currentEnemy.scale <= 0) {
+                    float xp_multiplier = 2.0f + calculate_max_stats(4);
+                    float reward = (currentEnemy.scale > 50 ? 50.0f : 20.0f) * xp_multiplier;
+
+                    player_init.current_xp += reward;
                     ResetEnemy(&currentEnemy);
                 }
             }
