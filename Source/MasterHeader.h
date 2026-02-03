@@ -11,6 +11,7 @@
 #include <string>
 #include <array>
 #include <iostream>
+#include <vector>
 
 // System Headers
 #include "System.h"

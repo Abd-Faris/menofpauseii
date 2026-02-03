@@ -28,7 +28,8 @@ enum Type {
 struct Card {
 	// MEMBERS
 	bool print{ true };
-	AEVec2 pos; // world coords
+	AEVec2 pos; // dynamic world coords
+	AEVec2 homepos; // anchored world coords
 	AEVec2 size{ 250, 350 };
 	int type{}, val{}, rarity{ Rarity::COMMON };
 	AEGfxVertexList* mesh{};
