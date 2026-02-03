@@ -7,9 +7,10 @@
 //EVERYTHING USES WORLD COORDINATES
 //TEXTS USE NORMALISED
 	
-//initialise player struct
+// -- INITIAL PLAYER STATS --
 PlayerStats	player_init = {
-	100.0f, 10.0f, 300.0f, 0.4f, 1.0f, //base stats
+	// -- HP DMG SPEED FIRERATE XP --
+	100.0f, 10.0f, 250.0f, 0.5f, 1.0f, 
 
 	{ 0, 0, 0, 0, 0 },   //initial upgrade amount
 
@@ -61,7 +62,7 @@ namespace {
 
 	//***** IMPORTANT: CHANGE MULTIPLIERS HERE *****
 	// HP , DMG , MV SPEED , FIRE RATE , XP GAIN //
-	float multiplier[] = { 25.0f, 4.0f, 30.0f, 0.04f, 0.5f }; 
+	float multiplier[] = { 25.0f, 4.0f, 30.0f, 0.067f, 0.5f }; 
 
 	//storing into arrays (mainly for printing)
 	const char* stats[] = { "HP", "DMG", "SPEED", "FIRE RATE", "XP GAIN" };

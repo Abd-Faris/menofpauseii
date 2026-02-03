@@ -44,7 +44,7 @@ namespace {
 
     // -- Visual Settings --
     // Tweaking these changes how the Tank looks without changing logic
-    const float TANK_BARREL_LENGTH = 150.0f;
+    const float TANK_BARREL_LENGTH = 120.0f;
     const float TANK_BARREL_WIDTH = 30.0f;
 }
 
