@@ -133,8 +133,8 @@ void circlerectcollision() {
                 if (currentEnemy.hp <= 0 && currentEnemy.alive) {
                     // Award XP
 
-                    
-                  
+
+
                 }
             }
         }
@@ -189,12 +189,16 @@ void LoadGame() {
     for (int i = 0; i < 5; i++) SpawnOneEnemy(false);
 }
 
-// ===========================================================================
-// DRAW GAME
-// This is the Game Loop. It runs Inputs -> Logic -> Physics -> Rendering.
-// ===========================================================================
-void DrawGame() {
+
+// -----------------------------------------------------------------------
+// PART A: GAME UPDATES
+// -----------------------------------------------------------------------
+void UpdateGame() {
+
     float deltaTime = (float)AEFrameRateControllerGetFrameTime();
+
+    // -- Get Camera Data For UI --
+    UpdateDebug1();
 
     if (!player_init.menu_open) {
         // -----------------------------------------------------------------------
@@ -326,30 +330,36 @@ void DrawGame() {
             if (currentEnemy.hp <= 0) {
                 currentEnemy.scale -= 100 * deltaTime;
                 if (currentEnemy.scale <= 0) {
-                    float xp_multiplier = 2.0f + calculate_max_stats(4);
+                    float xp_multiplier = calculate_max_stats(4);
                     float reward = (currentEnemy.scale > 50 ? 50.0f : 20.0f) * xp_multiplier;
 
                     player_init.current_xp += reward;
                     ResetEnemy(&currentEnemy);
+
                 }
             }
         }
-
-        // 7. Check hits
-        circlerectcollision();
-
     }
 
+    // 7. Check hits
+    circlerectcollision();
 
 
-    // -----------------------------------------------------------------------
-    // PART B: RENDERING
-    // -----------------------------------------------------------------------
+}
+
+// -----------------------------------------------------------------------
+// PART B: RENDERING
+// -----------------------------------------------------------------------
+
+void DrawGame() {
+
+    if (MeshRect == nullptr || MeshCircle == nullptr) {
+        return;
+    }
 
     AEGfxSetBackgroundColor(0.2f, 0.2f, 0.2f); // Dark Grey Ground
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     AEGfxSetCamPosition(player.pos_x, player.pos_y); // Camera follows player
-
 
     // -- Draw Bullets --
     AEGfxSetColorToMultiply(1.0f, 1.0f, 0.0f, 1.0f); // Yellow
@@ -443,10 +453,6 @@ void DrawGame() {
         }
     }
 
-
-    // -- Get Camera Data For UI --
-    UpdateDebug1();
-    // -- Draws After Update --
     DrawDebug1();
 }
 
@@ -454,8 +460,11 @@ void DrawGame() {
 // CLEANUP
 // ===========================================================================
 void FreeGame() {
+
     AEGfxDestroyFont(boldPixelsFont);
     // Always check if pointer is valid before freeing to prevent crashes
     if (MeshRect) AEGfxMeshFree(MeshRect);
     if (MeshCircle) AEGfxMeshFree(MeshCircle);
+
+    FreeDebug1();
 }

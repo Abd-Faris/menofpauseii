@@ -54,6 +54,7 @@ void GSM_Update()
 		break;
 	case GS_GAME:
 		fpLoad = LoadGame;
+		fpUpdate = UpdateGame;
 		fpDraw = DrawGame;
 		fpFree = FreeGame;
 		break;

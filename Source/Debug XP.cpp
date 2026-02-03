@@ -9,7 +9,7 @@
 	
 //initialise player struct
 PlayerStats	player_init = {
-	100.0f, 10.0f, 300.0f, 0.25f, 1.0f, //base stats
+	100.0f, 10.0f, 300.0f, 0.4f, 1.0f, //base stats
 
 	{ 0, 0, 0, 0, 0 },   //initial upgrade amount
 
@@ -48,6 +48,7 @@ namespace {
 		if (mesh == nullptr) {
 			return;
 		}
+		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 		AEMtx33 scale, trans, final;
 		AEMtx33Scale(&scale, scale_x, scale_y);
 		AEMtx33Trans(&trans, x, y);
@@ -146,7 +147,6 @@ void handle_menu_input(float camX, float camY) {
 		s32 winWidth = AEGfxGetWindowWidth();
 		s32 winHeight = AEGfxGetWindowHeight();
 
-		// This is your mouse relative to the center of the screen (e.g., 0,0 is center)
 		float mouseX = (float)screenX - (winWidth / 2.0f);
 		float mouseY = (winHeight / 2.0f) - (float)screenY;
 
@@ -157,12 +157,10 @@ void handle_menu_input(float camX, float camY) {
 		float middle_to_edge = squaresize / 2.0f;
 
 		for (int i = 0; i < 5; ++i) {
-			// DO NOT add camX/camY here. 
-			// We want the STATIC screen position of the buttons.
 			float buttonX = offset_middle;
 			float buttonY = start_y - (i * spacing_y);
 
-			// Compare screen-relative mouse to screen-relative button
+			//compare screen-relative mouse to screen-relative button
 			if (mouseX >= (buttonX - middle_to_edge) && mouseX <= (buttonX + middle_to_edge) &&
 				mouseY >= (buttonY - middle_to_edge) && mouseY <= (buttonY + middle_to_edge))
 			{
@@ -281,6 +279,8 @@ void DrawDebug1() {
 
 	float camX, camY;
 	AEGfxGetCamPosition(&camX, &camY);
+
+	if (boldPixels < 0) return;
 
 	float hudX = camX + 0.0f;
 	float hudY = camY - 410.0f;
