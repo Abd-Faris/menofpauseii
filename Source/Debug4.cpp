@@ -16,11 +16,12 @@ namespace {
 	// card scales for diff vector arrays
 	f32 CARD_SHOP_SCALE{ 8 };
 	f32 ACTIVE_CARD_SCALE{ 3 };
+	f32 INVENTORY_CARD_SCALE{ 3 };
 
 	// num of cards available to be displayed to player
 	int num_shopCards      { 3 };
 	int num_activeCards    { 5 };
-	int num_inventoryCards{ 16 };
+	int num_inventoryCards{ 5 };
 
 	// declare array for cards
 	std::array<std::vector<Card>, 3>    allCards;	// vector for all cards
@@ -70,6 +71,16 @@ namespace {
 		}
 	}
 
+	// FOR TESTING ONLY DELETE LATER
+	void initInventoryCards(std::vector<Card>& shop) {
+		// create 3 cards for shop
+		Card card{ 1 }; // 1 for print bool in Card struct
+		for (int i{ 0 }; i < num_inventoryCards; ++i) {
+			card.generateCard();  // generate card stats
+			shop.push_back(card); // push card into vector
+		}
+	}
+
 	void computeXCardPositions(std::vector<Card>& arr, f32 start, f32 end, f32 y, f32 scale = 10) {
 		// EDGECASE: if array empty, return
 		if (arr.empty()) return;
@@ -95,6 +106,34 @@ namespace {
 			// denormalise from range into world coords
 			arr[i].pos.x = start + (normalized * range);
 			arr[i].pos.y = y;
+		}
+	}
+
+	void computeYCardPositions(std::vector<Card>& arr, f32 start, f32 end, f32 x, f32 scale = 10) {
+		// EDGECASE: if array empty, return
+		if (arr.empty()) return;
+
+		// SET NUM OF DISPLAY CARDS
+		int displayCards = arr.size();
+		// set range for shop INCL PADDING ON EITHER SIDE
+		start += (arr[0].size.y / 2) * scale;
+		end -= (arr[0].size.y / 2) * scale;
+		// finds range
+		f32 range = end - start;
+
+		// normalise card position within range
+		for (int i{ 0 }; i < displayCards; ++i) {
+			// EDGECASE: ONLY compute if more than 1 card
+			if (arr.size() <= 1) {
+				arr[i].pos.y = (0.5f * range); // centers one card
+				arr[i].pos.x = x;
+				continue;
+			}
+			// normalise card into range
+			f32 normalized = static_cast<f32>(i) / (displayCards - 1);
+			// denormalise from range into world coords
+			arr[i].pos.y = start + (normalized * range);
+			arr[i].pos.x = x;
 		}
 	}
 }
@@ -125,6 +164,8 @@ void InitializeDebug4() {
 	// init other cards [ FOR DEMO ONLY ]
 	initActiveCards(activeCards);
 	computeXCardPositions(activeCards, -550, 300, -300, ACTIVE_CARD_SCALE);
+	initInventoryCards(inventoryCards);
+	computeYCardPositions(inventoryCards, -335, 340, 575, INVENTORY_CARD_SCALE);
 }
 
 void UpdateDebug4() {
@@ -150,14 +191,18 @@ void DrawDebug4() {
 	// TEXTS
 	Gfxtext bagtext{ {575, 375}, 0.5, "INVENTORY"};
 	Gfxtext shoptext{ {-200, 195}, 0.8, "SHOP"};
-	Gfxtext desctext{ {-200, 325}, 1, "PLACEHOLDER DESCRIPTION", 255, 255, 255, 255};
+	Gfxtext desctext{ {-200, 325}, 1,"DESCRIPTION GOES HERE", 255, 255, 255, 255};
 	Gfxtext cardSlotstext{ {-125, -225}, 0.5, "ACTIVE CARDS"};
-	Gfxtext trashtext{ {-695, -300}, 2, "X"};
+	Gfxtext trashtext{ {-695, -300}, 2, "X" };
+	Gfxtext activeNumtext{ {-125, -375}, 0.5, "5/5" };
+	Gfxtext inventoryNumtext{ {575, -375}, 0.5, "5/15"};
 	Gfx::printText(bagtext, boldPixels);
 	Gfx::printText(shoptext, boldPixels);
 	Gfx::printText(desctext, boldPixels);
 	Gfx::printText(cardSlotstext, boldPixels);
 	Gfx::printText(trashtext, boldPixels);
+	Gfx::printText(activeNumtext, boldPixels);
+	Gfx::printText(inventoryNumtext, boldPixels);
 	
 	// CARDS
 	// print shop cards
@@ -167,7 +212,17 @@ void DrawDebug4() {
 	for (Card& indivCard : activeCards) {
 		Gfx::printMesh(rectMesh, indivCard, ACTIVE_CARD_SCALE);
 	}
-	//AEGfxEnd();
+	for (Card& indivCard : inventoryCards) {
+		Gfx::printMesh(rectMesh, indivCard, INVENTORY_CARD_SCALE);
+	}
+
+	// TEXT FOR DEMO [ DELETE LATER ]
+	Gfxtext card1{ {-600, 20}, 0.5, "HP x1.5", 255, 255, 255, 255 };
+	Gfxtext card2{ {-200, 20}, 0.5, "DMG +5", 255, 255, 255, 255 };
+	Gfxtext card3{ {200, 20}, 0.5, "XP x2", 255, 255, 255, 255 };
+	Gfx::printText(card1, boldPixels);
+	Gfx::printText(card2, boldPixels);
+	Gfx::printText(card3, boldPixels);
 }
 
 void FreeDebug4() {
@@ -178,4 +233,5 @@ void FreeDebug4() {
 	// clear shop array
 	shopCards.clear();
 	activeCards.clear();
+	inventoryCards.clear();
 }

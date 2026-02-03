@@ -8,7 +8,7 @@ namespace {
 		{"Play", -400, -200, 1, 255, 255, 255, 255},
 		{"Credits", 0, -200, 1, 255, 255, 255, 255},
 		{"Exit", 400, -200, 1, 255, 255, 255, 255},
-		{"Gloomy's Revenge", 0, 200, 3, 255, 255, 255, 255}
+		{"Gloomy's Revenge", 0, 200, 2.5, 255, 255, 255, 255}
 	}};
 	std::array<gfxbutton, NUM_OF_BUTTONS>buttons{};
 }
