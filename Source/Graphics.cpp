@@ -71,7 +71,7 @@ namespace Graphics {
 	}
 
 	// Prints a mesh using TRS
-	void printMesh(AEGfxVertexList *mesh, AEVec2 pos, AEVec2 size) {
+	void printMesh(AEGfxVertexList *mesh, AEVec2 pos, AEVec2 size, f32 scalar) {
 		// if no mesh, return
 		if (!mesh) return;
 		// object drawing settings
@@ -83,7 +83,7 @@ namespace Graphics {
 		AEMtx33Trans(&translate, pos.x, pos.y);
 		// Scale Matrix
 		AEMtx33 scale{ 0 };
-		AEMtx33Scale(&scale, size.x, size.y);
+		AEMtx33Scale(&scale, (size.x) * scalar, (size.y) * scalar);
 		// Resultant Transformation
 		AEMtx33 transform{ 0 };
 		AEMtx33Concat(&transform, &translate, &scale);	
@@ -94,14 +94,14 @@ namespace Graphics {
 	}
 
 	// overload for card printing
-	void printMesh(Card& card) {
-		printMesh(card.mesh, card.pos, card.size);
+	void printMesh(AEGfxVertexList *mesh, Card& card,f32 scalar) {
+		printMesh(mesh, card.pos, card.size, scalar);
 	}
 
 	// prints text
-	void printText(gfxtext &text, s8 font) {
+	void printText(Gfxtext &text, s8 font) {
 		// Normalise Coordinates
-		f32 x{ text.x }, y{ text.y };
+		f32 x{ text.pos.x }, y{ text.pos.y };
 		Comp::normalizePoint(x, y);
 		// Normalise RGBA
 		f32 r{ text.r }, g{ text.g }, b{ text.b }, a{ text.a };
@@ -114,6 +114,11 @@ namespace Graphics {
 		f32 drawY = y - (height / 2.f);
 		// Prints text
 		AEGfxPrint(font, text.text, drawX, drawY, text.scale, r, g, b, a);
+	}
+
+	void printText(gfxtext& t, s8 font) {
+		Gfxtext text{ {t.x, t.y}, t.scale, t.text, t.r, t.g, t.b, t.a };
+		printText(text, font);
 	}
 
 	void printButton(gfxbutton &button) {

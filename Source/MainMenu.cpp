@@ -8,7 +8,7 @@ namespace {
 		{"Play", -400, -200, 1, 255, 255, 255, 255},
 		{"Credits", 0, -200, 1, 255, 255, 255, 255},
 		{"Exit", 400, -200, 1, 255, 255, 255, 255},
-		{"<pending-name>", 0, 200, 3, 255, 255, 255, 255}
+		{"Gloomy's Revenge", 0, 200, 3, 255, 255, 255, 255}
 	}};
 	std::array<gfxbutton, NUM_OF_BUTTONS>buttons{};
 }
@@ -29,7 +29,9 @@ void InitializeMainMenu() {
 }
 
 void DrawMainMenu() {
-
+	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+	AEGfxSetTransparency(1.f);
 	// gray bg
 	AEGfxSetBackgroundColor(0.52f, 0.f, 0.f);
 	for (int i{}; i < NUM_OF_BUTTONS; ++i) {
