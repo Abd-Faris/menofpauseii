@@ -28,6 +28,7 @@ namespace Graphics {
 	AEGfxVertexList* createRectMesh(std::string alignment = "center", u32 colour = 0x00000000);
 	void printMesh(AEGfxVertexList* mesh, AEVec2 pos, AEVec2 size, f32 scalar=1);
 	void printMesh(AEGfxVertexList* mesh, Card &card, f32 scalar = 1);
+	void printText(Gfxtext& text, s8 font);
 	void printText(gfxtext &text, s8 font);
 	void printButton(gfxbutton &button);
 }

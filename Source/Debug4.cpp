@@ -3,11 +3,8 @@
 
 // global variables
 namespace {
+	// declare font var
 	s8 boldPixels;
-	// create texts
-	std::vector<gfxtext> texts{
-		{"Card Screen", 0, 0, 1, 255, 255, 255, 255}
-	};
 
 	// define meshes
 	AEGfxVertexList* rectMesh{};
@@ -127,7 +124,7 @@ void InitializeDebug4() {
 
 	// init other cards [ FOR DEMO ONLY ]
 	initActiveCards(activeCards);
-	computeXCardPositions(activeCards, -500, 300, -300, ACTIVE_CARD_SCALE);
+	computeXCardPositions(activeCards, -550, 300, -300, ACTIVE_CARD_SCALE);
 }
 
 void UpdateDebug4() {
@@ -142,17 +139,27 @@ void DrawDebug4() {
 	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
 	AEGfxSetTransparency(1.f);
-	//AEGfxVertexList* bag, * shop, * desc, * cardSlots, * trash;
-	// print static boxes
+
+	// CONTAINERS
 	Gfx::printMesh(bag, { 575,0 }, { 350,800 });
 	Gfx::printMesh(shop, { -200, 40 }, { 1100, 380 });
 	Gfx::printMesh(desc, { -200, 325 }, { 1100, 150 });
 	Gfx::printMesh(cardSlots, { -125, -300 }, { 950, 200 });
 	Gfx::printMesh(trash, { -700, -300 }, { 100, 100 });
-	// print text
-	for (gfxtext g : texts) {
-		Gfx::printText(g, boldPixels);
-	}
+	
+	// TEXTS
+	Gfxtext bagtext{ {575, 375}, 0.5, "INVENTORY"};
+	Gfxtext shoptext{ {-200, 195}, 0.8, "SHOP"};
+	Gfxtext desctext{ {-200, 325}, 1, "PLACEHOLDER DESCRIPTION", 255, 255, 255, 255};
+	Gfxtext cardSlotstext{ {-125, -225}, 0.5, "ACTIVE CARDS"};
+	Gfxtext trashtext{ {-695, -300}, 2, "X"};
+	Gfx::printText(bagtext, boldPixels);
+	Gfx::printText(shoptext, boldPixels);
+	Gfx::printText(desctext, boldPixels);
+	Gfx::printText(cardSlotstext, boldPixels);
+	Gfx::printText(trashtext, boldPixels);
+	
+	// CARDS
 	// print shop cards
 	for (Card &indivCard : shopCards) {
 		Gfx::printMesh(rectMesh, indivCard, CARD_SHOP_SCALE);
