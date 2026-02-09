@@ -46,6 +46,12 @@ namespace Computation {
 		x.y = (x.y / (AEGfxGetWindowHeight() / 2)) * 1.f;
 	}
 
+	// degree to radian
+	void toRadian();
+
+	// radian to degree
+	void toDegree();
+
 	// detects collision between point and rectangle
 	bool collisionPointRect(AEVec2 mousepos, AEVec2 rect, f32 sizex, f32 sizey) {
 		// calculates half of width and height
