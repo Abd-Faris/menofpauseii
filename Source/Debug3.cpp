@@ -10,10 +10,6 @@ f32 maxspeed = 50;
 f32 friction = 0.92;
 namespace {
 	s8 boldPixels;
-	enum {NUM_OF_TEXTS = 1};
-	gfxtext texts[NUM_OF_TEXTS] = {
-		{"Debug 3", 0, 0, 1, 255, 255, 255, 255}
-	};
 	AEGfxVertexList* MeshRect{};
 	
 }
@@ -287,9 +283,6 @@ void DrawDebug3() {
 
 	// gray bg
 	AEGfxSetBackgroundColor(0.82f, 0.82f, 0.82f);
-	for (int i{ 0 }; i < NUM_OF_TEXTS; ++i) {
-		Graphics::printText(texts[i], boldPixels);
-	}
 
 	dt = AEFrameRateControllerGetFrameTime();
 	timer += dt;

@@ -18,6 +18,7 @@ namespace Computation {
 	f32 toRadian(f32 degree);
 	f32 toDegree(f32 radian);
 	// Collision Detection
+	//void computeBoundingBox(AABB boundingbox, AEVec2 pos, AEVec2 size, f32 scale = 1.f);
 	bool collisionPointRect(AEVec2 mousepos, AEVec2 rect, f32 sizex, f32 sizey);
 }
 namespace Comp = Computation;

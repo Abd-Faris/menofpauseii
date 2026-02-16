@@ -4,8 +4,8 @@
 // To view, Right-Click Struct Name -> Go to Definition
 
 // Graphics.h Structs
-struct gfxtext;
-struct gfxbutton;
+struct GfxText;
+struct GfxButton;
 
 // Card Enums and Structs
 enum Rarity {
@@ -48,6 +48,10 @@ struct Card {
 		default: break;
 		};
 	}
+};
+
+struct AABB {
+	AEVec2 max, min;
 };
 
 struct shape {

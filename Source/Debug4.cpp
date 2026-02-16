@@ -30,10 +30,26 @@ namespace {
 	std::vector<Card>& activeCards    = allCards[1];// ref to active cards
 	std::vector<Card>& inventoryCards = allCards[2];// reference to cards in bag
 
-	// create mesh for cards
-	//std::array<Card, 3>cardShop = { 0 };
+	// init shop texts
+	std::vector<GfxText> shopTexts{
+		{"INVENTORY", 0.5f, 0, 0, 0, 255, {575, 375}},
+		{"SHOP", 0.8f, 0, 0, 0, 255, {-200, 195}},
+		{"ACTIVE CARDS", 0.5f, 0, 0, 0, 255, {-125, -225}},
+		{"X", 2.f, 0, 0, 0, 255, {-695, -300}},
+		{"5/5", 0.5f, 0, 0, 0, 255, {-125, -375}},
+		{"5/15", 0.5f, 0, 0, 0, 255, {575, -375}},
+		{"DESCRIPTION GOES HERE", 0.5f, 255, 255, 255, 255, {-200, 325}}
+	};
 
-	
+	//GfxText bagtext{ {575, 375}, 0.5, "INVENTORY" };
+	//GfxText shoptext{ {-200, 195}, 0.8, "SHOP" };
+	//GfxText cardSlotstext{ {-125, -225}, 0.5, "ACTIVE CARDS" };
+	//GfxText trashtext{ {-695, -300}, 2, "X" };
+	//GfxText activeNumtext{ {-125, -375}, 0.5, "5/5" };
+	//GfxText inventoryNumtext{ {575, -375}, 0.5, "5/15" };
+	//
+	//GfxText desctext{ {-200, 325}, 1,"DESCRIPTION GOES HERE", 255, 255, 255, 255 };
+
 
 	// mesh pointers
 	void populateCardShop(std::vector<Card>& shop) {
@@ -189,20 +205,17 @@ void DrawDebug4() {
 	Gfx::printMesh(trash, { -700, -300 }, { 100, 100 });
 	
 	// TEXTS
-	Gfxtext bagtext{ {575, 375}, 0.5, "INVENTORY"};
-	Gfxtext shoptext{ {-200, 195}, 0.8, "SHOP"};
-	Gfxtext desctext{ {-200, 325}, 1,"DESCRIPTION GOES HERE", 255, 255, 255, 255};
-	Gfxtext cardSlotstext{ {-125, -225}, 0.5, "ACTIVE CARDS"};
-	Gfxtext trashtext{ {-695, -300}, 2, "X" };
-	Gfxtext activeNumtext{ {-125, -375}, 0.5, "5/5" };
-	Gfxtext inventoryNumtext{ {575, -375}, 0.5, "5/15"};
-	Gfx::printText(bagtext, boldPixels);
-	Gfx::printText(shoptext, boldPixels);
-	Gfx::printText(desctext, boldPixels);
-	Gfx::printText(cardSlotstext, boldPixels);
-	Gfx::printText(trashtext, boldPixels);
-	Gfx::printText(activeNumtext, boldPixels);
-	Gfx::printText(inventoryNumtext, boldPixels);
+	for (GfxText text : shopTexts) {
+		Gfx::printText(text, boldPixels);
+	}
+
+	//Gfx::printText(bagtext, boldPixels);
+	//Gfx::printText(shoptext, boldPixels);
+	//Gfx::printText(desctext, boldPixels);
+	//Gfx::printText(cardSlotstext, boldPixels);
+	//Gfx::printText(trashtext, boldPixels);
+	//Gfx::printText(activeNumtext, boldPixels);
+	//Gfx::printText(inventoryNumtext, boldPixels);
 	
 	// CARDS
 	// print shop cards
@@ -215,14 +228,6 @@ void DrawDebug4() {
 	for (Card& indivCard : inventoryCards) {
 		Gfx::printMesh(rectMesh, indivCard, INVENTORY_CARD_SCALE);
 	}
-
-	// TEXT FOR DEMO [ DELETE LATER ]
-	Gfxtext card1{ {-600, 20}, 0.5, "HP x1.5", 255, 255, 255, 255 };
-	Gfxtext card2{ {-200, 20}, 0.5, "DMG +5", 255, 255, 255, 255 };
-	Gfxtext card3{ {200, 20}, 0.5, "XP x2", 255, 255, 255, 255 };
-	Gfx::printText(card1, boldPixels);
-	Gfx::printText(card2, boldPixels);
-	Gfx::printText(card3, boldPixels);
 }
 
 void FreeDebug4() {

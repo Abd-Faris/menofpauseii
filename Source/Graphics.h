@@ -1,27 +1,16 @@
 #pragma once
 #include "MasterHeader.h"
 
-// OLD STRUCT USE NEW ONE BELOW
-struct gfxtext {
-	const char* text;
-	f32 x, y, scale, r, g, b, a;
-	AEVec2 pos;
+struct GfxText {
+	std::string text;
+	f32 scale{ 1 }; // default 1
+	f32 r{ 0.f }, g{ 0.f }, b{ 0.f }, a{ 255.f }; // default black
+	AEVec2 pos{ 0.f, 0.f }; // optional
 };
 
-// NEW ONE, USE THIS INSTEAD
-struct Gfxtext {
-	AEVec2 pos;
-	f32 scale;
-	const char* text;
-	f32 r{ 0.f }, g{ 0.f }, b{ 0.f }, a{ 255.f };
-
-};
-
-struct gfxbutton {
-	AEVec2 pos;
-	AEVec2 size;
-	gfxtext text{};			 // optional
-	AEGfxVertexList* mesh{}; // only assigned in initialize
+struct GfxButton {
+	AEVec2 pos, size;
+	AEGfxVertexList* mesh;
 };
 
 namespace Graphics {
@@ -30,8 +19,7 @@ namespace Graphics {
 	//void printMesh(AEGfxVertexList* mesh, AEVec2 pos, AEVec2 size, f32 scalar=1);
 	void printMesh(AEGfxVertexList* mesh, AEVec2 pos, AEVec2 size, f32 angleRad = 0.f, AEVec2 offset = { 0,0 });
 	void printMesh(AEGfxVertexList* mesh, Card &card, f32 scalar = 1);
-	void printText(Gfxtext& text, s8 font);
-	void printText(gfxtext &text, s8 font);
-	void printButton(gfxbutton &button);
+	void printText(GfxText& text, s8 font);
+	void printButton(GfxButton &button);
 }
 namespace Gfx = Graphics;

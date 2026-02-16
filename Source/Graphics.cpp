@@ -135,7 +135,7 @@ namespace Graphics {
 	}
 
 	// prints text
-	void printText(Gfxtext &text, s8 font) {
+	void printText(GfxText &text, s8 font) {
 		// Normalise Coordinates
 		f32 x{ text.pos.x }, y{ text.pos.y };
 		Comp::normalizePoint(x, y);
@@ -144,22 +144,16 @@ namespace Graphics {
 		Comp::normalizeRGBA(r, g, b, a);
 		// Calculates offset to "center align" text
 		f32 width, height;
-		AEGfxGetPrintSize(font, text.text, text.scale, &width, &height);
+		AEGfxGetPrintSize(font, text.text.c_str(), text.scale, &width, &height);
 		// Subtract normalised (width/height) / 2 from normalised pos
 		f32 drawX = x - (width / 2.f);
 		f32 drawY = y - (height / 2.f);
 		// Prints text
-		AEGfxPrint(font, text.text, drawX, drawY, text.scale, r, g, b, a);
+		AEGfxPrint(font, text.text.c_str(), drawX, drawY, text.scale, r, g, b, a);
 	}
 
-	void printText(gfxtext& t, s8 font) {
-		Gfxtext text{ {t.x, t.y}, t.scale, t.text, t.r, t.g, t.b, t.a };
-		printText(text, font);
-	}
-
-	void printButton(gfxbutton &button) {
-		gfxtext& text = button.text;
-		printMesh(button.mesh, { text.x, text.y }, button.size);
+	void printButton(GfxButton &button) {
+		printMesh(button.mesh, button.pos, button.size);
 	}
 }
 

@@ -56,6 +56,10 @@ namespace Computation {
 		return radian / PI * 180.f;
 	}
 
+	// computes bounding box and stores values in AABB struct
+	//void computeBoundingBox() {
+	//	//
+	//}
 	// detects collision between point and rectangle
 	bool collisionPointRect(AEVec2 mousepos, AEVec2 rect, f32 sizex, f32 sizey) {
 		// calculates half of width and height

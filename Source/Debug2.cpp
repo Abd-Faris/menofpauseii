@@ -8,10 +8,6 @@
 
 namespace {
 	s8 boldPixels;
-	enum {NUM_OF_TEXTS = 1};
-	gfxtext texts[NUM_OF_TEXTS] = {
-		{"Player + Shooting", 0, 0, 1, 255, 255, 255, 255}
-	};
 	AEGfxVertexList* MeshCircle{};
 	AEGfxVertexList* MeshRect{};
 	shape circle = { 0 };
@@ -76,10 +72,6 @@ void DrawDebug2() {
 
 	// gray bg
 	AEGfxSetBackgroundColor(0.82f, 0.82f, 0.82f);
-	for (int i{ 0 }; i < NUM_OF_TEXTS; ++i) {
-		Graphics::printText(texts[i], boldPixels);
-	}
-
 
 		AESysFrameStart();
 		// Set the background to black.

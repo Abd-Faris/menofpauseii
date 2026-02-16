@@ -4,8 +4,8 @@
 namespace {
 	s8 boldPixels;
 	enum {NUM_OF_TEXTS = 1};
-	gfxtext texts[NUM_OF_TEXTS] = {
-		{"Debug 5", 0, 0, 1, 255, 255, 255, 255}
+	GfxText texts[NUM_OF_TEXTS] = {
+		{"Debug 5"}
 	};
 }
 
@@ -18,9 +18,7 @@ void DrawDebug5() {
 
 	// gray bg
 	AEGfxSetBackgroundColor(0.82f, 0.82f, 0.82f);
-	for (int i{ 0 }; i < NUM_OF_TEXTS; ++i) {
-		Graphics::printText(texts[i], boldPixels);
-	}
+	for (GfxText text : texts) Gfx::printText(text, boldPixels);
 }
 
 void FreeDebug5() {
