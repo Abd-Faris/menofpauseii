@@ -47,10 +47,14 @@ namespace Computation {
 	}
 
 	// degree to radian
-	void toRadian();
+	f32 toRadian(f32 degree) {
+		return degree / 180.f * PI;
+	}
 
 	// radian to degree
-	void toDegree();
+	f32 toDegree(f32 radian) {
+		return radian / PI * 180.f;
+	}
 
 	// detects collision between point and rectangle
 	bool collisionPointRect(AEVec2 mousepos, AEVec2 rect, f32 sizex, f32 sizey) {

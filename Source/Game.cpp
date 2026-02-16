@@ -1,15 +1,15 @@
 #include "MasterHeader.h"
-#include "DebugMenus.h"
-#include "Structs.h"
-#include "AEEngine.h"
-#include "AEGraphics.h"
-#include "AEMath.h"
-#include <cmath>
-#include <array>
-#include <vector>
-#define PI 3.14159265f
-#define HALF_PI 3.14159265f/ 2.0f
-#define TWO_PI 3.14159265f * 2.0f
+//#include "DebugMenus.h"
+//#include "Structs.h"
+//#include "AEEngine.h"
+//#include "AEGraphics.h"
+//#include "AEMath.h"
+//#include <cmath>
+//#include <array>
+//#include <vector>
+//#define PI 3.14159265f
+//#define HALF_PI 3.14159265f/ 2.0f
+//#define TWO_PI 3.14159265f * 2.0f
 
 // ===========================================================================
 // CONFIGURATION & VARIABLES
@@ -105,41 +105,71 @@ namespace {
 // ===========================================================================
 
 // --- NEW FUNCTION: DRAW MULTIPLE BARRELS ---
+
 void DrawMultiBarrels(int count, float gap, float pivotOffset, float tankRot, float tankX, float tankY) {
     if (count <= 0) return;
 
-    // 1. Calculate total width to center them
+    // 1. Calculate the starting X offset to keep the barrels centered on the turret
     float formationWidth = (float)(count - 1) * gap;
     float startX = -formationWidth / 2.0f;
 
     AEGfxSetColorToMultiply(0.3f, 0.3f, 0.3f, 1.0f);
 
     for (int i = 0; i < count; i++) {
+        // 2. Calculate local position relative to the tank's center
+        // Spread them along the X-axis and push them forward along Y
         float currentLocalX = startX + (i * gap);
+        AEVec2 barrelOffset = { currentLocalX, pivotOffset };
 
-        AEMtx33 scaleMatrix, offsetMatrix, rotationMatrix, transMatrix, finalMatrix;
+        // 3. Define the size of each barrel
+        AEVec2 barrelSize = { GameConfig::Tank::BARREL_WIDTH, GameConfig::Tank::BARREL_LENGTH };
 
-        // Scale
-        AEMtx33Scale(&scaleMatrix, GameConfig::Tank::BARREL_WIDTH, GameConfig::Tank::BARREL_LENGTH);
-
-        // Translate Locally (Spread + Push forward)
-        AEMtx33Trans(&offsetMatrix, currentLocalX, pivotOffset);
-
-        // Rotate (Tank Angle)
-        AEMtx33Rot(&rotationMatrix, tankRot);
-
-        // Translate Global (Tank Pos)
-        AEMtx33Trans(&transMatrix, tankX, tankY);
-
-        // Combine: GlobalTrans * GlobalRot * LocalOffset * Scale
-        AEMtx33Concat(&finalMatrix, &offsetMatrix, &scaleMatrix);
-        AEMtx33Concat(&finalMatrix, &rotationMatrix, &finalMatrix);
-        AEMtx33Concat(&finalMatrix, &transMatrix, &finalMatrix);
-
-        AEGfxSetTransform(finalMatrix.m);
-        AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);
+        // 4. Use the generalized printMesh to handle the TRS math
+        Gfx::printMesh(
+            MeshRect,            // The barrel shape
+            { tankX, tankY },    // Tank Position (World Coords)
+            barrelSize,          // Scale
+            tankRot,             // Rotation (Radians)
+            barrelOffset         // Local Offset (Position relative to tank center)
+        );
     }
 }
+
+//void DrawMultiBarrels(int count, float gap, float pivotOffset, float tankRot, float tankX, float tankY) {
+//    if (count <= 0) return;
+//
+//    // 1. Calculate total width to center them
+//    float formationWidth = (float)(count - 1) * gap;
+//    float startX = -formationWidth / 2.0f;
+//
+//    AEGfxSetColorToMultiply(0.3f, 0.3f, 0.3f, 1.0f);
+//
+//    for (int i = 0; i < count; i++) {
+//        float currentLocalX = startX + (i * gap);
+//
+//        AEMtx33 scaleMatrix, offsetMatrix, rotationMatrix, transMatrix, finalMatrix;
+//
+//        // Scale
+//        AEMtx33Scale(&scaleMatrix, GameConfig::Tank::BARREL_WIDTH, GameConfig::Tank::BARREL_LENGTH);
+//
+//        // Translate Locally (Spread + Push forward)
+//        AEMtx33Trans(&offsetMatrix, currentLocalX, pivotOffset);
+//
+//        // Rotate (Tank Angle)
+//        AEMtx33Rot(&rotationMatrix, tankRot);
+//
+//        // Translate Global (Tank Pos)
+//        AEMtx33Trans(&transMatrix, tankX, tankY);
+//
+//        // Combine: GlobalTrans * GlobalRot * LocalOffset * Scale
+//        AEMtx33Concat(&finalMatrix, &offsetMatrix, &scaleMatrix);
+//        AEMtx33Concat(&finalMatrix, &rotationMatrix, &finalMatrix);
+//        AEMtx33Concat(&finalMatrix, &transMatrix, &finalMatrix);
+//
+//        AEGfxSetTransform(finalMatrix.m);
+//        AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);
+//    }
+//}
 
 void ResetEnemy(Enemies* enemyToReset) {
     enemyToReset->alive = false;
@@ -214,22 +244,24 @@ void LoadGame() {
     boldPixelsFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 
     // Mesh: Circle
-    AEGfxMeshStart();
-    int slices = 40;
-    float angleStep = TWO_PI/ slices;
-    for (int i = 0; i < slices; i++) {
-        AEGfxTriAdd(
-            0.0f, 0.0f, 0xFFFFFFFF, 0.0f, 1.0f,
-            cosf(i * angleStep), sinf(i * angleStep), 0xFFFFFFFF, 1.0f, 1.0f,
-            cosf((i + 1) * angleStep), sinf((i + 1) * angleStep), 0xFFFFFFFF, 0.0f, 0.0f);
-    }
-    MeshCircle = AEGfxMeshEnd();
+    //AEGfxMeshStart();
+    //int slices = 40;
+    //float angleStep = TWO_PI/ slices;
+    //for (int i = 0; i < slices; i++) {
+    //    AEGfxTriAdd(
+    //        0.0f, 0.0f, 0xFFFFFFFF, 0.0f, 1.0f,
+    //        cosf(i * angleStep), sinf(i * angleStep), 0xFFFFFFFF, 1.0f, 1.0f,
+    //        cosf((i + 1) * angleStep), sinf((i + 1) * angleStep), 0xFFFFFFFF, 0.0f, 0.0f);
+    //}
+    //MeshCircle = AEGfxMeshEnd();
+    MeshCircle = Gfx::createCircleMesh(0xFFFFFFFF);
 
     // Mesh: Rect
-    AEGfxMeshStart();
-    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f, 0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f, -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-    AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f, 0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f, -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-    MeshRect = AEGfxMeshEnd();
+    //AEGfxMeshStart();
+    //AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f, 0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f, -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+    //AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f, 0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f, -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+    //MeshRect = AEGfxMeshEnd();
+    MeshRect = Gfx::createRectMesh("center", 0xFFFFFFFFF);
 
     // Reset Player
     player.pos_x = 0;
@@ -408,6 +440,7 @@ void UpdateGame() {
 // ===========================================================================
 // DRAW GAME
 // ===========================================================================
+
 void DrawGame() {
     if (MeshRect == nullptr || MeshCircle == nullptr) return;
 
@@ -416,51 +449,32 @@ void DrawGame() {
     AEGfxSetCamPosition(player.pos_x, player.pos_y);
 
     // -- Draw Bullets --
+    // Bullets use a simple scale and position with no rotation
     AEGfxSetColorToMultiply(1.0f, 1.0f, 0.0f, 1.0f);
     for (const auto& boolet : bulletList) {
         if (boolet.isActive) {
-            AEMtx33 scaleMatrix, transMatrix, finalMatrix;
-            AEMtx33Scale(&scaleMatrix, boolet.size, boolet.size);
-            AEMtx33Trans(&transMatrix, boolet.posX, boolet.posY);
-            AEMtx33Concat(&finalMatrix, &transMatrix, &scaleMatrix);
-            AEGfxSetTransform(finalMatrix.m);
-            AEGfxMeshDraw(MeshCircle, AE_GFX_MDM_TRIANGLES);
+            Gfx::printMesh(MeshCircle, { boolet.posX, boolet.posY }, { boolet.size, boolet.size }, 0.0f);
         }
     }
 
     // -- Draw Player Tank --
-    AEMtx33 scaleMatrix, rotationMatrix, transMatrix, offsetMatrix, finalMatrix;
-    AEMtx33Rot(&rotationMatrix, player.currentAngle);
-    AEMtx33Trans(&transMatrix, player.pos_x, player.pos_y);
+    AEVec2 playerPos = { player.pos_x, player.pos_y };
 
     // 1. Draw Tracks
     AEGfxSetColorToMultiply(0.1f, 0.1f, 0.1f, 1.0f);
-    // Left
-    AEMtx33Scale(&scaleMatrix, GameConfig::Tank::TRACK_WIDTH, GameConfig::Tank::TRACK_HEIGHT);
-    AEMtx33Trans(&offsetMatrix, -GameConfig::Tank::TRACK_OFFSET_X, 0.0f);
-    AEMtx33Concat(&finalMatrix, &offsetMatrix, &scaleMatrix);
-    AEMtx33Concat(&finalMatrix, &rotationMatrix, &finalMatrix);
-    AEMtx33Concat(&finalMatrix, &transMatrix, &finalMatrix);
-    AEGfxSetTransform(finalMatrix.m);
-    AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);
-    // Right
-    AEMtx33Scale(&scaleMatrix, GameConfig::Tank::TRACK_WIDTH, GameConfig::Tank::TRACK_HEIGHT);
-    AEMtx33Trans(&offsetMatrix, GameConfig::Tank::TRACK_OFFSET_X, 0.0f);
-    AEMtx33Concat(&finalMatrix, &offsetMatrix, &scaleMatrix);
-    AEMtx33Concat(&finalMatrix, &rotationMatrix, &finalMatrix);
-    AEMtx33Concat(&finalMatrix, &transMatrix, &finalMatrix);
-    AEGfxSetTransform(finalMatrix.m);
-    AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);
+    AEVec2 trackSize = { GameConfig::Tank::TRACK_WIDTH, GameConfig::Tank::TRACK_HEIGHT };
+
+    // Left Track: Offset to the left before rotating
+    Gfx::printMesh(MeshRect, playerPos, trackSize, player.currentAngle, { -GameConfig::Tank::TRACK_OFFSET_X, 0.0f });
+
+    // Right Track: Offset to the right before rotating
+    Gfx::printMesh(MeshRect, playerPos, trackSize, player.currentAngle, { GameConfig::Tank::TRACK_OFFSET_X, 0.0f });
 
     // 2. Draw Main Body
     AEGfxSetColorToMultiply(0.2f, 0.6f, 0.2f, 1.0f);
-    AEMtx33Scale(&scaleMatrix, GameConfig::Tank::BODY_WIDTH, GameConfig::Tank::BODY_HEIGHT);
-    AEMtx33Concat(&finalMatrix, &rotationMatrix, &scaleMatrix);
-    AEMtx33Concat(&finalMatrix, &transMatrix, &finalMatrix);
-    AEGfxSetTransform(finalMatrix.m);
-    AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);
+    Gfx::printMesh(MeshRect, playerPos, { GameConfig::Tank::BODY_WIDTH, GameConfig::Tank::BODY_HEIGHT }, player.currentAngle);
 
-    // 3. Draw Barrels (Dynamic Multi-Barrel)
+    // 3. Draw Barrels
     DrawMultiBarrels(
         player.barrelCount,
         GameConfig::Tank::BARREL_GAP,
@@ -472,32 +486,116 @@ void DrawGame() {
 
     // 4. Draw Turret
     AEGfxSetColorToMultiply(0.3f, 0.7f, 0.3f, 1.0f);
-    AEMtx33Scale(&scaleMatrix, GameConfig::Tank::TURRET_SIZE, GameConfig::Tank::TURRET_SIZE);
-    AEMtx33Concat(&finalMatrix, &rotationMatrix, &scaleMatrix);
-    AEMtx33Concat(&finalMatrix, &transMatrix, &finalMatrix);
-    AEGfxSetTransform(finalMatrix.m);
-    AEGfxMeshDraw(MeshCircle, AE_GFX_MDM_TRIANGLES);
+    Gfx::printMesh(MeshCircle, playerPos, { GameConfig::Tank::TURRET_SIZE, GameConfig::Tank::TURRET_SIZE }, player.currentAngle);
 
     // -- Draw Enemies --
     for (const auto& currentEnemy : enemyPool) {
         if (currentEnemy.alive || currentEnemy.scale > 0) {
+            // Set color based on enemy size
             if (currentEnemy.scale > (GameConfig::Enemy::SIZE_SMALL + 10.0f))
                 AEGfxSetColorToMultiply(0.2f, 0.2f, 0.8f, 1);
             else
                 AEGfxSetColorToMultiply(0.8f, 0.2f, 0.2f, 1);
 
-            AEMtx33Scale(&scaleMatrix, currentEnemy.scale, currentEnemy.scale);
-            AEMtx33RotDeg(&rotationMatrix, currentEnemy.rotation);
-            AEMtx33Trans(&transMatrix, currentEnemy.pos.x, currentEnemy.pos.y);
-            AEMtx33Concat(&finalMatrix, &transMatrix, &rotationMatrix);
-            AEMtx33Concat(&finalMatrix, &finalMatrix, &scaleMatrix);
-            AEGfxSetTransform(finalMatrix.m);
-            AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);
+            // Convert degrees to radians for the rotation parameter
+            float rotationRad = currentEnemy.rotation * (PI / 180.0f);
+            Gfx::printMesh(MeshRect, currentEnemy.pos, { currentEnemy.scale, currentEnemy.scale }, rotationRad);
         }
     }
 
-    DrawDebug1();
+    DrawDebug1(); // Render Stats UI
 }
+
+//void DrawGame() {
+//    if (MeshRect == nullptr || MeshCircle == nullptr) return;
+//
+//    AEGfxSetBackgroundColor(0.2f, 0.2f, 0.2f);
+//    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+//    AEGfxSetCamPosition(player.pos_x, player.pos_y);
+//
+//    // -- Draw Bullets --
+//    AEGfxSetColorToMultiply(1.0f, 1.0f, 0.0f, 1.0f);
+//    for (const auto& boolet : bulletList) {
+//        if (boolet.isActive) {
+//            AEMtx33 scaleMatrix, transMatrix, finalMatrix;
+//            AEMtx33Scale(&scaleMatrix, boolet.size, boolet.size);
+//            AEMtx33Trans(&transMatrix, boolet.posX, boolet.posY);
+//            AEMtx33Concat(&finalMatrix, &transMatrix, &scaleMatrix);
+//            AEGfxSetTransform(finalMatrix.m);
+//            AEGfxMeshDraw(MeshCircle, AE_GFX_MDM_TRIANGLES);
+//        }
+//    }
+//
+//    // -- Draw Player Tank --
+//    AEMtx33 scaleMatrix, rotationMatrix, transMatrix, offsetMatrix, finalMatrix;
+//    AEMtx33Rot(&rotationMatrix, player.currentAngle);
+//    AEMtx33Trans(&transMatrix, player.pos_x, player.pos_y);
+//
+//    // 1. Draw Tracks
+//    AEGfxSetColorToMultiply(0.1f, 0.1f, 0.1f, 1.0f);
+//    // Left
+//    AEMtx33Scale(&scaleMatrix, GameConfig::Tank::TRACK_WIDTH, GameConfig::Tank::TRACK_HEIGHT);
+//    AEMtx33Trans(&offsetMatrix, -GameConfig::Tank::TRACK_OFFSET_X, 0.0f);
+//    AEMtx33Concat(&finalMatrix, &offsetMatrix, &scaleMatrix);
+//    AEMtx33Concat(&finalMatrix, &rotationMatrix, &finalMatrix);
+//    AEMtx33Concat(&finalMatrix, &transMatrix, &finalMatrix);
+//    AEGfxSetTransform(finalMatrix.m);
+//    AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);
+//    // Right
+//    AEMtx33Scale(&scaleMatrix, GameConfig::Tank::TRACK_WIDTH, GameConfig::Tank::TRACK_HEIGHT);
+//    AEMtx33Trans(&offsetMatrix, GameConfig::Tank::TRACK_OFFSET_X, 0.0f);
+//    AEMtx33Concat(&finalMatrix, &offsetMatrix, &scaleMatrix);
+//    AEMtx33Concat(&finalMatrix, &rotationMatrix, &finalMatrix);
+//    AEMtx33Concat(&finalMatrix, &transMatrix, &finalMatrix);
+//    AEGfxSetTransform(finalMatrix.m);
+//    AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);
+//
+//    // 2. Draw Main Body
+//    AEGfxSetColorToMultiply(0.2f, 0.6f, 0.2f, 1.0f);
+//    AEMtx33Scale(&scaleMatrix, GameConfig::Tank::BODY_WIDTH, GameConfig::Tank::BODY_HEIGHT);
+//    AEMtx33Concat(&finalMatrix, &rotationMatrix, &scaleMatrix);
+//    AEMtx33Concat(&finalMatrix, &transMatrix, &finalMatrix);
+//    AEGfxSetTransform(finalMatrix.m);
+//    AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);
+//
+//    // 3. Draw Barrels (Dynamic Multi-Barrel)
+//    DrawMultiBarrels(
+//        player.barrelCount,
+//        GameConfig::Tank::BARREL_GAP,
+//        GameConfig::Tank::BARREL_PIVOT_OFFSET,
+//        player.currentAngle,
+//        player.pos_x,
+//        player.pos_y
+//    );
+//
+//    // 4. Draw Turret
+//    AEGfxSetColorToMultiply(0.3f, 0.7f, 0.3f, 1.0f);
+//    AEMtx33Scale(&scaleMatrix, GameConfig::Tank::TURRET_SIZE, GameConfig::Tank::TURRET_SIZE);
+//    AEMtx33Concat(&finalMatrix, &rotationMatrix, &scaleMatrix);
+//    AEMtx33Concat(&finalMatrix, &transMatrix, &finalMatrix);
+//    AEGfxSetTransform(finalMatrix.m);
+//    AEGfxMeshDraw(MeshCircle, AE_GFX_MDM_TRIANGLES);
+//
+//    // -- Draw Enemies --
+//    for (const auto& currentEnemy : enemyPool) {
+//        if (currentEnemy.alive || currentEnemy.scale > 0) {
+//            if (currentEnemy.scale > (GameConfig::Enemy::SIZE_SMALL + 10.0f))
+//                AEGfxSetColorToMultiply(0.2f, 0.2f, 0.8f, 1);
+//            else
+//                AEGfxSetColorToMultiply(0.8f, 0.2f, 0.2f, 1);
+//
+//            AEMtx33Scale(&scaleMatrix, currentEnemy.scale, currentEnemy.scale);
+//            AEMtx33RotDeg(&rotationMatrix, currentEnemy.rotation);
+//            AEMtx33Trans(&transMatrix, currentEnemy.pos.x, currentEnemy.pos.y);
+//            AEMtx33Concat(&finalMatrix, &transMatrix, &rotationMatrix);
+//            AEMtx33Concat(&finalMatrix, &finalMatrix, &scaleMatrix);
+//            AEGfxSetTransform(finalMatrix.m);
+//            AEGfxMeshDraw(MeshRect, AE_GFX_MDM_TRIANGLES);
+//        }
+//    }
+//
+//    DrawDebug1();
+//}
 
 void FreeGame() {
     AEGfxDestroyFont(boldPixelsFont);

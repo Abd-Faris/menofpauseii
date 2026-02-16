@@ -14,8 +14,8 @@
 #include <vector>
 
 // System Headers
-#include "System.h"
-#include "Input.h"
+#include "System.h" // Program Initialisation
+#include "Input.h"  // Gamestate Changer for Debug Menus
 
 // Namespaces, Structs
 #include "Structs.h"

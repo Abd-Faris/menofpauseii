@@ -62,8 +62,8 @@ namespace Graphics {
 			// define triangle mesh with centre pts (0,0)
 			AEGfxTriAdd(
 				0.f, 0.f, 0xFFFFFFFF, 0.5f, 0.5f, // Centre point
-				AECos(angle1) * 0.5f, AESin(angle1) * 0.5f, colour, 0.0f, 0.0f,
-				AECos(angle2) * 0.5f, AESin(angle2) * 0.5f, colour, 0.0f, 0.0f);
+				AECos(angle1), AESin(angle1), colour, 1.0f, 1.0f,
+				AECos(angle2), AESin(angle2), colour, 0.0f, 0.0f);
 		}
 		// return mesh and marvel at a round object
 		// such teknologi much wow
@@ -71,31 +71,67 @@ namespace Graphics {
 	}
 
 	// Prints a mesh using TRS
-	void printMesh(AEGfxVertexList *mesh, AEVec2 pos, AEVec2 size, f32 scalar) {
+	//void printMesh(AEGfxVertexList *mesh, AEVec2 pos, AEVec2 size, f32 scalar) {
+	//	// if no mesh, return
+	//	if (!mesh) return;
+	//	// object drawing settings
+	//	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+	//	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+	//	AEGfxSetTransparency(1.f);
+	//	// Translate Matrix
+	//	AEMtx33 translate{ 0 };
+	//	AEMtx33Trans(&translate, pos.x, pos.y);
+	//	// Scale Matrix
+	//	AEMtx33 scale{ 0 };
+	//	AEMtx33Scale(&scale, (size.x) * scalar, (size.y) * scalar);
+	//	// Resultant Transformation
+	//	AEMtx33 transform{ 0 };
+	//	AEMtx33Concat(&transform, &translate, &scale);	
+	//	// Apply transformation to mesh
+	//	AEGfxSetTransform(transform.m);
+	//	// Printing
+	//	AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
+	//}
+
+	// Prints mesh using RTS
+	void printMesh(AEGfxVertexList* mesh, AEVec2 pos, AEVec2 size, f32 angleRad, AEVec2 offset) {
 		// if no mesh, return
 		if (!mesh) return;
 		// object drawing settings
 		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
 		AEGfxSetTransparency(1.f);
-		// Translate Matrix
-		AEMtx33 translate{ 0 };
-		AEMtx33Trans(&translate, pos.x, pos.y);
-		// Scale Matrix
-		AEMtx33 scale{ 0 };
-		AEMtx33Scale(&scale, (size.x) * scalar, (size.y) * scalar);
-		// Resultant Transformation
-		AEMtx33 transform{ 0 };
-		AEMtx33Concat(&transform, &translate, &scale);	
-		// Apply transformation to mesh
-		AEGfxSetTransform(transform.m);
-		// Printing
+
+		// Init Matrices
+		AEMtx33 scale, rot, trans, localOffset, finalTransform;
+
+		// Compute RTS Matrices ( + camera offset translation )
+		AEMtx33Scale(&scale, size.x, size.y);
+		AEMtx33Rot(&rot, angleRad);
+		AEMtx33Trans(&trans, pos.x, pos.y);
+		AEMtx33Trans(&localOffset, offset.x, offset.y);
+
+		// Concatenation with RTSS (in reverse cos thats how that works i think)
+		
+		// Concat scale with local offset
+		AEMtx33Concat(&finalTransform, &localOffset, &scale);
+		// Concat rotation
+		AEMtx33Concat(&finalTransform, &rot, &finalTransform);
+		// Concat translation from origin
+		AEMtx33Concat(&finalTransform, &trans, &finalTransform);
+
+		// Apply matrix to global and draw
+		AEGfxSetTransform(finalTransform.m);
 		AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 	}
 
+		
+
 	// overload for card printing
 	void printMesh(AEGfxVertexList *mesh, Card& card,f32 scalar) {
-		printMesh(mesh, card.pos, card.size, scalar);
+		AEVec2 finalSize{};
+		AEVec2Scale(&finalSize, &card.size, scalar);
+		printMesh(mesh, card.pos, finalSize);
 	}
 
 	// prints text
