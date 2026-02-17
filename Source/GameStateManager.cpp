@@ -15,17 +15,34 @@ Technology is prohibited.
 
 #include "MasterHeader.h"
 
-int current = 0, previous = 0, next = 0;
+int GS_current = 0, GS_previous = 0, GS_next = 0;
 
-FP fpLoad = nullptr, fpInitialize = nullptr, fpUpdate = nullptr, fpDraw = nullptr, fpFree = nullptr, fpUnload = nullptr;
+// function pointer array of CURRENT gamestate
+GSFunctions GS_Functions;
+
+// Array of Gamestate Function Pointers
+// ENSURE THE ORDER MATCHES THE ENUM IN GameStateManager.h!!!
+std::vector<GSFunctions> gamestates{
+	{LoadMainMenu, InitializeMainMenu, nullptr, DrawMainMenu, FreeMainMenu, nullptr},
+	{LoadGame, nullptr, UpdateGame, DrawGame, FreeGame, nullptr},
+	{LoadDebug1, nullptr, UpdateDebug1, DrawDebug1, FreeDebug1, nullptr},
+	{LoadDebug2, nullptr, nullptr, DrawDebug2, FreeDebug2, nullptr},
+	{LoadDebug3, nullptr, nullptr, DrawDebug3, FreeDebug3, nullptr},
+	{LoadDebug4, InitializeDebug4, UpdateDebug4, DrawDebug4, FreeDebug4, nullptr},
+	{LoadDebug5, nullptr, nullptr, DrawDebug5, FreeDebug5, nullptr}
+};
+// Load, Initialize, Update, Draw, Free, Unload
+// if no function of that type exists, enter nullptr
+
+//FP fpLoad = nullptr, fpInitialize = nullptr, fpUpdate = nullptr, fpDraw = nullptr, fpFree = nullptr, fpUnload = nullptr;
 
 //-----------------------------------------------------------//
 // This function initialises the game state manager with a
 // default start game state
 //-----------------------------------------------------------//
-void GSM_Initialize(int startingState)
+void GSM_Initialize(int GS_startingState)
 {
-	current = previous = next = startingState;
+	GS_current = GS_previous = GS_next = GS_startingState;
 
 	//some additional code
 	printf("GSM:Initialize\n");
@@ -37,60 +54,6 @@ void GSM_Initialize(int startingState)
 //-----------------------------------------------------------//
 void GSM_Update()
 {
-	//some unfinished code here
-	//printf("GSM:Update\n");
-	
-	// reset function pointers
-	fpLoad = nullptr, fpInitialize = nullptr, fpUpdate = nullptr, fpDraw = nullptr, fpFree = nullptr, fpUnload = nullptr;
-
-	// Game State Switch Statements
-	switch (current)
-	{
-	case GS_MAIN_MENU:
-		fpLoad = LoadMainMenu;
-		fpInitialize = InitializeMainMenu;
-		fpDraw = DrawMainMenu;
-		fpFree = FreeMainMenu;
-		break;
-	case GS_GAME:
-		fpLoad = LoadGame;
-		fpUpdate = UpdateGame;
-		fpDraw = DrawGame;
-		fpFree = FreeGame;
-		break;
-	case GS_RESTART:
-		break;
-	case GS_QUIT:
-		break;
-	case DEBUG1:
-		fpLoad = LoadDebug1;
-		fpUpdate = UpdateDebug1;
-		fpDraw = DrawDebug1;
-		fpFree = FreeDebug1;
-		break;
-	case DEBUG2:
-		fpLoad = LoadDebug2;
-		fpDraw = DrawDebug2;
-		fpFree = FreeDebug2;
-		break;
-	case DEBUG3:
-		fpLoad = LoadDebug3;
-		fpDraw = DrawDebug3;
-		fpFree = FreeDebug3;
-		break;
-	case DEBUG4:
-		fpLoad = LoadDebug4;
-		fpInitialize = InitializeDebug4;
-		fpUpdate = UpdateDebug4;
-		fpDraw = DrawDebug4;
-		fpFree = FreeDebug4;
-		break;
-	case DEBUG5:
-		fpLoad = LoadDebug5;
-		fpDraw = DrawDebug5;
-		fpFree = FreeDebug5;
-		break;
-	default:
-		break;
-	}
+	// Switch Game States
+	GS_Functions = gamestates[GS_current];
 }

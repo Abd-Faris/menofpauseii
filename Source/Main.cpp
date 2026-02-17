@@ -28,40 +28,43 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     GSM_Initialize(GS_MAIN_MENU);
 
     // Game Loop
-    while (current != GS_QUIT)
+    while (GS_current != GS_QUIT)
     {
-        if (current != GS_RESTART) {
+        if (GS_current != GS_RESTART) {
             GSM_Update();
-            if(fpLoad) fpLoad();
+            if(GS_Functions.Load) GS_Functions.Load();
         }
         else { // if current = GS_RESTART
             // set all to prev game state
-            next = previous;
-            current = previous;
+            GS_next = GS_previous;
+            GS_current = GS_previous;
         }
         // init game state
-        if(fpInitialize) fpInitialize();
+        if(GS_Functions.Initialize) GS_Functions.Initialize();
 
         // the game loop
-        while(next == current){
+        while(GS_next == GS_current){
             AESysFrameStart(); // start of game frame
-            //input_handler();
-            if(fpUpdate) fpUpdate();
-            if(fpDraw) fpDraw();
-            Debug_States(); // detect game state change
+            
+            // Update & Draw Functions
+            if(GS_Functions.Update) GS_Functions.Update();
+            if(GS_Functions.Draw) GS_Functions.Draw();
+
+            // for access to debug screens
+            Debug_States();
             AESysFrameEnd(); // end of game frame
         }
 
         // more steps
-        if(fpFree) fpFree();
+        if(GS_Functions.Free) GS_Functions.Free();
 
         // unloads level
-        if (next != GS_RESTART){
-            if(fpUnload) fpUnload();
+        if (GS_next != GS_RESTART){
+            if(GS_Functions.Unload) GS_Functions.Unload();
         }
         // shifts game states over by one
-        previous = current;
-        current = next;
+        GS_previous = GS_current;
+        GS_current = GS_next;
     }
 
     //Systems exit (terminate)
