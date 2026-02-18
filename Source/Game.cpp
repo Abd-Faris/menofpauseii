@@ -73,6 +73,11 @@ namespace GameConfig {
 // ===========================================================================
 // GLOBAL OBJECTS
 // ===========================================================================
+
+// -- Enemy Pool --
+std::array<Enemies, GameConfig::MAX_ENEMIES_COUNT> enemyPool;
+f64 enemySpawnTimer = 0;
+
 namespace {
     // -- Assets --
     s8 boldPixelsFont;
@@ -95,9 +100,6 @@ namespace {
     BulletObj bulletList[GameConfig::MAX_BULLETS_COUNT];
     float bulletFireTimer = 0.0f;
 
-    // -- Enemy Pool --
-    std::array<Enemies, GameConfig::MAX_ENEMIES_COUNT> enemyPool;
-    f64 enemySpawnTimer = 0;
 }
 
 // ===========================================================================
@@ -201,7 +203,10 @@ void SpawnOneEnemy(bool isBigEnemy) {
             newEnemy.alive = true;
             newEnemy.rotation = AERandFloat() * 360.0f;
             newEnemy.scale = isBigEnemy ? GameConfig::Enemy::SIZE_BIG : GameConfig::Enemy::SIZE_SMALL;
-            newEnemy.hp = isBigEnemy ? GameConfig::Enemy::HP_BIG : GameConfig::Enemy::HP_SMALL;
+
+            int initialHP = (int)(isBigEnemy ? GameConfig::Enemy::HP_BIG : GameConfig::Enemy::HP_SMALL);
+            newEnemy.hp = initialHP;
+            newEnemy.maxhp = initialHP;
             break;
         }
     }
@@ -427,14 +432,16 @@ void UpdateGame() {
                 currentEnemy.scale -= GameConfig::Enemy::SHRINK_SPEED * deltaTime;
                 if (currentEnemy.scale <= 0) {
                     float xp_multiplier = calculate_max_stats(4);
-                    float reward = (currentEnemy.scale > (GameConfig::Enemy::SIZE_SMALL + 10.0f) ? 50.0f : 20.0f) * xp_multiplier;
-                    player_init.current_xp += reward;
+                    float baseReward = (currentEnemy.maxhp >= (int)GameConfig::Enemy::HP_BIG) ? 80.0f : 20.0f;
+                    player_init.current_xp += (baseReward * xp_multiplier);
                     ResetEnemy(&currentEnemy);
                 }
             }
         }
     }
     circlerectcollision();
+    AEGfxSetCamPosition(player.pos_x, player.pos_y);
+
 }
 
 // ===========================================================================
@@ -502,8 +509,8 @@ void DrawGame() {
             Gfx::printMesh(MeshRect, currentEnemy.pos, { currentEnemy.scale, currentEnemy.scale }, rotationRad);
         }
     }
-
     DrawDebug1(); // Render Stats UI
+
 }
 
 //void DrawGame() {

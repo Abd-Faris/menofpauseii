@@ -3,10 +3,10 @@
 #include "AEEngine.h"
 #include "AEGraphics.h"
 #include "Structs.h"
+#include "array"
 
-//EVERYTHING USES WORLD COORDINATES
-//TEXTS USE NORMALISED
-	
+extern std::array<Enemies, 50> enemyPool;
+
 // -- INITIAL PLAYER STATS --
 PlayerStats	player_init = {
 	// -- HP DMG SPEED FIRERATE XP --
@@ -59,6 +59,35 @@ namespace {
 		AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 	}
 
+	//helper to draw enemy health bar, takes in enemy struct and camera position for correct placement
+	void draw_enemy_health_bar(Enemies& enemy, float camX, float camY) {
+		if (!enemy.alive || enemy.hp >= enemy.maxhp || enemy.hp <= 0) {
+			return;
+		}
+
+		//bar size is based on enemy scale
+		float barWidth = enemy.scale;
+		float barHeight = 6.0f;
+		
+		//offset the bars below the enemy, using scale to ensure it stays proportional to enemy size
+		float yOffset = -(enemy.scale * 0.9f);
+
+		//calculate percentage of hp remaining, ensuring it doesn't go below 0
+		float perc = (float)enemy.hp / (float)enemy.maxhp;
+		if (perc < 0.0f) perc = 0.0f;
+
+		//draws background (black)
+		drawmesh(pBlackRectMesh, enemy.pos.x, enemy.pos.y + yOffset, barWidth + 4.0f, barHeight + 2.0f);
+
+		//draws health (reds)
+		float actualW = barWidth * perc;
+
+		//calculate the shift to ensure the health bar shrinks from the middle, rather than from the right edge
+		float shiftX = (barWidth - actualW) / 2.0f;
+
+		//draw the red health bar, shifting it to the right by shiftX to ensure it shrinks from the middle
+		drawmesh(pRedRectMesh, enemy.pos.x - shiftX, enemy.pos.y + yOffset, actualW, barHeight, 1.0f, 0.0f, 0.0f);
+	}
 
 	//***** IMPORTANT: CHANGE MULTIPLIERS HERE *****
 	// HP , DMG , MV SPEED , FIRE RATE , XP GAIN //
@@ -148,15 +177,20 @@ void handle_menu_input(float camX, float camY) {
 		s32 winWidth = AEGfxGetWindowWidth();
 		s32 winHeight = AEGfxGetWindowHeight();
 
+		//convert screen coordinates to screen-relative coordinates with (0,0) in the middle of the screen
 		float mouseX = (float)screenX - (winWidth / 2.0f);
 		float mouseY = (winHeight / 2.0f) - (float)screenY;
 
+		//adjust mouse coordinates to be relative to the menu bg, which is also screen-relative
 		float start_y = 200.0f;
 		float spacing_y = 100.0f;
 		float offset_middle = 260.0f;
 		float squaresize = 60.0f;
 		float middle_to_edge = squaresize / 2.0f;
 
+		//loop through each button, checking if the mouse is within the button's bounds. 
+		//if it is, and the player has skill points and hasn't already fully upgraded that stat
+		//upgrade the stat and reduce skill points by 1
 		for (int i = 0; i < 5; ++i) {
 			float buttonX = offset_middle;
 			float buttonY = start_y - (i * spacing_y);
@@ -205,8 +239,11 @@ void draw_hud_bar(AEGfxVertexList* mesh, float current, float max, float anchorX
 
 	float actual_w = max_width * perc;
 
+	//calculate the shift to ensure the bar shrinks from the middle, rather than from the right edge
 	float shiftRight = (max_width - actual_w) / 2.0f;
 
+	//final position is the anchor position, shifted right by shiftRight to ensure it shrinks from the middle
+	//and shifted down by relativeY to stack the bars
 	float finalX = anchorX - shiftRight;
 	float finalY = anchorY + relativeY;
 
@@ -215,16 +252,17 @@ void draw_hud_bar(AEGfxVertexList* mesh, float current, float max, float anchorX
 
 
 void draw_upgrade_rows(float camX, float camY) {
-	//initalise white container variables
+	//define starting y position for the first row, the spacing between rows, and the x offset for the middle boxes
 	float start_y = 200.0f, spacing_y = 100.0f, offset_middle = 260.0f;
-	//initialise segment inside container variables
+	//define the width of each upgrade segment, the gap between segments, and the starting x position for the first segment
 	float segment_w = 70.0f, gap = 8.0f;
 	float total_segment_dist = segment_w + gap;
 	float start_x = -(total_segment_dist * 2.0f);
 
-	//draws each row 5 times
+	//loop through each of the 5 upgrade rows
 	for (int i = 0; i < 5; ++i) {
-		float actual_y = start_y - (i * spacing_y); //formula to calculate the centre point
+		//draw the row background, then draw 5 boxes for the upgrade segments
+		float actual_y = start_y - (i * spacing_y);
 		drawmesh(pWhiteRectMesh, 0.0f + camX, actual_y + camY, 400.0f, 60.0f);
 		drawmesh(pWhiteRectMesh, -offset_middle + camX, actual_y + camY, 60.0f, 60.0f);
 		drawmesh(pWhiteRectMesh, offset_middle + camX, actual_y + camY, 60.0f, 60.0f);
@@ -278,30 +316,42 @@ void UpdateDebug1() {
 
 void DrawDebug1() {
 
+	//get camera position for correct hud placement
 	float camX, camY;
 	AEGfxGetCamPosition(&camX, &camY);
 
 	if (boldPixels < 0) return;
 
+	//define hud position relative to camera
 	float hudX = camX + 0.0f;
 	float hudY = camY - 410.0f;
 
+	//define max width for hp and xp bars, and calculate max hp and xp needed for level up for correct bar scaling
 	float max_width = 300.0f;
 	float max_hp = calculate_max_stats(0);
 	float xp_needed = 100.0f + (player_init.player_level * 50.0f);
 
-	// --- DRAW HUD ---
+	// --- DRAW PLAYER HUD ---
 	drawmesh(pBlackRectMesh, hudX, hudY, max_width + 10.0f, 52.0f);
 	draw_hud_bar(pRedRectMesh, player_init.current_hp, max_hp, hudX, hudY, 7.0f, 25.0f, max_width);
 	draw_hud_bar(pYellowRectMesh, player_init.current_xp, xp_needed, hudX, hudY, -15.0f, 10.0f, max_width);
 
-	//print hp and xp stats
-	char hud[64];
-	char hud2[64];
-	sprintf_s(hud, "LEVEL: %d (press E for XP): %.1f/%.0f", player_init.player_level, player_init.current_xp, xp_needed);
-	sprintf_s(hud2, " %.0f / %.0f (R to heal, T to lose hp)", player_init.current_hp, max_hp);
-	AEGfxPrint(boldPixels, hud, 0.35f, -0.85f, 0.4f, 0.0f, 0.0f, 0.0f, 1.0f);
-	AEGfxPrint(boldPixels, hud2, 0.35f, -0.9f, 0.4f, 0.0f, 0.0f, 0.0f, 1.0f);
+	// --- DRAW ENEMY HEALTH BARS ---
+	for (int i = 0; i < 50; i++) {
+		if (enemyPool[i].alive) {
+			draw_enemy_health_bar(enemyPool[i], camX, camY);
+		}
+	}
+
+	//print hp and lvl text
+	char hudHP[64], hudXP[64], level[32];
+	sprintf_s(hudHP, "%.0f / %.0f", player_init.current_hp, max_hp);
+	//sprintf_s(hudXP, "XP: %.0f / %.0f", player_init.current_xp, xp_needed);
+	sprintf_s(level, "LEVEL %d", player_init.player_level);
+
+	AEGfxPrint(boldPixels, hudHP, -0.07f, -0.91f, 0.35f, 1.0f, 1.0f, 1.0f, 1.0f);
+	//AEGfxPrint(boldPixels, hudXP, -0.05f, -0.96f, 0.25f, 0.0f, 0.0f, 0.0f, 1.0f);
+	AEGfxPrint(boldPixels, level, -0.18f, -0.84f, 0.4f, 1.0f, 1.0f, 1.0f, 1.0f);
 
 	//print the 5 main stats
 	for (int i = 0; i < 5; ++i) {

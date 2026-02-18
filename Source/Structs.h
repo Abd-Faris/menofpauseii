@@ -79,6 +79,7 @@ struct Enemies {
 	float rotation;
 	bool alive = false;
 	int hp;
+	int maxhp;
 };
 
 struct PlayerStats {
