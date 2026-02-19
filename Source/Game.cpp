@@ -207,6 +207,7 @@ void SpawnOneEnemy(bool isBigEnemy) {
             int initialHP = (int)(isBigEnemy ? GameConfig::Enemy::HP_BIG : GameConfig::Enemy::HP_SMALL);
             newEnemy.hp = initialHP;
             newEnemy.maxhp = initialHP;
+            newEnemy.enemtype = PASSIVE;
             break;
         }
     }
@@ -230,7 +231,7 @@ void SpawnAttackEnemy() {
             }
 
             newEnemy.pos = { spawnX, spawnY };
-            newEnemy.velocity = { 1, 1 };
+            newEnemy.velocity = { 0, 0};
             newEnemy.alive = true;
             newEnemy.rotation = AERandFloat() * 360.0f;
             newEnemy.scale = GameConfig::Enemy::SIZE_BIG ;
@@ -432,7 +433,7 @@ void UpdateGame() {
         if (enemySpawnTimer >= GameConfig::Enemy::SPAWN_INTERVAL) {
             bool spawnBig = (AERandFloat() * 10.0f) < 4.0f;
             SpawnOneEnemy(spawnBig);
-            if (player_init.player_level >= 1)
+            if (player_init.player_level >= 5)
             {
                 SpawnAttackEnemy();
             }
@@ -448,9 +449,13 @@ void UpdateGame() {
                 AEVec2 EnemyPos = { currentEnemy.pos };
                 AEVec2 dir = {};
                 AEVec2Sub(&dir, &PlayerPos, &EnemyPos);
-                AEVec2Normalize(&dir, &dir);
-                currentEnemy.velocity.x += dir.x * deltaTime;
-                currentEnemy.velocity.y += dir.y * deltaTime;
+
+                f32 hyp = sqrt(dir.x * dir.x + dir.y * dir.y);
+                dir.x /= hyp;
+                dir.y /= hyp;
+                
+                currentEnemy.velocity.x += dir.x * 500 * deltaTime;
+                currentEnemy.velocity.y += dir.y * 500 * deltaTime;
                 currentEnemy.velocity.x *= GameConfig::Enemy::FRICTION;
                 currentEnemy.velocity.y *= GameConfig::Enemy::FRICTION;
                 currentEnemy.pos.x += currentEnemy.velocity.x * deltaTime;
@@ -549,11 +554,16 @@ void DrawGame() {
     for (const auto& currentEnemy : enemyPool) {
         if (currentEnemy.alive || currentEnemy.scale > 0) {
             // Set color based on enemy size
+            if (currentEnemy.enemtype == PASSIVE) {
             if (currentEnemy.scale > (GameConfig::Enemy::SIZE_SMALL + 10.0f))
                 AEGfxSetColorToMultiply(0.2f, 0.2f, 0.8f, 1);
             else
                 AEGfxSetColorToMultiply(0.8f, 0.2f, 0.2f, 1);
+            }
 
+            if (currentEnemy.enemtype == ATTACK) {
+                AEGfxSetColorToMultiply(0.2f, 1.f, 0.2f, 1);
+            }
             // Convert degrees to radians for the rotation parameter
             float rotationRad = currentEnemy.rotation * (PI / 180.0f);
             Gfx::printMesh(MeshRect, currentEnemy.pos, { currentEnemy.scale, currentEnemy.scale }, rotationRad);
