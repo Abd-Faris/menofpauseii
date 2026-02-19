@@ -25,6 +25,11 @@ enum Type {
 	NUM_OF_TYPES
 };
 
+enum EnemyType {
+	PASSIVE = 0,
+	ATTACK
+};
+
 struct Card {
 	// MEMBERS
 	bool print{ false };
@@ -80,6 +85,7 @@ struct Enemies {
 	bool alive = false;
 	int hp;
 	int maxhp;
+	int enemtype = PASSIVE;
 };
 
 struct PlayerStats {
