@@ -252,6 +252,22 @@ void circlerectcollision() {
     for (auto& currentEnemy : enemyPool) {
         if (!currentEnemy.alive) continue;
 
+        if (currentEnemy.enemtype == ATTACK) {
+            float differenceX = player.pos_x - currentEnemy.pos.x;
+            float differenceY = player.pos_y - currentEnemy.pos.y;
+            float distanceSquared = (differenceX * differenceX) + (differenceY * differenceY);
+
+            float collisionRadius = (currentEnemy.scale * GameConfig::Enemy::HITBOX_RATIO) + player.scale;
+            float currentdmg = calculate_max_stats(1);
+
+            if (distanceSquared < (collisionRadius * collisionRadius)) {
+                player_init.current_hp -= currentEnemy.hp / 10;
+                currentEnemy.hp = 0;
+
+            }
+                
+        }
+
         for (auto& boolet : bulletList) {
             if (!boolet.isActive) continue;
 
@@ -451,9 +467,14 @@ void UpdateGame() {
                 AEVec2Sub(&dir, &PlayerPos, &EnemyPos);
 
                 f32 hyp = sqrt(dir.x * dir.x + dir.y * dir.y);
+
+                f32 enemydir = atan2f(dir.y, dir.x) - HALF_PI;
+                currentEnemy.rotation = enemydir;
+
                 dir.x /= hyp;
                 dir.y /= hyp;
                 
+
                 currentEnemy.velocity.x += dir.x * 500 * deltaTime;
                 currentEnemy.velocity.y += dir.y * 500 * deltaTime;
                 currentEnemy.velocity.x *= GameConfig::Enemy::FRICTION;
