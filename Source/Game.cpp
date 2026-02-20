@@ -468,8 +468,17 @@ void UpdateGame() {
 
                 f32 hyp = sqrt(dir.x * dir.x + dir.y * dir.y);
 
-                f32 enemydir = atan2f(dir.y, dir.x) - HALF_PI;
-                currentEnemy.rotation = enemydir;
+                /*f32 enemydir = atan2f(dir.y, dir.x) - HALF_PI;
+                currentEnemy.rotation = enemydir;*/
+
+                if ((dir.x * dir.x) + (dir.y * dir.y) > GameConfig::MOUSE_JITTER_THRESHOLD) {
+                    float targetAngle = atan2f(dir.y, dir.x) * (180.f/PI);
+                    float angleDifference = targetAngle - currentEnemy.rotation;
+                    while (angleDifference > 180.f) angleDifference -= 360.f;
+                    while (angleDifference < -180.f) angleDifference += 360.f;
+                    currentEnemy.rotation += angleDifference * 0.1f;
+                }
+
 
                 dir.x /= hyp;
                 dir.y /= hyp;
