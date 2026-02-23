@@ -8,14 +8,6 @@ namespace {
 	
 	// exiting game app boolean (to display confirmation screen)
 	bool exiting{};
-
-	//enum {NUM_OF_TEXTS = 4, NUM_OF_BUTTONS = 3};
-	//std::array<GfxText, NUM_OF_TEXTS>texts{ {
-	//	{"Play", -400, -200, 1, 255, 255, 255, 255},
-	//	{"Credits", 0, -200, 1, 255, 255, 255, 255},
-	//	{"Exit", 400, -200, 1, 255, 255, 255, 255},
-	//	{"Gloomy's Revenge", 0, 200, 2.5, 255, 255, 255, 255}
-	//}};
 	
 	// init main menu buttons
 	std::vector<GfxButton> mainMenuButtons{

@@ -30,6 +30,10 @@ enum EnemyType {
 	ATTACK
 };
 
+struct AABB {
+	AEVec2 max, min;
+};
+
 struct Card {
 	// MEMBERS
 	bool print{ false };
@@ -38,6 +42,8 @@ struct Card {
 	AEVec2 size{ 25, 35 };
 	int type{}, val{}, rarity{ Rarity::COMMON };
 	AEGfxVertexList* mesh{};
+	bool cardFollowsCursor{ false }; // bool to anchor card to cursor pos
+	AABB boundingBox{}; // collision bounding box
 
 	// MEMBER FUNCTIONS
 
@@ -53,10 +59,6 @@ struct Card {
 		default: break;
 		};
 	}
-};
-
-struct AABB {
-	AEVec2 max, min;
 };
 
 struct shape {

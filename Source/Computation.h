@@ -3,22 +3,30 @@
 
 // USAGE: Comp::<function-name>
 namespace Computation {
-	// normalizes RGBA
+	//--------------- CONVERSIONS ----------------//
+
+	// Normalizes RGBA
 	void normalizeRGBA(f32& r, f32& g, f32& b, f32& a);
-	// converts normalised to world coords
+	// Denormalizes to World Coordinates
 	void denormalizePoint(f32& x, f32& y);
 	void denormalizePoint(AEVec2 &x);
-	// converts screen coords to world coords
+	// Converts Screen Coordinates to World Coordinates
 	void screenToWorld(f32& x, f32& y);
 	void screenToWorld(AEVec2 &x);
-	// normalises world coords
+	// Normalizes World Coordinates
 	void normalizePoint(f32& x, f32& y);
 	void normalizePoint(AEVec2& x);
-	// converts between radian and degree
+	// Converts between Radian and Degree
 	f32 toRadian(f32 degree);
 	f32 toDegree(f32 radian);
-	// Collision Detection
-	//void computeBoundingBox(AABB boundingbox, AEVec2 pos, AEVec2 size, f32 scale = 1.f);
+
+	//---------------- COLLISION -----------------//
+	
+	// AABB Bounding Box Computation
+	void computeBoundingBox(AABB& box, AEVec2& pos, AEVec2& size);
+
+	// AABB-Point Collision Detection
+	bool collisionPointRect(AEVec2& pt, AABB& box);
 	bool collisionPointRect(AEVec2 mousepos, AEVec2 rectpos, AEVec2 size);
 }
 namespace Comp = Computation;

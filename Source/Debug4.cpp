@@ -72,6 +72,7 @@ namespace {
 		// create 3 cards for shop
 		Card card{1}; // 1 for print bool in Card struct
 		for (int i{ 0 }; i < num_shopCards; ++i) {
+			
 			card.generateCard();  // generate card stats
 			shop.push_back(card); // push card into vector
 		}
@@ -168,7 +169,7 @@ void InitializeDebug4() {
 	cardSlots = Gfx::createRectMesh("center", ccardSlots);
 	trash = Gfx::createRectMesh("center", ctrash);
 
-	// reserve space in memory for different card categories
+	// [ DO NOT TOUCH ] Reserve space in memory for different card categories
 	shopCards.reserve(4);
 	activeCards.reserve(8);
 	inventoryCards.reserve(16);
@@ -177,7 +178,7 @@ void InitializeDebug4() {
 	initCardShop(shopCards);
 	computeXCardPositions(shopCards, -700, 300, 20, CARD_SHOP_SCALE);
 
-	// init other cards [ FOR DEMO ONLY ]
+	// [ FOR DEMO ONLY. DELETE LATER ] init other cards
 	initActiveCards(activeCards);
 	computeXCardPositions(activeCards, -550, 300, -300, ACTIVE_CARD_SCALE);
 	initInventoryCards(inventoryCards);
@@ -185,7 +186,7 @@ void InitializeDebug4() {
 }
 
 void UpdateDebug4() {
-	// compute positions of cards
+	// compute bounding boxes of cards based on homepos
 }
 
 void DrawDebug4() {
@@ -208,14 +209,6 @@ void DrawDebug4() {
 	for (GfxText text : shopTexts) {
 		Gfx::printText(text, boldPixels);
 	}
-
-	//Gfx::printText(bagtext, boldPixels);
-	//Gfx::printText(shoptext, boldPixels);
-	//Gfx::printText(desctext, boldPixels);
-	//Gfx::printText(cardSlotstext, boldPixels);
-	//Gfx::printText(trashtext, boldPixels);
-	//Gfx::printText(activeNumtext, boldPixels);
-	//Gfx::printText(inventoryNumtext, boldPixels);
 	
 	// CARDS
 	// print shop cards
