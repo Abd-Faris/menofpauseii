@@ -68,12 +68,9 @@ namespace {
 	void clickToNextState() {
 		// skip if left click not triggered
 		if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
-		// gets mouse SCREEN coords
-		s32 mouseX, mouseY;
-		AEInputGetCursorPosition(&mouseX, &mouseY);
-		AEVec2 mousepos{(float)mouseX, (float)mouseY};
-		// convert to world coords
-		Comp::screenToWorld(mousepos);
+		// get cursor position
+		AEVec2 mousepos{};
+		Comp::getCursorPos(mousepos);
 
 		std::vector <GfxButton>& buttons = exiting ? exitingButtons : mainMenuButtons;
 

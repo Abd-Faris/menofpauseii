@@ -36,7 +36,6 @@ struct AABB {
 
 struct Card {
 	// MEMBERS
-	bool print{ false };
 	AEVec2 pos; // dynamic world coords
 	AEVec2 homepos; // anchored world coords
 	AEVec2 size{ 25, 35 };
@@ -44,6 +43,7 @@ struct Card {
 	AEGfxVertexList* mesh{};
 	bool cardFollowsCursor{ false }; // bool to anchor card to cursor pos
 	AABB boundingBox{}; // collision bounding box
+	bool selected{ false };
 
 	// MEMBER FUNCTIONS
 

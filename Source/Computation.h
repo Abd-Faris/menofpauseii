@@ -20,10 +20,14 @@ namespace Computation {
 	f32 toRadian(f32 degree);
 	f32 toDegree(f32 radian);
 
+	// Fetches Current Cursor Position in WORLD COORDS
+	void getCursorPos(AEVec2& inputVec);
+	void getDeltaCursorPos(AEVec2& inputVec);
+
 	//---------------- COLLISION -----------------//
 	
 	// AABB Bounding Box Computation
-	void computeBoundingBox(AABB& box, AEVec2& pos, AEVec2& size);
+	void computeBoundingBox(AABB& box, AEVec2& pos, AEVec2& size, f32 scale = 10);
 
 	// AABB-Point Collision Detection
 	bool collisionPointRect(AEVec2& pt, AABB& box);

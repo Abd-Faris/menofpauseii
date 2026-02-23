@@ -53,17 +53,34 @@ namespace Computation {
 	f32 toDegree(f32 radian) {
 		return radian / PI * 180.f;
 	}
+
+	// Fetches Current Cursor Position in WORLD COORDS
+	void getCursorPos(AEVec2& inputVec) {
+		// gets mouse SCREEN coords
+		s32 mouseX, mouseY;
+		AEInputGetCursorPosition(&mouseX, &mouseY);
+		inputVec = { (float)mouseX, (float)mouseY };
+		// convert to WORLD coords
+		Comp::screenToWorld(inputVec);
+	}
+	// Fetches Change in Cursor Position in SCREEN COORDS
+	void getDeltaCursorPos(AEVec2& inputVec) {
+		// gets mouse SCREEN coords
+		s32 mouseX, mouseY;
+		AEInputGetCursorPositionDelta(&mouseX, &mouseY);
+		inputVec = { (float)mouseX, (float)mouseY };
+	}
 	
 	//---------------- COLLISION -----------------//
 	
 	// AABB Bounding Box Computation
-	void computeBoundingBox(AABB &box, AEVec2 &pos, AEVec2 &size) {
+	void computeBoundingBox(AABB &box, AEVec2 &pos, AEVec2 &size, f32 scale) {
 		// Calculate max coords
-		box.max.x = pos.x + (size.x * 0.5f);
-		box.max.y = pos.y + (size.y * 0.5f);
+		box.max.x = pos.x + (size.x * 0.5f * scale);
+		box.max.y = pos.y + (size.y * 0.5f * scale);
 		// Calculate min coords
-		box.min.x = pos.x - (size.x * 0.5f);
-		box.min.y = pos.y - (size.y * 0.5f);
+		box.min.x = pos.x - (size.x * 0.5f * scale);
+		box.min.y = pos.y - (size.y * 0.5f * scale);
 	}
 
 	// AABB-Point Collision Detection

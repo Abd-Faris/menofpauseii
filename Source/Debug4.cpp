@@ -29,6 +29,8 @@ namespace {
 	std::vector<Card>& shopCards      = allCards[0];// reference to shop cards
 	std::vector<Card>& activeCards    = allCards[1];// ref to active cards
 	std::vector<Card>& inventoryCards = allCards[2];// reference to cards in bag
+	// boolean for selected card
+	bool cardSelected{};
 
 	// init shop texts
 	std::vector<GfxText> shopTexts{
@@ -70,9 +72,8 @@ namespace {
 
 	void initCardShop(std::vector<Card>& shop) {
 		// create 3 cards for shop
-		Card card{1}; // 1 for print bool in Card struct
+		Card card{};
 		for (int i{ 0 }; i < num_shopCards; ++i) {
-			
 			card.generateCard();  // generate card stats
 			shop.push_back(card); // push card into vector
 		}
@@ -81,7 +82,7 @@ namespace {
 	// FOR TESTING ONLY DELETE LATER
 	void initActiveCards(std::vector<Card>& shop) {
 		// create 3 cards for shop
-		Card card{ 1 }; // 1 for print bool in Card struct
+		Card card{};
 		for (int i{ 0 }; i < num_activeCards; ++i) {
 			card.generateCard();  // generate card stats
 			shop.push_back(card); // push card into vector
@@ -91,7 +92,7 @@ namespace {
 	// FOR TESTING ONLY DELETE LATER
 	void initInventoryCards(std::vector<Card>& shop) {
 		// create 3 cards for shop
-		Card card{ 1 }; // 1 for print bool in Card struct
+		Card card{};
 		for (int i{ 0 }; i < num_inventoryCards; ++i) {
 			card.generateCard();  // generate card stats
 			shop.push_back(card); // push card into vector
@@ -116,6 +117,8 @@ namespace {
 			if (arr.size() <= 1) {
 				arr[i].pos.x = (0.5f*range); // centers one card
 				arr[i].pos.y = y;
+				// assigns homepos to computed pos
+				arr[i].homepos = arr[i].pos;
 				continue;
 			}
 			// normalise card into range
@@ -123,6 +126,8 @@ namespace {
 			// denormalise from range into world coords
 			arr[i].pos.x = start + (normalized * range);
 			arr[i].pos.y = y;
+			// assigns homepos to computed pos
+			arr[i].homepos = arr[i].pos;
 		}
 	}
 
@@ -144,6 +149,8 @@ namespace {
 			if (arr.size() <= 1) {
 				arr[i].pos.y = (0.5f * range); // centers one card
 				arr[i].pos.x = x;
+				// assigns homepos to computed pos
+				arr[i].homepos = arr[i].pos;
 				continue;
 			}
 			// normalise card into range
@@ -151,7 +158,75 @@ namespace {
 			// denormalise from range into world coords
 			arr[i].pos.y = start + (normalized * range);
 			arr[i].pos.x = x;
+			// assigns homepos to computed pos
+			arr[i].homepos = arr[i].pos;
 		}
+	}
+
+	// only called if theres a card selected (via updateCardPosition)
+	Card& findSelectedCard() {
+		// Check shop
+		for (Card& card : shopCards) {
+			if (card.selected) return card;
+		}
+		// Check active
+		for (Card& card : activeCards) {
+			if (card.selected) return card;
+		}
+		// Check inventory
+		for (Card& card : inventoryCards) {
+			if (card.selected) return card;
+		}
+	}
+
+	void updateCardPosition() {
+		// get selected card
+		Card &card = findSelectedCard();
+
+		// update card position
+		AEVec2 deltacursorpos{};
+		Comp::getDeltaCursorPos(deltacursorpos);
+		card.pos.x += deltacursorpos.x;
+		card.pos.y -= deltacursorpos.y;
+
+		// if user NOT holding left click
+		if (!AEInputCheckCurr(AEVK_LBUTTON)) {
+			// deselect card
+			card.selected = false;
+			// reset to home pos
+			card.pos = card.homepos;
+			// set global bool to false
+			cardSelected = false;
+		}
+	}
+
+	bool checkCardCollision() {
+		// get cursor position
+		AEVec2 cursorpos{};
+		Comp::getCursorPos(cursorpos);
+
+		// for every card in ALL arrays, check for a hit
+		// if hit, set selected boolean to true and return hit
+		for (Card &card : shopCards) {
+			if (Comp::collisionPointRect(cursorpos, card.boundingBox)) {
+				card.selected = true;
+				return 1;
+			}
+		}
+		for (Card &card : activeCards) {
+			if (Comp::collisionPointRect(cursorpos, card.boundingBox)) {
+				card.selected = true;
+				return 1;
+			}
+		}
+		for (Card &card : inventoryCards) {
+			if (Comp::collisionPointRect(cursorpos, card.boundingBox)) {
+				card.selected = true;
+				return 1;
+			}
+		}
+		// else return no hit
+		return 0;
 	}
 }
 
@@ -161,7 +236,7 @@ void LoadDebug4() {
 }
 
 void InitializeDebug4() {
-	// create mesh
+	// create container meshes
 	rectMesh = Gfx::createRectMesh();
 	bag = Gfx::createRectMesh("center", cbag);
 	shop = Gfx::createRectMesh("center", cshop);
@@ -174,9 +249,14 @@ void InitializeDebug4() {
 	activeCards.reserve(8);
 	inventoryCards.reserve(16);
 
-	// intialises shop cards
+	// initializes shop cards
 	initCardShop(shopCards);
 	computeXCardPositions(shopCards, -700, 300, 20, CARD_SHOP_SCALE);
+	for (Card &card : shopCards) {
+		Comp::computeBoundingBox(card.boundingBox, card.homepos, card.size, CARD_SHOP_SCALE);
+	}
+	// set selected card boolean to false
+	cardSelected = false;
 
 	// [ FOR DEMO ONLY. DELETE LATER ] init other cards
 	initActiveCards(activeCards);
@@ -186,7 +266,19 @@ void InitializeDebug4() {
 }
 
 void UpdateDebug4() {
-	// compute bounding boxes of cards based on homepos
+	// if theres a card selected, update selected card position
+	if (cardSelected) {
+		updateCardPosition();
+	}
+	// else if user clicked left click
+	else if (AEInputCheckTriggered(AEVK_LBUTTON)) {
+		// check for collision for ALL cards
+		// if theres a hit, set bool to true
+		if (checkCardCollision()) cardSelected = true;
+	} 
+	// else set selected card bool to false
+	else cardSelected = false;
+	// endif
 }
 
 void DrawDebug4() {
