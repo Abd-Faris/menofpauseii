@@ -471,11 +471,15 @@ void UpdateGame() {
 
                 f32 hyp = sqrt(dir.x * dir.x + dir.y * dir.y);
 
+                if (hyp <= 600) currentEnemy.detect = true;
+
+                if (currentEnemy.detect || currentEnemy.hp < currentEnemy.maxhp) {
+
                 /*f32 enemydir = atan2f(dir.y, dir.x) - HALF_PI;
                 currentEnemy.rotation = enemydir;*/
 
                 if ((dir.x * dir.x) + (dir.y * dir.y) > GameConfig::MOUSE_JITTER_THRESHOLD) {
-                    float targetAngle = atan2f(dir.y, dir.x) * (180.f/PI);
+                    float targetAngle = atan2f(dir.y, dir.x) * (180.f / PI);
                     float angleDifference = targetAngle - currentEnemy.rotation;
                     while (angleDifference > 180.f) angleDifference -= 360.f;
                     while (angleDifference < -180.f) angleDifference += 360.f;
@@ -485,7 +489,7 @@ void UpdateGame() {
 
                 dir.x /= hyp;
                 dir.y /= hyp;
-                
+
 
                 currentEnemy.velocity.x += dir.x * 500 * deltaTime;
                 currentEnemy.velocity.y += dir.y * 500 * deltaTime;
@@ -493,6 +497,7 @@ void UpdateGame() {
                 currentEnemy.velocity.y *= GameConfig::Enemy::FRICTION;
                 currentEnemy.pos.x += currentEnemy.velocity.x * deltaTime;
                 currentEnemy.pos.y += currentEnemy.velocity.y * deltaTime;
+                }
             }
 
             AEVec2 separationForce = { 0,0 };
