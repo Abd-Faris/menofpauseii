@@ -6,4 +6,6 @@ void InitializeMainMenu();
 
 void DrawMainMenu();
 
-void FreeMainMenu();
+void UpdateMainMenu();
+
+void UnloadMainMenu();

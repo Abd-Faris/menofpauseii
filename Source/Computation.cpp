@@ -25,13 +25,13 @@ namespace Computation {
 	// converts screen to world coords
 	// overload f32, f32
 	void screenToWorld(f32& x, f32& y) {
-		x = x + (AEGfxGetWindowWidth() / 2);
-		y = y + (AEGfxGetWindowHeight() /2);
+		x = x - (AEGfxGetWindowWidth() / 2);
+		y = y - (AEGfxGetWindowHeight() /2);
 	}
 	// overload AEVec2 struct
 	void screenToWorld(AEVec2 &x) {
-		x.x = x.x + (AEGfxGetWindowWidth() / 2);
-		x.y = x.y + (AEGfxGetWindowHeight() / 2);
+		x.x = x.x - (AEGfxGetWindowWidth() / 2);
+		x.y = (AEGfxGetWindowHeight() / 2) - x.y;
 	}
 
 	// converts world to normalised
@@ -60,16 +60,17 @@ namespace Computation {
 	//void computeBoundingBox() {
 	//	//
 	//}
+	
 	// detects collision between point and rectangle
-	bool collisionPointRect(AEVec2 mousepos, AEVec2 rect, f32 sizex, f32 sizey) {
+	bool collisionPointRect(AEVec2 mousepos, AEVec2 rectpos, AEVec2 size) {
 		// calculates half of width and height
-		f32 halfx = sizex / 2;
-		f32 halfy = sizey / 2;
+		f32 halfx = size.x / 2;
+		f32 halfy = size.y / 2;
 		// determines limits (x and y) for the rectangle
-		f32 left = rect.x - halfx;
-		f32 right = rect.x + halfx;
-		f32 top = rect.y + halfy;
-		f32 bottom = rect.y - halfy;
+		f32 left = rectpos.x - halfx;
+		f32 right = rectpos.x + halfx;
+		f32 top = rectpos.y + halfy;
+		f32 bottom = rectpos.y - halfy;
 		// AABB collision
 		if (mousepos.x < left || mousepos.x > right || mousepos.y > top || mousepos.y < bottom) {
 			return false;

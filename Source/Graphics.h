@@ -11,6 +11,7 @@ struct GfxText {
 struct GfxButton {
 	AEVec2 pos, size;
 	AEGfxVertexList* mesh;
+	int nextGS{}; // if not set, defaults to main menu 
 };
 
 namespace Graphics {
@@ -19,8 +20,8 @@ namespace Graphics {
 	AEGfxVertexList* createTriangleMesh(u32 colour = 0x00000000);
 	//void printMesh(AEGfxVertexList* mesh, AEVec2 pos, AEVec2 size, f32 scalar=1);
 	void printMesh(AEGfxVertexList* mesh, AEVec2 pos, AEVec2 size, f32 angleRad = 0.f, AEVec2 offset = { 0,0 });
-	void printMesh(AEGfxVertexList* mesh, Card &card, f32 scalar = 1);
+	void printMesh(AEGfxVertexList* mesh, Card& card, f32 scalar = 1);
 	void printText(GfxText& text, s8 font);
-	void printButton(GfxButton &button);
+	void printButton(GfxButton& button);
 }
 namespace Gfx = Graphics;
