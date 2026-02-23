@@ -86,6 +86,7 @@ struct Enemies {
 	int hp;
 	int maxhp;
 	int enemtype = PASSIVE;
+	bool detect = false;
 };
 
 struct PlayerStats {
