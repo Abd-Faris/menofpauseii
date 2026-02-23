@@ -70,6 +70,17 @@ namespace Graphics {
 		return AEGfxMeshEnd();
 	}
 
+	AEGfxVertexList* createTriangleMesh(u32 colour) {
+	
+		// for loop to create meshes at diff rotations to form a circle
+		AEGfxMeshStart();
+		AEGfxTriAdd(
+			-0.3f, 0.5f, colour, 0.0f, 1.0f,
+			-0.3f, -0.5f, colour, 1.0f, 1.0f,
+			0.3f, 0.f, colour, 0.0f, 0.0f);
+	
+		return AEGfxMeshEnd();
+	}
 	// Prints a mesh using TRS
 	//void printMesh(AEGfxVertexList *mesh, AEVec2 pos, AEVec2 size, f32 scalar) {
 	//	// if no mesh, return

@@ -83,6 +83,7 @@ namespace {
     s8 boldPixelsFont;
     AEGfxVertexList* MeshRect = nullptr;
     AEGfxVertexList* MeshCircle = nullptr;
+    AEGfxVertexList* MeshTriangle = nullptr;
 
     // -- Player State --
     // Note: Ensure your struct in Structs.h has 'int barrelCount'
@@ -316,6 +317,8 @@ void LoadGame() {
     //AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f, 0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f, -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
     //MeshRect = AEGfxMeshEnd();
     MeshRect = Gfx::createRectMesh("center", 0xFFFFFFFFF);
+
+    MeshTriangle = Gfx::createTriangleMesh(0xFFFFFFFF);
 
     // Reset Player
     player.pos_x = 0;
@@ -592,7 +595,10 @@ void DrawGame() {
             }
 
             if (currentEnemy.enemtype == ATTACK) {
-                AEGfxSetColorToMultiply(0.2f, 1.f, 0.2f, 1);
+                AEGfxSetColorToMultiply(0.6f, 0.2f, 0.6f, 1);
+                float rotationRad = currentEnemy.rotation * (PI / 180.0f);
+                Gfx::printMesh(MeshTriangle, currentEnemy.pos, { currentEnemy.scale, currentEnemy.scale }, rotationRad);
+                continue;
             }
             // Convert degrees to radians for the rotation parameter
             float rotationRad = currentEnemy.rotation * (PI / 180.0f);
