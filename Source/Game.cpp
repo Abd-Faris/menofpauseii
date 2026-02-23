@@ -471,7 +471,11 @@ void UpdateGame() {
 
                 f32 hyp = sqrt(dir.x * dir.x + dir.y * dir.y);
 
-                if (hyp <= 600) currentEnemy.detect = true;
+                if (hyp <= 600) { 
+                    currentEnemy.detect = true; 
+                    /*GfxText exclaim{ "!", 1, 255, 0, 0, 255, {currentEnemy.pos.x, currentEnemy.pos.y + 50.f} };
+                    Gfx::printText(exclaim, boldPixelsFont);*/
+                }
 
                 if (currentEnemy.detect || currentEnemy.hp < currentEnemy.maxhp) {
 
