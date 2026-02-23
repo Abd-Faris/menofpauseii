@@ -72,12 +72,11 @@ namespace Graphics {
 
 	AEGfxVertexList* createTriangleMesh(u32 colour) {
 	
-		// for loop to create meshes at diff rotations to form a circle
 		AEGfxMeshStart();
 		AEGfxTriAdd(
-			-0.3f, 0.5f, colour, 0.0f, 1.0f,
-			-0.3f, -0.5f, colour, 1.0f, 1.0f,
-			0.3f, 0.f, colour, 0.0f, 0.0f);
+			-0.5f, 0.5f, colour, 0.0f, 1.0f,
+			-0.5f, -0.5f, colour, 1.0f, 1.0f,
+			0.5f, 0.f, colour, 0.0f, 0.0f);
 	
 		return AEGfxMeshEnd();
 	}
