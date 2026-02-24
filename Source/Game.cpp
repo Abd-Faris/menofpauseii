@@ -88,6 +88,7 @@ namespace {
     // -- Player State --
     // Note: Ensure your struct in Structs.h has 'int barrelCount'
     shape player = { GameConfig::Tank::SCALE, 0.0f, 0.0f, 0.0f, 1 };
+    bool bigcannon = false;
 
     // -- Bullet Pool --
     struct BulletObj {
@@ -96,6 +97,7 @@ namespace {
         float speed;
         float size;
         bool isActive;
+        float damagemul;
     };
 
     BulletObj bulletList[GameConfig::MAX_BULLETS_COUNT];
@@ -109,7 +111,7 @@ namespace {
 
 // --- NEW FUNCTION: DRAW MULTIPLE BARRELS ---
 
-void DrawMultiBarrels(int count, float gap, float pivotOffset, float tankRot, float tankX, float tankY) {
+void DrawMultiBarrels(int count, float gap, float pivotOffset, float tankRot, float tankX, float tankY, float barrelWidth, float barrelLength) {
     if (count <= 0) return;
 
     // 1. Calculate the starting X offset to keep the barrels centered on the turret
@@ -125,7 +127,7 @@ void DrawMultiBarrels(int count, float gap, float pivotOffset, float tankRot, fl
         AEVec2 barrelOffset = { currentLocalX, pivotOffset };
 
         // 3. Define the size of each barrel
-        AEVec2 barrelSize = { GameConfig::Tank::BARREL_WIDTH, GameConfig::Tank::BARREL_LENGTH };
+        AEVec2 barrelSize = { barrelWidth, barrelLength };
 
         // 4. Use the generalized printMesh to handle the TRS math
         Gfx::printMesh(
@@ -280,7 +282,7 @@ void circlerectcollision() {
             float currentdmg = calculate_max_stats(1);
 
             if (distanceSquared < (collisionRadius * collisionRadius)) {
-                currentEnemy.hp -= (int)currentdmg;
+                currentEnemy.hp -= (int)(currentdmg*boolet.damagemul);
                 boolet.isActive = false;
 
                 if (currentEnemy.hp <= 0 && currentEnemy.alive) {
@@ -344,15 +346,33 @@ void UpdateGame() {
 
     if (!player_init.menu_open) {
 
-        // --- KEY '7': TOGGLE UPGRADE ---
+        // --- KEY '7': TOGGLE DUAL UPGRADE ---
         if (AEInputCheckTriggered(AEVK_7)) {
             if (player.barrelCount == 1) {
-                player.barrelCount = 2; // Upgrade to Dual
-                player.scale *= 1.2;
+                // Turn Dual ON
+                player.barrelCount = 2;
+                bigcannon = false; // Force turn off big cannon to prevent overlapping states
+                player.scale = GameConfig::Tank::SCALE * 2.0f; // Set exact scale
             }
             else {
-                player.barrelCount = 1; // Downgrade to Single
-               
+                // Turn Dual OFF
+                player.barrelCount = 1;
+                player.scale = GameConfig::Tank::SCALE; // Back to normal
+            }
+        }
+
+        // --- KEY 'U': TOGGLE BIG CANNON ---
+        if (AEInputCheckTriggered(AEVK_U)) {
+            bigcannon = !bigcannon;
+
+            if (bigcannon) {
+                // Turn Big Cannon ON
+                player.barrelCount = 1; // Force turn off dual barrels
+                player.scale = GameConfig::Tank::SCALE * 2.0f; // Set exact scale
+            }
+            else {
+                // Turn Big Cannon OFF
+                player.scale = GameConfig::Tank::SCALE; // Back to normal
             }
         }
 
@@ -425,7 +445,14 @@ void UpdateGame() {
 
                         boolet.speed = GameConfig::Bullet::BASE_SPEED;
                         boolet.size = GameConfig::Bullet::DEFAULT_SIZE;
-
+                        if (bigcannon) {
+                            boolet.size = GameConfig::Bullet::DEFAULT_SIZE * 2.0f; // Twice as big
+                            boolet.damagemul = 2.5f; // 2.5x damage
+                        }
+                        else {
+                            boolet.size = GameConfig::Bullet::DEFAULT_SIZE; // Normal size
+                            boolet.damagemul = 1.0f; // Normal damage
+                        }
                         bulletsFound++;
                         if (bulletsFound >= bulletsNeeded) break;
                     }
@@ -563,34 +590,38 @@ void DrawGame() {
 
     // -- Draw Player Tank --
     AEVec2 playerPos = { player.pos_x, player.pos_y };
+    float visualScale = player.scale / GameConfig::Tank::SCALE;
 
     // 1. Draw Tracks
     AEGfxSetColorToMultiply(0.1f, 0.1f, 0.1f, 1.0f);
-    AEVec2 trackSize = { GameConfig::Tank::TRACK_WIDTH, GameConfig::Tank::TRACK_HEIGHT };
+    AEVec2 trackSize = { GameConfig::Tank::TRACK_WIDTH * visualScale, GameConfig::Tank::TRACK_HEIGHT* visualScale };
+    float scaledTrackOffset = GameConfig::Tank::TRACK_OFFSET_X * visualScale;
 
     // Left Track: Offset to the left before rotating
-    Gfx::printMesh(MeshRect, playerPos, trackSize, player.currentAngle, { -GameConfig::Tank::TRACK_OFFSET_X, 0.0f });
+    Gfx::printMesh(MeshRect, playerPos, trackSize, player.currentAngle, { -scaledTrackOffset, 0.0f });
 
     // Right Track: Offset to the right before rotating
-    Gfx::printMesh(MeshRect, playerPos, trackSize, player.currentAngle, { GameConfig::Tank::TRACK_OFFSET_X, 0.0f });
+    Gfx::printMesh(MeshRect, playerPos, trackSize, player.currentAngle, { scaledTrackOffset, 0.0f });
 
     // 2. Draw Main Body
     AEGfxSetColorToMultiply(0.2f, 0.6f, 0.2f, 1.0f);
-    Gfx::printMesh(MeshRect, playerPos, { GameConfig::Tank::BODY_WIDTH, GameConfig::Tank::BODY_HEIGHT }, player.currentAngle);
-
+    Gfx::printMesh(MeshRect, playerPos, { GameConfig::Tank::BODY_WIDTH * visualScale, GameConfig::Tank::BODY_HEIGHT * visualScale }, player.currentAngle);
+    float cannonwidthnow = bigcannon ? GameConfig::Tank::BARREL_WIDTH * 2.0f : GameConfig::Tank::BARREL_WIDTH;
     // 3. Draw Barrels
     DrawMultiBarrels(
         player.barrelCount,
-        GameConfig::Tank::BARREL_GAP,
-        GameConfig::Tank::BARREL_PIVOT_OFFSET,
+        GameConfig::Tank::BARREL_GAP * visualScale,
+        GameConfig::Tank::BARREL_PIVOT_OFFSET * visualScale,
         player.currentAngle,
         player.pos_x,
-        player.pos_y
+        player.pos_y,
+        cannonwidthnow*visualScale,
+        GameConfig::Tank::BARREL_LENGTH * visualScale
     );
 
     // 4. Draw Turret
     AEGfxSetColorToMultiply(0.3f, 0.7f, 0.3f, 1.0f);
-    Gfx::printMesh(MeshCircle, playerPos, { GameConfig::Tank::TURRET_SIZE, GameConfig::Tank::TURRET_SIZE }, player.currentAngle);
+    Gfx::printMesh(MeshCircle, playerPos, { GameConfig::Tank::TURRET_SIZE * visualScale, GameConfig::Tank::TURRET_SIZE * visualScale }, player.currentAngle);
 
     // -- Draw Enemies --
     for (const auto& currentEnemy : enemyPool) {
