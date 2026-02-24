@@ -111,5 +111,12 @@ struct PlayerStats {
 	float current_hp;
 };
 
+struct Explosion {
+	AEVec2 pos;
+	float timer;
+	int currentFrame;
+	bool active;
+};
+
 // Externs
 extern PlayerStats player_init;

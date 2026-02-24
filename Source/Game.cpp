@@ -284,9 +284,10 @@ void circlerectcollision() {
             if (distanceSquared < (collisionRadius * collisionRadius)) {
                 currentEnemy.hp -= (int)(currentdmg*boolet.damagemul);
                 boolet.isActive = false;
-
+                
                 if (currentEnemy.hp <= 0 && currentEnemy.alive) {
-                    // Enemy Dead
+					//triggers explosion animation at enemy position
+                    TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y);
                 }
             }
         }
@@ -298,6 +299,7 @@ void circlerectcollision() {
 // ===========================================================================
 void LoadGame() {
     LoadDebug1();
+    Animations_Load();
     boldPixelsFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 
     // Mesh: Circle
@@ -346,7 +348,14 @@ void UpdateGame() {
 
     if (!player_init.menu_open) {
 
+
         // --- KEY '7': TOGGLE DUAL UPGRADE ---
+
+		// Update Animations
+        Animations_Update(deltaTime);
+
+        // --- KEY '7': TOGGLE UPGRADE ---
+
         if (AEInputCheckTriggered(AEVK_7)) {
             if (player.barrelCount == 1) {
                 // Turn Dual ON
@@ -557,7 +566,9 @@ void UpdateGame() {
                 if (currentEnemy.scale <= 0) {
                     float xp_multiplier = calculate_max_stats(4);
                     float baseReward = (currentEnemy.maxhp >= (int)GameConfig::Enemy::HP_BIG) ? 80.0f : 20.0f;
-                    player_init.current_xp += (baseReward * xp_multiplier);
+					float finalReward = baseReward * xp_multiplier;
+                    player_init.current_xp += finalReward;
+                    TriggerXpPopup(finalReward);
                     ResetEnemy(&currentEnemy);
                 }
             }
@@ -645,7 +656,10 @@ void DrawGame() {
             Gfx::printMesh(MeshRect, currentEnemy.pos, { currentEnemy.scale, currentEnemy.scale }, rotationRad);
         }
     }
-    DrawDebug1(); // Render Stats UI
+
+    Animations_Draw();
+    DrawDebug1();
+    
 
 }
 
@@ -745,4 +759,5 @@ void FreeGame() {
     if (MeshRect) AEGfxMeshFree(MeshRect);
     if (MeshCircle) AEGfxMeshFree(MeshCircle);
     FreeDebug1();
+    Animations_Free();
 }
