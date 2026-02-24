@@ -530,7 +530,9 @@ void UpdateGame() {
                 if (currentEnemy.scale <= 0) {
                     float xp_multiplier = calculate_max_stats(4);
                     float baseReward = (currentEnemy.maxhp >= (int)GameConfig::Enemy::HP_BIG) ? 80.0f : 20.0f;
-                    player_init.current_xp += (baseReward * xp_multiplier);
+					float finalReward = baseReward * xp_multiplier;
+                    player_init.current_xp += finalReward;
+                    TriggerXpPopup(finalReward);
                     ResetEnemy(&currentEnemy);
                 }
             }

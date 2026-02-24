@@ -6,6 +6,7 @@ void UpdateDebug1();
 void DrawDebug1();
 void FreeDebug1();
 float calculate_max_stats(int i);
+void TriggerXpPopup(float xpAmount);
 
 // debug2.cpp
 void LoadDebug2();

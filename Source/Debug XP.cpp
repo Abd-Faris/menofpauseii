@@ -5,6 +5,7 @@
 #include "Structs.h"
 #include "array"
 
+// -- ENEMY POOL --
 extern std::array<Enemies, 50> enemyPool;
 
 // -- INITIAL PLAYER STATS --
@@ -61,6 +62,7 @@ namespace {
 
 	//helper to draw enemy health bar, takes in enemy struct and camera position for correct placement
 	void draw_enemy_health_bar(Enemies& enemy, float camX, float camY) {
+		//if the enemy is not alive, or hp is full or 0 or below, don't draw the health bar
 		if (!enemy.alive || enemy.hp >= enemy.maxhp || enemy.hp <= 0) {
 			return;
 		}
@@ -98,6 +100,11 @@ namespace {
 
 	//to put into update loop for implementation of cards
 	float base_stats[] = { player_init.baseHp, player_init.baseDmg, player_init.baseSpeed, player_init.baseFireRate, player_init.baseXpGain };
+
+	//floating xp text pop up variables
+	float xpPopuptimer = 0.0f;
+	float xpPopupduration = 0.7f;
+	float xpPopupvalue = 0.0f;
 }
 
 
@@ -117,6 +124,13 @@ void LoadDebug1() {
 }
 
 
+//  --- FUNCTION TO TRIGGER FLOATING XP TEXT ---
+void TriggerXpPopup(float xpAmount) {
+	xpPopupvalue = xpAmount;
+	xpPopuptimer = xpPopupduration;
+}
+
+// --- FUNCTION TO RESET GAME  ---
 void reset_game() {
 	//reset player stats
 	player_init.player_level = 0;
@@ -320,8 +334,6 @@ void DrawDebug1() {
 	float camX, camY;
 	AEGfxGetCamPosition(&camX, &camY);
 
-	if (boldPixels < 0) return;
-
 	//define hud position relative to camera
 	float hudX = camX + 0.0f;
 	float hudY = camY - 410.0f;
@@ -341,6 +353,20 @@ void DrawDebug1() {
 		if (enemyPool[i].alive) {
 			draw_enemy_health_bar(enemyPool[i], camX, camY);
 		}
+	}
+
+	// --- DRAW FLOATING XP TEXT ---
+	if (xpPopuptimer > 0.0f) {
+		float dt = AEFrameRateControllerGetFrameTime();
+		char xppopup[32];
+		sprintf_s(xppopup, "+%.0fxp", xpPopupvalue);
+
+		float alpha = xpPopuptimer / xpPopupduration; //fade out over time
+		float upward_drift = (xpPopupduration - xpPopuptimer) * 0.07f; //move up over time
+		
+		AEGfxPrint(boldPixels, xppopup, 0.22f, -0.93f + upward_drift, 0.35f, 1.0f, 1.0f, 1.0f, alpha);
+		//decrease timer
+		xpPopuptimer -= dt;
 	}
 
 	//print hp and lvl text
@@ -374,6 +400,7 @@ void DrawDebug1() {
 			AEGfxPrint(boldPixels, "PRESS ESC TO CLOSE!", -0.18f, -0.63f, 0.4f, 1.0f, 1.0f, 1.0f, 1.0f);
 		}
 	}
+
 }
 
 
