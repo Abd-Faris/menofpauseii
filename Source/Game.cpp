@@ -282,9 +282,10 @@ void circlerectcollision() {
             if (distanceSquared < (collisionRadius * collisionRadius)) {
                 currentEnemy.hp -= (int)currentdmg;
                 boolet.isActive = false;
-
+                
                 if (currentEnemy.hp <= 0 && currentEnemy.alive) {
-                    // Enemy Dead
+					//triggers explosion animation at enemy position
+                    TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y);
                 }
             }
         }
@@ -296,6 +297,7 @@ void circlerectcollision() {
 // ===========================================================================
 void LoadGame() {
     LoadDebug1();
+    Animations_Load();
     boldPixelsFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 
     // Mesh: Circle
@@ -343,6 +345,9 @@ void UpdateGame() {
     UpdateDebug1();
 
     if (!player_init.menu_open) {
+
+		// Update Animations
+        Animations_Update(deltaTime);
 
         // --- KEY '7': TOGGLE UPGRADE ---
         if (AEInputCheckTriggered(AEVK_7)) {
@@ -616,7 +621,10 @@ void DrawGame() {
             Gfx::printMesh(MeshRect, currentEnemy.pos, { currentEnemy.scale, currentEnemy.scale }, rotationRad);
         }
     }
-    DrawDebug1(); // Render Stats UI
+
+    Animations_Draw();
+    DrawDebug1();
+    
 
 }
 
@@ -716,4 +724,5 @@ void FreeGame() {
     if (MeshRect) AEGfxMeshFree(MeshRect);
     if (MeshCircle) AEGfxMeshFree(MeshCircle);
     FreeDebug1();
+    Animations_Free();
 }
