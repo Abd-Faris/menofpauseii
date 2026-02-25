@@ -387,10 +387,10 @@ void UpdateGame() {
 
         // 1. Move Player
         float playerSpeed = calculate_max_stats(2);
-        if (AEInputCheckCurr(AEVK_W)) player.pos_y += playerSpeed * deltaTime;
-        if (AEInputCheckCurr(AEVK_S)) player.pos_y -= playerSpeed * deltaTime;
-        if (AEInputCheckCurr(AEVK_A)) player.pos_x -= playerSpeed * deltaTime;
-        if (AEInputCheckCurr(AEVK_D)) player.pos_x += playerSpeed * deltaTime;
+        if (AEInputCheckCurr(AEVK_W) || AEInputCheckCurr(AEVK_UP)) player.pos_y += playerSpeed * deltaTime;
+        if (AEInputCheckCurr(AEVK_S) || AEInputCheckCurr(AEVK_DOWN)) player.pos_y -= playerSpeed * deltaTime;
+        if (AEInputCheckCurr(AEVK_A) || AEInputCheckCurr(AEVK_LEFT)) player.pos_x -= playerSpeed * deltaTime;
+        if (AEInputCheckCurr(AEVK_D) || AEInputCheckCurr(AEVK_RIGHT)) player.pos_x += playerSpeed * deltaTime;
 
         // 2. Rotate Player
         s32 mouseX, mouseY;
@@ -409,7 +409,7 @@ void UpdateGame() {
         }
 
         // 3. Shooting (UPDATED FOR MULTI-BARREL)
-        if (AEInputCheckCurr(AEVK_SPACE)) {
+        if (AEInputCheckCurr(AEVK_SPACE||AEVK_LBUTTON)) {
             bulletFireTimer -= deltaTime;
 
             if (bulletFireTimer <= 0) {
