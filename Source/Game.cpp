@@ -409,7 +409,7 @@ void UpdateGame() {
         }
 
         // 3. Shooting (UPDATED FOR MULTI-BARREL)
-        if (AEInputCheckCurr(AEVK_SPACE||AEVK_LBUTTON)) {
+        if (AEInputCheckCurr(AEVK_SPACE)|| AEInputCheckCurr(AEVK_LBUTTON)) {
             bulletFireTimer -= deltaTime;
 
             if (bulletFireTimer <= 0) {
