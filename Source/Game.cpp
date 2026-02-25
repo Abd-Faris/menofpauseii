@@ -248,6 +248,39 @@ void SpawnAttackEnemy() {
     }
 }
 
+
+void SpawnShooterEnemy() {
+    for (auto& newEnemy : enemyPool) {
+        if (!newEnemy.alive) {
+            float windowWidth = (float)AEGfxGetWindowWidth();
+            float windowHeight = (float)AEGfxGetWindowHeight();
+
+            float spawnX = (AERandFloat() * windowWidth) - windowWidth / 2.0f;
+            float spawnY = (AERandFloat() * windowHeight) - windowHeight / 2.0f;
+
+            float differenceX = spawnX - player.pos_x;
+            float differenceY = spawnY - player.pos_y;
+            float distanceToPlayer = sqrt((differenceX * differenceX) + (differenceY * differenceY));
+
+            if (distanceToPlayer < GameConfig::Enemy::SPAWN_SAFE_ZONE) {
+                spawnX += GameConfig::Enemy::SPAWN_PUSH_DIST;
+            }
+
+            newEnemy.pos = { spawnX, spawnY };
+            newEnemy.velocity = { 0, 0 };
+            newEnemy.alive = true;
+            newEnemy.rotation = AERandFloat() * 360.0f;
+            newEnemy.scale = GameConfig::Enemy::SIZE_BIG;
+            newEnemy.enemtype = SHOOTER;
+
+            int initialHP = (int)(GameConfig::Enemy::HP_BIG);
+            newEnemy.hp = initialHP;
+            newEnemy.maxhp = initialHP;
+            break;
+        }
+    }
+}
+
 // ===========================================================================
 // COLLISION LOGIC
 // ===========================================================================
@@ -255,7 +288,7 @@ void circlerectcollision() {
     for (auto& currentEnemy : enemyPool) {
         if (!currentEnemy.alive) continue;
 
-        if (currentEnemy.enemtype == ATTACK) {
+        if (1) {
             float differenceX = player.pos_x - currentEnemy.pos.x;
             float differenceY = player.pos_y - currentEnemy.pos.y;
             float distanceSquared = (differenceX * differenceX) + (differenceY * differenceY);
@@ -264,9 +297,9 @@ void circlerectcollision() {
             float currentdmg = calculate_max_stats(1);
 
             if (distanceSquared < (collisionRadius * collisionRadius)) {
-                player_init.current_hp -= currentEnemy.hp / 10;
+                player_init.current_hp -= currentEnemy.hp / 5;
                 currentEnemy.hp = 0;
-
+                TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale);
             }
                 
         }
@@ -497,7 +530,9 @@ void UpdateGame() {
             }
             enemySpawnTimer = 0;
         }
+        
 
+        
         // 6. Enemy Physics
         for (auto& currentEnemy : enemyPool) {
             if (!currentEnemy.alive) continue;
