@@ -75,6 +75,7 @@ namespace Computation {
 	
 	// AABB Bounding Box Computation
 	void computeBoundingBox(AABB &box, AEVec2 &pos, AEVec2 &size, f32 scale) {
+		scale /= 10.f;
 		// Calculate max coords
 		box.max.x = pos.x + (size.x * 0.5f * scale);
 		box.max.y = pos.y + (size.y * 0.5f * scale);

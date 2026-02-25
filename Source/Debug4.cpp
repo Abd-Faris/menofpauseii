@@ -21,7 +21,7 @@ namespace {
 	// num of cards available to be displayed to player
 	int num_shopCards      { 3 };
 	int num_activeCards    { 5 };
-	int num_inventoryCards{ 5 };
+	int num_inventoryCards { 5 };
 
 	// declare array for cards
 	std::array<std::vector<Card>, 3>    allCards;	// vector for all cards
@@ -108,6 +108,18 @@ namespace {
 		// set range for shop INCL PADDING ON EITHER SIDE
 		start += (arr[0].size.x / 2) * scale;
 		end   -= (arr[0].size.x / 2) * scale;
+		f32 totalRange = end - start;
+
+		f32 maxGap = 200.0f; // Set max padding
+		f32 contentWidth = (displayCards - 1) * maxGap;
+
+		// If cards are too spread out, shrink range and center
+		if (contentWidth < totalRange && displayCards > 1) {
+			f32 offset = (totalRange - contentWidth) / 2.0f;
+			start += offset;
+			end -= offset;
+		}
+
 		// finds range
 		f32 range = end - start;
 
