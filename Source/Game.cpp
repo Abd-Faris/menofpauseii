@@ -420,7 +420,10 @@ void UpdateGame() {
                 int bulletsNeeded = player.barrelCount;
 
                 // Calculate Start Offset for bullets (Same math as drawing)
-                float totalWidth = (float)(player.barrelCount - 1) * GameConfig::Tank::BARREL_GAP;
+                float visualScale = player.scale / GameConfig::Tank::SCALE;
+
+                float scaledgap = visualScale * GameConfig::Tank::BARREL_GAP;
+                float totalWidth = (float)(player.barrelCount - 1) *scaledgap;
                 float startOffset = -totalWidth / 2.0f;
 
                 int bulletsFound = 0;
@@ -429,8 +432,8 @@ void UpdateGame() {
                         boolet.isActive = true;
 
                         // -- Calculate Multi-Barrel Spawn Position --
-                        float offsetLocalX = startOffset + (bulletsFound * GameConfig::Tank::BARREL_GAP);
-                        float offsetLocalY = GameConfig::Tank::BARREL_LENGTH; // Spawn at tip
+                        float offsetLocalX = startOffset + (bulletsFound * scaledgap);
+                        float offsetLocalY = GameConfig::Tank::BARREL_LENGTH* visualScale; // Spawn at tip
 
                         // Rotate Local Offset by Tank Angle
                         // Formula: x' = x*cos - y*sin, y' = x*sin + y*cos
