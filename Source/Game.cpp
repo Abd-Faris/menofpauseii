@@ -5,7 +5,7 @@
 // ===========================================================================
 // GLOBAL OBJECTS
 // ===========================================================================
-
+extern dualback;
 namespace {
     // -- Assets --
     s8 boldPixelsFont;
@@ -109,6 +109,9 @@ void UpdateGame() {
 		// --- KEY 'U': TOGGLE BIG CANNON ---
 		drawBigCannon(player);
 
+        //key 8 back forth
+        DualBack(player);
+
 		// 1. Move Player
 		movePlayer(player, deltaTime);
 
@@ -171,6 +174,14 @@ void DrawGame() {
     Gfx::printMesh(MeshRect, playerPos, { GameConfig::Tank::BODY_WIDTH * visualScale, GameConfig::Tank::BODY_HEIGHT * visualScale }, player.currentAngle);
     float cannonwidthnow = bigcannon ? GameConfig::Tank::BARREL_WIDTH * 2.0f : GameConfig::Tank::BARREL_WIDTH;
     // 3. Draw Barrels
+
+    if (dualback) {
+        // Draw forward barrel
+        DrawMultiBarrels(1, 0.0f, GameConfig::Tank::BARREL_PIVOT_OFFSET * visualScale, player.currentAngle, player.pos_x, player.pos_y, cannonwidthnow * visualScale, GameConfig::Tank::BARREL_LENGTH * visualScale, MeshRect);
+
+        // Draw backward barrel (+ PI rotates it 180 degrees)
+        DrawMultiBarrels(1, 0.0f, GameConfig::Tank::BARREL_PIVOT_OFFSET * visualScale, player.currentAngle + PI, player.pos_x, player.pos_y, cannonwidthnow * visualScale, GameConfig::Tank::BARREL_LENGTH * visualScale, MeshRect);
+    }
     DrawMultiBarrels(
         player.barrelCount,
         GameConfig::Tank::BARREL_GAP * visualScale,

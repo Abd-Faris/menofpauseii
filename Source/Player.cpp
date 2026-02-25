@@ -7,6 +7,7 @@ namespace {  }
 BulletObj bulletList[GameConfig::MAX_BULLETS_COUNT];
 float bulletFireTimer = 0.0f;
 bool bigcannon = false;
+bool dualback = false;
 
 void DrawMultiBarrels(int count, float gap, float pivotOffset, float tankRot, float tankX, float tankY, float barrelWidth, float barrelLength, AEGfxVertexList* MeshRect) {
     if (count <= 0) return;
@@ -107,6 +108,29 @@ void SpawnBullet(shape& player, float deltaTime) {
             float cosA = cosf(player.currentAngle);
             float sinA = sinf(player.currentAngle);
 
+            if (dualback) {
+                offsetLocalX = 0.0f; // Keep it centered
+                if (bulletsFound == 0) {
+                    // Bullet 1: Forward
+                    offsetLocalY = GameConfig::Tank::BARREL_LENGTH * visualScale;
+                    currentDirX = -sinA;
+                    currentDirY = cosA;
+                }
+                else {
+                    // Bullet 2: Backward (Negative Length & Flipped Direction)
+                    offsetLocalY = -GameConfig::Tank::BARREL_LENGTH * visualScale;
+                    currentDirX = sinA;
+                    currentDirY = -cosA;
+                }
+            }
+            else {
+                // Normal Side-by-Side Math
+                offsetLocalX = startOffset + (bulletsFound * scaledgap);
+                offsetLocalY = GameConfig::Tank::BARREL_LENGTH * visualScale;
+                currentDirX = -sinA;
+                currentDirY = cosA;
+            }
+
             // Because Tank "Forward" is Angle + 90deg (Y-Axis), we adjust coordinate rotation:
             // Tank Right Vector (X axis) is (cos(a), sin(a))
             // Tank Forward Vector (Y axis) is (cos(a+90), sin(a+90)) -> (-sin(a), cos(a))
@@ -133,6 +157,18 @@ void SpawnBullet(shape& player, float deltaTime) {
             }
             bulletsFound++;
             if (bulletsFound >= bulletsNeeded) break;
+        }
+    }
+}
+void DualBack(shape& player) {
+    if (AEInputCheckTriggered(AEVK_8)) {
+        dualback = !dualback;
+
+        if (dualback) {
+            // Turn off other modes to prevent visual/math glitches
+            player.barrelCount = 1;
+            bigcannon = false;
+            player.scale = GameConfig::Tank::SCALE;
         }
     }
 }
