@@ -6,13 +6,6 @@
 // GLOBAL OBJECTS
 // ===========================================================================
 
-// -- Enemy Pool --
-//std::array<Enemies, GameConfig::MAX_ENEMIES_COUNT> enemyPool;
-//f64 enemySpawnTimer = 0;
-
-
-
-
 namespace {
     // -- Assets --
     s8 boldPixelsFont;
@@ -23,17 +16,7 @@ namespace {
     // -- Player State --
     // Note: Ensure your struct in Structs.h has 'int barrelCount'
     shape player = { GameConfig::Tank::SCALE, 0.0f, 0.0f, 0.0f, 1 };
-    
-
-
-
-
-
 }
-
-// ===========================================================================
-// HELPER FUNCTIONS
-// ===========================================================================
 
 // ===========================================================================
 // COLLISION LOGIC
@@ -88,27 +71,10 @@ void LoadGame() {
     LoadDebug1();
     Animations_Load();
     boldPixelsFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
-
-    // Mesh: Circle
-    //AEGfxMeshStart();
-    //int slices = 40;
-    //float angleStep = TWO_PI/ slices;
-    //for (int i = 0; i < slices; i++) {
-    //    AEGfxTriAdd(
-    //        0.0f, 0.0f, 0xFFFFFFFF, 0.0f, 1.0f,
-    //        cosf(i * angleStep), sinf(i * angleStep), 0xFFFFFFFF, 1.0f, 1.0f,
-    //        cosf((i + 1) * angleStep), sinf((i + 1) * angleStep), 0xFFFFFFFF, 0.0f, 0.0f);
-    //}
-    //MeshCircle = AEGfxMeshEnd();
+    
+    // Create Meshes
     MeshCircle = Gfx::createCircleMesh(0xFFFFFFFF);
-
-    // Mesh: Rect
-    //AEGfxMeshStart();
-    //AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f, 0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f, -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-    //AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f, 0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f, -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-    //MeshRect = AEGfxMeshEnd();
     MeshRect = Gfx::createRectMesh("center", 0xFFFFFFFFF);
-
     MeshTriangle = Gfx::createTriangleMesh(0xFFFFFFFF);
 
     // Reset Player
@@ -134,15 +100,10 @@ void UpdateGame() {
 	UpdateDebug1();
 
 	if (!player_init.menu_open) {
-
-
-		// --- KEY '7': TOGGLE DUAL UPGRADE ---
-
 		// Update Animations
 		Animations_Update(deltaTime);
 
-		// --- KEY '7': TOGGLE UPGRADE ---
-
+		// --- KEY '7': TOGGLE UPGRADE --
 		drawBigTank(player);
 
 		// --- KEY 'U': TOGGLE BIG CANNON ---
@@ -161,19 +122,13 @@ void UpdateGame() {
 		updateBullets(player, deltaTime);
 
 		// 5. Spawn Enemies
-
 		EnemySpawner(player, deltaTime);
-
-
 
 		// 6. Enemy Physics
 		updateEnemyPhysics(player, deltaTime);
 	}
-
 	circlerectcollision();
 	AEGfxSetCamPosition(player.pos_x, player.pos_y);
-
-
 }
 
 // ===========================================================================
@@ -254,14 +209,9 @@ void DrawGame() {
             Gfx::printMesh(MeshRect, currentEnemy.pos, { currentEnemy.scale, currentEnemy.scale }, rotationRad);
         }
     }
-
     Animations_Draw();
     DrawDebug1();
-    
-
 }
-
-
 
 void FreeGame() {
     AEGfxDestroyFont(boldPixelsFont);
