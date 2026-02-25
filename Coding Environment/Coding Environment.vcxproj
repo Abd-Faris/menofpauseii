@@ -103,12 +103,14 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="..\Source\Debug3.cpp" />
     <ClCompile Include="..\Source\Debug4.cpp" />
     <ClCompile Include="..\Source\Debug5.cpp" />
+    <ClCompile Include="..\Source\Enemy.cpp" />
     <ClCompile Include="..\Source\Game.cpp" />
     <ClCompile Include="..\Source\Graphics.cpp" />
     <ClCompile Include="..\Source\Input.cpp" />
     <ClCompile Include="..\Source\Main.cpp" />
     <ClCompile Include="..\Source\GameStateManager.cpp" />
     <ClCompile Include="..\Source\MainMenu.cpp" />
+    <ClCompile Include="..\Source\Player.cpp" />
     <ClCompile Include="..\Source\SoloProj.cpp" />
     <ClCompile Include="..\Source\System.cpp" />
   </ItemGroup>
@@ -116,12 +118,14 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="..\Source\Animations.h" />
     <ClInclude Include="..\Source\Computation.h" />
     <ClInclude Include="..\Source\DebugMenus.h" />
+    <ClInclude Include="..\Source\Enemy.h" />
     <ClInclude Include="..\Source\Game.h" />
     <ClInclude Include="..\Source\GameStateManager.h" />
     <ClInclude Include="..\Source\Graphics.h" />
     <ClInclude Include="..\Source\Input.h" />
     <ClInclude Include="..\Source\MainMenu.h" />
     <ClInclude Include="..\Source\MasterHeader.h" />
+    <ClInclude Include="..\Source\Player.h" />
     <ClInclude Include="..\Source\Structs.h" />
     <ClInclude Include="..\Source\System.h" />
   </ItemGroup>

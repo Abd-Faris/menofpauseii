@@ -120,5 +120,16 @@ struct Explosion {
 	float scale;
 };
 
+// -- Bullet Pool --
+struct BulletObj {
+	float posX, posY;
+	float directionX, directionY;
+	float speed;
+	float size;
+	bool isActive;
+	float damagemul;
+};
+
 // Externs
 extern PlayerStats player_init;
+

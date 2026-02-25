@@ -33,4 +33,6 @@
 // Graphics & Animations
 #include "Animations.h"
 
+#include "Player.h"
+#include "Enemy.h"
 

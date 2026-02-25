@@ -1,4 +1,4 @@
-#include "MasterHeader.h"
+#pragma once
 
 void Animations_Load();
 void Animations_Update(float dt);
