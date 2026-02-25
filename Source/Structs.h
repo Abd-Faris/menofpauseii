@@ -27,7 +27,8 @@ enum Type {
 
 enum EnemyType {
 	PASSIVE = 0,
-	ATTACK
+	ATTACK,
+	SHOOTER
 };
 
 struct AABB {
