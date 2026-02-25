@@ -7,7 +7,7 @@
 
 namespace {
 	//initialise explosion pool frames
-    const int MAX_EXPLOSIONS = 20;
+    const int MAX_EXPLOSIONS = 50;
     const int TOTAL_FRAMES = 5;
     const float FRAME_TIME = 0.08f;
 
@@ -48,7 +48,7 @@ void Animations_Load() {
 }
 
 // --- TRIGGER FUNCTION: Activate an explosion at the given position ---
-void TriggerExplosion(float x, float y) {
+void TriggerExplosion(float x, float y, float size) {
 	//find the first inactive explosion in the pool and activate it with the given position
     for (int i = 0; i < MAX_EXPLOSIONS; i++) {
         if (explosionPool[i].active == false) {
@@ -56,6 +56,8 @@ void TriggerExplosion(float x, float y) {
             explosionPool[i].pos.x = x;
 			//initialise y pos
             explosionPool[i].pos.y = y;
+			//initialise size
+            explosionPool[i].scale = size;
 			//reset timer and frame to start animation from the beginning
             explosionPool[i].timer = 0.0f;
             explosionPool[i].currentFrame = 0;
@@ -111,7 +113,7 @@ void Animations_Draw() {
 
 		//create transformation matrix to position and scale the explosion sprite correctly on the screen
         AEMtx33 mScale, mTrans, mFinal;
-        AEMtx33Scale(&mScale, 60.0f, 60.0f);
+        AEMtx33Scale(&mScale, explosionPool[i].scale, explosionPool[i].scale);
         AEMtx33Trans(&mTrans, explosionPool[i].pos.x, explosionPool[i].pos.y);
         AEMtx33Concat(&mFinal, &mTrans, &mScale);
 

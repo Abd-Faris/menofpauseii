@@ -287,7 +287,7 @@ void circlerectcollision() {
                 
                 if (currentEnemy.hp <= 0 && currentEnemy.alive) {
 					//triggers explosion animation at enemy position
-                    TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y);
+                    TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale);
                 }
             }
         }
@@ -565,15 +565,13 @@ void UpdateGame() {
             currentEnemy.pos.y += currentEnemy.velocity.y * deltaTime;
 
             if (currentEnemy.hp <= 0) {
-                currentEnemy.scale -= GameConfig::Enemy::SHRINK_SPEED * deltaTime;
-                if (currentEnemy.scale <= 0) {
-                    float xp_multiplier = calculate_max_stats(4);
-                    float baseReward = (currentEnemy.maxhp >= (int)GameConfig::Enemy::HP_BIG) ? 80.0f : 20.0f;
-					float finalReward = baseReward * xp_multiplier;
-                    player_init.current_xp += finalReward;
-                    TriggerXpPopup(finalReward);
-                    ResetEnemy(&currentEnemy);
-                }
+                float xp_multiplier = calculate_max_stats(4);
+                float baseReward = (currentEnemy.maxhp >= (int)GameConfig::Enemy::HP_BIG) ? 80.0f : 20.0f;
+			    float finalReward = baseReward * xp_multiplier;
+                player_init.current_xp += finalReward;
+                TriggerXpPopup(finalReward);
+                ResetEnemy(&currentEnemy);
+            
             }
         }
     }

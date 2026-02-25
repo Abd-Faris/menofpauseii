@@ -116,6 +116,7 @@ struct Explosion {
 	float timer;
 	int currentFrame;
 	bool active;
+	float scale;
 };
 
 // Externs
