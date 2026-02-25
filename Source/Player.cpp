@@ -84,7 +84,7 @@ void SpawnBullet(shape& player, float deltaTime) {
     bulletFireTimer = fire_rate;
 
     // We need to find 'barrelCount' inactive bullets
-    int bulletsNeeded = player.barrelCount;
+    int bulletsNeeded = dualback ? 2 : player.barrelCount; player.barrelCount;
 
     // Calculate Start Offset for bullets (Same math as drawing)
     float visualScale = player.scale / GameConfig::Tank::SCALE;
@@ -101,6 +101,8 @@ void SpawnBullet(shape& player, float deltaTime) {
             // -- Calculate Multi-Barrel Spawn Position --
             float offsetLocalX = startOffset + (bulletsFound * scaledgap);
             float offsetLocalY = GameConfig::Tank::BARREL_LENGTH * visualScale; // Spawn at tip
+            float currentDirX = 0.0f;
+            float currentDirY = 0.0f;
 
             // Rotate Local Offset by Tank Angle
             // Formula: x' = x*cos - y*sin, y' = x*sin + y*cos
@@ -142,8 +144,8 @@ void SpawnBullet(shape& player, float deltaTime) {
             boolet.posY = player.pos_y + spawnOffsetY;
 
             // Direction is same for all parallel barrels
-            boolet.directionX = -sinA; // Forward Vector X
-            boolet.directionY = cosA;  // Forward Vector Y
+            boolet.directionX = currentDirX; // Forward Vector X
+            boolet.directionY = currentDirY;  // Forward Vector Y
 
             boolet.speed = GameConfig::Bullet::BASE_SPEED;
             boolet.size = GameConfig::Bullet::DEFAULT_SIZE;

@@ -5,7 +5,7 @@
 // ===========================================================================
 // GLOBAL OBJECTS
 // ===========================================================================
-extern dualback;
+extern bool dualback;
 namespace {
     // -- Assets --
     s8 boldPixelsFont;
@@ -182,17 +182,19 @@ void DrawGame() {
         // Draw backward barrel (+ PI rotates it 180 degrees)
         DrawMultiBarrels(1, 0.0f, GameConfig::Tank::BARREL_PIVOT_OFFSET * visualScale, player.currentAngle + PI, player.pos_x, player.pos_y, cannonwidthnow * visualScale, GameConfig::Tank::BARREL_LENGTH * visualScale, MeshRect);
     }
-    DrawMultiBarrels(
-        player.barrelCount,
-        GameConfig::Tank::BARREL_GAP * visualScale,
-        GameConfig::Tank::BARREL_PIVOT_OFFSET * visualScale,
-        player.currentAngle,
-        player.pos_x,
-        player.pos_y,
-        cannonwidthnow*visualScale,
-        GameConfig::Tank::BARREL_LENGTH * visualScale,
-        MeshRect
-    );
+    else {
+        DrawMultiBarrels(
+            player.barrelCount,
+            GameConfig::Tank::BARREL_GAP * visualScale,
+            GameConfig::Tank::BARREL_PIVOT_OFFSET * visualScale,
+            player.currentAngle,
+            player.pos_x,
+            player.pos_y,
+            cannonwidthnow * visualScale,
+            GameConfig::Tank::BARREL_LENGTH * visualScale,
+            MeshRect
+        );
+    }
 
     // 4. Draw Turret
     AEGfxSetColorToMultiply(0.3f, 0.7f, 0.3f, 1.0f);
