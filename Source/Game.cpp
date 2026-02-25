@@ -248,6 +248,39 @@ void SpawnAttackEnemy() {
     }
 }
 
+
+void SpawnShooterEnemy() {
+    for (auto& newEnemy : enemyPool) {
+        if (!newEnemy.alive) {
+            float windowWidth = (float)AEGfxGetWindowWidth();
+            float windowHeight = (float)AEGfxGetWindowHeight();
+
+            float spawnX = (AERandFloat() * windowWidth) - windowWidth / 2.0f;
+            float spawnY = (AERandFloat() * windowHeight) - windowHeight / 2.0f;
+
+            float differenceX = spawnX - player.pos_x;
+            float differenceY = spawnY - player.pos_y;
+            float distanceToPlayer = sqrt((differenceX * differenceX) + (differenceY * differenceY));
+
+            if (distanceToPlayer < GameConfig::Enemy::SPAWN_SAFE_ZONE) {
+                spawnX += GameConfig::Enemy::SPAWN_PUSH_DIST;
+            }
+
+            newEnemy.pos = { spawnX, spawnY };
+            newEnemy.velocity = { 0, 0 };
+            newEnemy.alive = true;
+            newEnemy.rotation = AERandFloat() * 360.0f;
+            newEnemy.scale = GameConfig::Enemy::SIZE_BIG;
+            newEnemy.enemtype = SHOOTER;
+
+            int initialHP = (int)(GameConfig::Enemy::HP_BIG);
+            newEnemy.hp = initialHP;
+            newEnemy.maxhp = initialHP;
+            break;
+        }
+    }
+}
+
 // ===========================================================================
 // COLLISION LOGIC
 // ===========================================================================
@@ -255,7 +288,7 @@ void circlerectcollision() {
     for (auto& currentEnemy : enemyPool) {
         if (!currentEnemy.alive) continue;
 
-        if (currentEnemy.enemtype == ATTACK) {
+        if (1) {
             float differenceX = player.pos_x - currentEnemy.pos.x;
             float differenceY = player.pos_y - currentEnemy.pos.y;
             float distanceSquared = (differenceX * differenceX) + (differenceY * differenceY);
@@ -264,9 +297,9 @@ void circlerectcollision() {
             float currentdmg = calculate_max_stats(1);
 
             if (distanceSquared < (collisionRadius * collisionRadius)) {
-                player_init.current_hp -= currentEnemy.hp / 10;
+                player_init.current_hp -= currentEnemy.hp / 5;
                 currentEnemy.hp = 0;
-
+                TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale);
             }
                 
         }
@@ -287,7 +320,7 @@ void circlerectcollision() {
                 
                 if (currentEnemy.hp <= 0 && currentEnemy.alive) {
 					//triggers explosion animation at enemy position
-                    TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y);
+                    TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale);
                 }
             }
         }
@@ -387,10 +420,10 @@ void UpdateGame() {
 
         // 1. Move Player
         float playerSpeed = calculate_max_stats(2);
-        if (AEInputCheckCurr(AEVK_W)) player.pos_y += playerSpeed * deltaTime;
-        if (AEInputCheckCurr(AEVK_S)) player.pos_y -= playerSpeed * deltaTime;
-        if (AEInputCheckCurr(AEVK_A)) player.pos_x -= playerSpeed * deltaTime;
-        if (AEInputCheckCurr(AEVK_D)) player.pos_x += playerSpeed * deltaTime;
+        if (AEInputCheckCurr(AEVK_W) || AEInputCheckCurr(AEVK_UP)) player.pos_y += playerSpeed * deltaTime;
+        if (AEInputCheckCurr(AEVK_S) || AEInputCheckCurr(AEVK_DOWN)) player.pos_y -= playerSpeed * deltaTime;
+        if (AEInputCheckCurr(AEVK_A) || AEInputCheckCurr(AEVK_LEFT)) player.pos_x -= playerSpeed * deltaTime;
+        if (AEInputCheckCurr(AEVK_D) || AEInputCheckCurr(AEVK_RIGHT)) player.pos_x += playerSpeed * deltaTime;
 
         // 2. Rotate Player
         s32 mouseX, mouseY;
@@ -409,7 +442,7 @@ void UpdateGame() {
         }
 
         // 3. Shooting (UPDATED FOR MULTI-BARREL)
-        if (AEInputCheckCurr(AEVK_SPACE)) {
+        if (AEInputCheckCurr(AEVK_SPACE)|| AEInputCheckCurr(AEVK_LBUTTON)) {
             bulletFireTimer -= deltaTime;
 
             if (bulletFireTimer <= 0) {
@@ -420,7 +453,10 @@ void UpdateGame() {
                 int bulletsNeeded = player.barrelCount;
 
                 // Calculate Start Offset for bullets (Same math as drawing)
-                float totalWidth = (float)(player.barrelCount - 1) * GameConfig::Tank::BARREL_GAP;
+                float visualScale = player.scale / GameConfig::Tank::SCALE;
+
+                float scaledgap = visualScale * GameConfig::Tank::BARREL_GAP;
+                float totalWidth = (float)(player.barrelCount - 1) *scaledgap;
                 float startOffset = -totalWidth / 2.0f;
 
                 int bulletsFound = 0;
@@ -429,8 +465,8 @@ void UpdateGame() {
                         boolet.isActive = true;
 
                         // -- Calculate Multi-Barrel Spawn Position --
-                        float offsetLocalX = startOffset + (bulletsFound * GameConfig::Tank::BARREL_GAP);
-                        float offsetLocalY = GameConfig::Tank::BARREL_LENGTH; // Spawn at tip
+                        float offsetLocalX = startOffset + (bulletsFound * scaledgap);
+                        float offsetLocalY = GameConfig::Tank::BARREL_LENGTH* visualScale; // Spawn at tip
 
                         // Rotate Local Offset by Tank Angle
                         // Formula: x' = x*cos - y*sin, y' = x*sin + y*cos
@@ -494,7 +530,9 @@ void UpdateGame() {
             }
             enemySpawnTimer = 0;
         }
+        
 
+        
         // 6. Enemy Physics
         for (auto& currentEnemy : enemyPool) {
             if (!currentEnemy.alive) continue;
@@ -562,15 +600,13 @@ void UpdateGame() {
             currentEnemy.pos.y += currentEnemy.velocity.y * deltaTime;
 
             if (currentEnemy.hp <= 0) {
-                currentEnemy.scale -= GameConfig::Enemy::SHRINK_SPEED * deltaTime;
-                if (currentEnemy.scale <= 0) {
-                    float xp_multiplier = calculate_max_stats(4);
-                    float baseReward = (currentEnemy.maxhp >= (int)GameConfig::Enemy::HP_BIG) ? 80.0f : 20.0f;
-					float finalReward = baseReward * xp_multiplier;
-                    player_init.current_xp += finalReward;
-                    TriggerXpPopup(finalReward);
-                    ResetEnemy(&currentEnemy);
-                }
+                float xp_multiplier = calculate_max_stats(4);
+                float baseReward = (currentEnemy.maxhp >= (int)GameConfig::Enemy::HP_BIG) ? 80.0f : 20.0f;
+			    float finalReward = baseReward * xp_multiplier;
+                player_init.current_xp += finalReward;
+                TriggerXpPopup(finalReward);
+                ResetEnemy(&currentEnemy);
+            
             }
         }
     }

@@ -5,4 +5,4 @@ void Animations_Update(float dt);
 void Animations_Draw(); 
 void Animations_Free();
 
-void TriggerExplosion(float x, float y);
+void TriggerExplosion(float x, float y, float size);

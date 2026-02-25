@@ -27,7 +27,8 @@ enum Type {
 
 enum EnemyType {
 	PASSIVE = 0,
-	ATTACK
+	ATTACK,
+	SHOOTER
 };
 
 struct AABB {
@@ -116,6 +117,7 @@ struct Explosion {
 	float timer;
 	int currentFrame;
 	bool active;
+	float scale;
 };
 
 // Externs
