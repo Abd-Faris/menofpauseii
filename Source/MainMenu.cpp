@@ -98,12 +98,10 @@ void LoadMainMenu() {
 	boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 	// creates rect mesh
 	rectMesh = Gfx::createRectMesh();
-	AEGfxSetCamPosition(0.0f, 0.0f);
 }
 
 void InitializeMainMenu() {
 	// Inits exiting boolean
-	AEGfxSetCamPosition(0.0f, 0.0f);
 	exiting = false;
 	// Inits button meshes
 	for (GfxButton &button : mainMenuButtons) {
@@ -120,15 +118,6 @@ void UpdateMainMenu() {
 }
 
 void DrawMainMenu() {
-	AEMtx33 identity;
-	AEMtx33Identity(&identity);
-	AEGfxSetTransform(identity.m);
-
-	AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
-
-	// 3. Ensure transparency blending is turned on (Crucial for Text!)
-	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-
 	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
 	AEGfxSetTransparency(1.f);
