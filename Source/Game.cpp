@@ -227,9 +227,14 @@ void DrawGame() {
 }
 
 void FreeGame() {
+    dualback = false;
     AEGfxDestroyFont(boldPixelsFont);
     if (MeshRect) AEGfxMeshFree(MeshRect);
     if (MeshCircle) AEGfxMeshFree(MeshCircle);
     FreeDebug1();
     Animations_Free();
+    bigcannon = false;
+    dualback = false;
+    player.scale = GameConfig::Tank::SCALE;
+    player.barrelCount = 1;
 }
