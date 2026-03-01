@@ -343,17 +343,18 @@ void DrawDebug1() {
 	float max_hp = calculate_max_stats(0);
 	float xp_needed = 100.0f + (player_init.player_level * 50.0f);
 
-	// --- DRAW PLAYER HUD ---
-	drawmesh(pBlackRectMesh, hudX, hudY, max_width + 10.0f, 52.0f);
-	draw_hud_bar(pRedRectMesh, player_init.current_hp, max_hp, hudX, hudY, 7.0f, 25.0f, max_width);
-	draw_hud_bar(pYellowRectMesh, player_init.current_xp, xp_needed, hudX, hudY, -15.0f, 10.0f, max_width);
-
 	// --- DRAW ENEMY HEALTH BARS ---
 	for (int i = 0; i < 50; i++) {
 		if (enemyPool[i].alive) {
 			draw_enemy_health_bar(enemyPool[i], camX, camY);
 		}
 	}
+
+	// --- DRAW PLAYER HUD ---
+	drawmesh(pBlackRectMesh, hudX, hudY, max_width + 10.0f, 52.0f);
+	draw_hud_bar(pRedRectMesh, player_init.current_hp, max_hp, hudX, hudY, 7.0f, 25.0f, max_width);
+	draw_hud_bar(pYellowRectMesh, player_init.current_xp, xp_needed, hudX, hudY, -15.0f, 10.0f, max_width);
+
 
 	// --- DRAW FLOATING XP TEXT ---
 	if (xpPopuptimer > 0.0f) {

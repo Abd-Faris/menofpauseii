@@ -33,6 +33,9 @@
 // Graphics & Animations
 #include "Animations.h"
 
+// Game Objects
 #include "Player.h"
 #include "Enemy.h"
-
+	
+// Game World
+#include "World.h"

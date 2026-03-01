@@ -12,6 +12,7 @@ namespace {
     AEGfxVertexList* MeshRect = nullptr;
     AEGfxVertexList* MeshCircle = nullptr;
     AEGfxVertexList* MeshTriangle = nullptr;
+    
 
     // -- Player State --
     // Note: Ensure your struct in Structs.h has 'int barrelCount'
@@ -71,6 +72,8 @@ void LoadGame() {
     LoadDebug1();
     Animations_Load();
     boldPixelsFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
+	World::Load_World();
+	World::Init_World();
     
     // Create Meshes
     MeshCircle = Gfx::createCircleMesh(0xFFFFFFFF);
@@ -142,9 +145,13 @@ void DrawGame() {
     if (MeshRect == nullptr || MeshCircle == nullptr) return;
 
     AEGfxSetBackgroundColor(0.2f, 0.2f, 0.2f);
-    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     AEGfxSetCamPosition(player.pos_x, player.pos_y);
 
+    // -- Draw World --
+    World::Draw_World();
+
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    
     // -- Draw Bullets --
     // Bullets use a simple scale and position with no rotation
     AEGfxSetColorToMultiply(1.0f, 1.0f, 0.0f, 1.0f);
@@ -232,4 +239,5 @@ void FreeGame() {
     if (MeshCircle) AEGfxMeshFree(MeshCircle);
     FreeDebug1();
     Animations_Free();
+	World::Free_World();
 }

@@ -56,10 +56,20 @@ void drawBigTank(shape &player) {
 
 void movePlayer(shape &player, float deltaTime) {
     float playerSpeed = calculate_max_stats(2);
-    if (AEInputCheckCurr(AEVK_W) || AEInputCheckCurr(AEVK_UP)) player.pos_y += playerSpeed * deltaTime;
-    if (AEInputCheckCurr(AEVK_S) || AEInputCheckCurr(AEVK_DOWN)) player.pos_y -= playerSpeed * deltaTime;
-    if (AEInputCheckCurr(AEVK_A) || AEInputCheckCurr(AEVK_LEFT)) player.pos_x -= playerSpeed * deltaTime;
-    if (AEInputCheckCurr(AEVK_D) || AEInputCheckCurr(AEVK_RIGHT)) player.pos_x += playerSpeed * deltaTime;
+	float moveAmount = playerSpeed * deltaTime;
+	float nextPosX = player.pos_x;
+	float nextPosY = player.pos_y;
+
+	if (AEInputCheckCurr(AEVK_W) || AEInputCheckCurr(AEVK_UP)) nextPosY += moveAmount;
+	if (AEInputCheckCurr(AEVK_S) || AEInputCheckCurr(AEVK_DOWN)) nextPosY -= moveAmount;
+	if (AEInputCheckCurr(AEVK_A) || AEInputCheckCurr(AEVK_LEFT)) nextPosX -= moveAmount;
+    if (AEInputCheckCurr(AEVK_D) || AEInputCheckCurr(AEVK_RIGHT)) nextPosX += moveAmount;
+
+    //check for collision between world border
+    if (!World::CheckCollision(nextPosX, nextPosY)) {
+        player.pos_x = nextPosX;
+        player.pos_y = nextPosY;
+    }
 }
 
 void rotatePlayer(shape &player) {
