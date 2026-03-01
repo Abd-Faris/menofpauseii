@@ -110,6 +110,7 @@ namespace Graphics {
 		// object drawing settings
 		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+		AEGfxSetBlendMode(AE_GFX_BM_NONE);
 		AEGfxSetTransparency(1.f);
 
 		// Init Matrices

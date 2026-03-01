@@ -43,16 +43,6 @@ namespace {
 		{"DESCRIPTION GOES HERE", 0.5f, 255, 255, 255, 255, {-200, 325}}
 	};
 
-	//GfxText bagtext{ {575, 375}, 0.5, "INVENTORY" };
-	//GfxText shoptext{ {-200, 195}, 0.8, "SHOP" };
-	//GfxText cardSlotstext{ {-125, -225}, 0.5, "ACTIVE CARDS" };
-	//GfxText trashtext{ {-695, -300}, 2, "X" };
-	//GfxText activeNumtext{ {-125, -375}, 0.5, "5/5" };
-	//GfxText inventoryNumtext{ {575, -375}, 0.5, "5/15" };
-	//
-	//GfxText desctext{ {-200, 325}, 1,"DESCRIPTION GOES HERE", 255, 255, 255, 255 };
-
-
 	// mesh pointers
 	void populateCardShop(std::vector<Card>& shop) {
 		int index{};
@@ -99,7 +89,7 @@ namespace {
 		}
 	}
 
-	void computeXCardPositions(std::vector<Card>& arr, f32 start, f32 end, f32 y, f32 scale = 10) {
+	void computeXCardPositions(std::vector<Card>& arr, f32 start, f32 end, f32 y, f32 scale = 10, f32 maxGap = 100.f) {
 		// EDGECASE: if array empty, return
 		if (arr.empty()) return;
 
@@ -110,7 +100,6 @@ namespace {
 		end   -= (arr[0].size.x / 2) * scale;
 		f32 totalRange = end - start;
 
-		f32 maxGap = 200.0f; // Set max padding
 		f32 contentWidth = (displayCards - 1) * maxGap;
 
 		// If cards are too spread out, shrink range and center
@@ -263,16 +252,17 @@ void InitializeDebug4() {
 
 	// initializes shop cards
 	initCardShop(shopCards);
-	computeXCardPositions(shopCards, -700, 300, 20, CARD_SHOP_SCALE);
+	computeXCardPositions(shopCards, -700, 300, 20, CARD_SHOP_SCALE, 300.f);
 	for (Card &card : shopCards) {
-		Comp::computeBoundingBox(card.boundingBox, card.homepos, card.size, CARD_SHOP_SCALE);
+		card.homepos = card.pos;
+		Comp::computeBoundingBox(card.boundingBox, card.homepos, card.size, CARD_SHOP_SCALE*10);
 	}
 	// set selected card boolean to false
 	cardSelected = false;
 
 	// [ FOR DEMO ONLY. DELETE LATER ] init other cards
 	initActiveCards(activeCards);
-	computeXCardPositions(activeCards, -550, 300, -300, ACTIVE_CARD_SCALE);
+	computeXCardPositions(activeCards, -550, 300, -300, ACTIVE_CARD_SCALE, 150.f);
 	initInventoryCards(inventoryCards);
 	computeYCardPositions(inventoryCards, -335, 340, 575, INVENTORY_CARD_SCALE);
 }
@@ -292,7 +282,7 @@ void UpdateDebug4() {
 	else cardSelected = false;
 	// endif
 }
-
+// -600 -200 200
 void DrawDebug4() {
 	//AEGfxStart();
 	// gray bg
