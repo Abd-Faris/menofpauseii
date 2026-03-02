@@ -27,6 +27,7 @@ void FreeDebug4();
 
 // debug5.cpp
 void LoadDebug5();
+void UpdateDebug5();
 void DrawDebug5();
 void FreeDebug5();
 
