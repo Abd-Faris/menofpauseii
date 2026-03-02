@@ -8,6 +8,10 @@ BulletObj bulletList[GameConfig::MAX_BULLETS_COUNT];
 float bulletFireTimer = 0.0f;
 bool bigcannon = false;
 bool dualback = false;
+bool orbitActive = false;
+float orbitAngle = 0.0f;
+float orbitPosX = 0.0f;
+float orbitPosY = 0.0f;
 
 void DrawMultiBarrels(int count, float gap, float pivotOffset, float tankRot, float tankX, float tankY, float barrelWidth, float barrelLength, AEGfxVertexList* MeshRect) {
     if (count <= 0) return;
@@ -192,6 +196,23 @@ void ShootBullet(shape &player, float deltaTime) {
         if (bulletFireTimer <= 0) {
             SpawnBullet(player, deltaTime);
         }
+    }
+}
+
+void updateOrbit(shape& player, float deltaTime) {
+    if (AEInputCheckTriggered(AEVK_C)) {
+        orbitActive = !orbitActive;
+    }
+
+    if (orbitActive) {
+        float orbitSpeed = 4.0f; // Spin speed
+        float orbitRadius = 150.0f * (player.scale / GameConfig::Tank::SCALE); // Distance from tank
+
+        orbitAngle += orbitSpeed * deltaTime;
+        if (orbitAngle > TWO_PI) orbitAngle -= TWO_PI;
+
+        orbitPosX = player.pos_x + cosf(orbitAngle) * orbitRadius;
+        orbitPosY = player.pos_y + sinf(orbitAngle) * orbitRadius;
     }
 }
 
