@@ -15,5 +15,6 @@ namespace World {
 	void Init_World();
 	void Draw_World();
 	void Free_World();
-	bool CheckCollision(float x, float y);
+	bool CheckCollision(float x, float y, float playerScale, float playerRotation);
+	bool isPointColliding(float worldX, float worldY);
 }
