@@ -48,12 +48,12 @@ void drawBigTank(shape &player) {
             // Turn Dual ON
             player.barrelCount = 2;
             bigcannon = false; // Force turn off big cannon to prevent overlapping states
-            player.scale = GameConfig::Tank::SCALE * 2.0f; // Set exact scale
+            //player.scale = GameConfig::Tank::SCALE * 2.0f; // Set exact scale
         }
         else {
             // Turn Dual OFF
             player.barrelCount = 1;
-            player.scale = GameConfig::Tank::SCALE; // Back to normal
+            //player.scale = GameConfig::Tank::SCALE; // Back to normal
         }
     }
 }
@@ -184,7 +184,7 @@ void DualBack(shape& player) {
             // Turn off other modes to prevent visual/math glitches
             player.barrelCount = 1;
             bigcannon = false;
-            player.scale = GameConfig::Tank::SCALE;
+           // player.scale = GameConfig::Tank::SCALE;
         }
     }
 }
@@ -223,11 +223,11 @@ void drawBigCannon(shape& player) {
         if (bigcannon) {
             // Turn Big Cannon ON
             player.barrelCount = 1; // Force turn off dual barrels
-            player.scale = GameConfig::Tank::SCALE * 2.0f; // Set exact scale
+            //player.scale = GameConfig::Tank::SCALE * 2.0f; // Set exact scale
         }
         else {
             // Turn Big Cannon OFF
-            player.scale = GameConfig::Tank::SCALE; // Back to normal
+           // player.scale = GameConfig::Tank::SCALE; // Back to normal
         }
     }
 }
