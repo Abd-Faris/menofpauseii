@@ -12,6 +12,7 @@ bool orbitActive = false;
 float orbitAngle = 0.0f;
 float orbitPosX = 0.0f;
 float orbitPosY = 0.0f;
+SmokeParticle smokes[100];
 
 void DrawMultiBarrels(int count, float gap, float pivotOffset, float tankRot, float tankX, float tankY, float barrelWidth, float barrelLength, AEGfxVertexList* MeshRect) {
     if (count <= 0) return;
@@ -76,6 +77,12 @@ void movePlayer(shape& player, float deltaTime) {
     }
     if (!World::CheckCollision(player.pos_x, nextY, player.scale, player.currentAngle)) {
         player.pos_y = nextY;
+    }
+    if (player_init.current_hp <= player_init.baseHp / 2 && player_init.current_hp > 0) {
+        // Give it a 15% chance to spawn a smoke puff every frame (prevents spawning too many)
+        if (AERandFloat() < 0.15f) {
+            SpawnSmoke(player.pos_x, player.pos_y, player.scale);
+        }
     }
 }
 
@@ -264,6 +271,34 @@ void updateBullets(shape& player, float deltaTime) {
             float diffY = eBullet.posY - player.pos_y;
             if ((diffX * diffX + diffY * diffY) > GameConfig::DESPAWN_DISTANCE_SQ) {
                 eBullet.isActive = false;
+            }
+        }
+    }
+}
+
+void SpawnSmoke(float x, float y, float baseSize) {
+    for (auto& s : smokes) {
+        if (!s.isActive) {
+            s.isActive = true;
+            // Spawn with a slight random offset
+            s.posX = x + (AERandFloat() * 20.0f - 10.0f);
+            s.posY = y + (AERandFloat() * 20.0f - 10.0f);
+            s.size = (baseSize * 0.4f) + (AERandFloat() * 10.0f); // Size based on what is attached to
+            break;
+        }
+    }
+}
+
+void updateSmoke(float deltaTime) {
+    for (auto& s : smokes) {
+        if (s.isActive) {
+            s.posY += 60.0f * deltaTime; // float upwards
+            s.posX += (AERandFloat() * 20.0f - 10.0f) * deltaTime; // goes slightly left/right
+            s.size -= 15.0f * deltaTime; // shrink over time
+
+            // if it shrinks away to nothing, despawn it
+            if (s.size <= 0) {
+                s.isActive = false;
             }
         }
     }

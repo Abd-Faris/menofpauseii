@@ -173,6 +173,13 @@ struct BulletObj {
 	float damagemul;
 };
 
+struct SmokeParticle {
+	float posX, posY;
+	float size;
+	bool isActive;
+};
+extern SmokeParticle smokes[100];
+
 // Externs
 extern PlayerStats player_init;
 

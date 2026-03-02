@@ -14,3 +14,6 @@ void ShootBullet(shape& player, float deltaTime);
 void drawBigCannon(shape& player);
 void updateBullets(shape& player, float deltaTime);
 void updateOrbit(shape& player, float deltaTime);
+void SpawnSmoke(float x, float y, float baseSize);
+
+void updateSmoke(float deltaTime);

@@ -160,6 +160,8 @@ void UpdateGame() {
 		// 4. Move Bullets
 		updateBullets(player, deltaTime);
 
+        updateSmoke(deltaTime);
+
 		// 5. Spawn Enemies
 		EnemySpawner(player, deltaTime);
 
@@ -205,6 +207,13 @@ void DrawGame() {
         AEGfxSetColorToMultiply(0.0f, 1.0f, 1.0f, 1.0f); // Bright Cyan
         float orbitSize = 40.0f;
         Gfx::printMesh(MeshCircle, { orbitPosX, orbitPosY }, { orbitSize, orbitSize }, orbitAngle);
+    }
+    // -- smokes--
+    AEGfxSetColorToMultiply(0.4f, 0.4f, 0.4f, 1.0f); // Dark Grey color
+    for (const auto& s : smokes) {
+        if (s.isActive) {
+            Gfx::printMesh(MeshCircle, { s.posX, s.posY }, { s.size, s.size }, 0.0f);
+        }
     }
 
     // -- Draw Player Tank --
