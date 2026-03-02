@@ -25,6 +25,13 @@ enum Type {
 	NUM_OF_TYPES
 };
 
+enum struct DECK {
+	SHOP,
+	ACTIVE,
+	BAG,
+	TRASH
+};
+
 enum EnemyType {
 	PASSIVE = 0,
 	ATTACK,
@@ -42,9 +49,9 @@ struct Card {
 	AEVec2 size{ 25, 35 };
 	int type{}, val{}, rarity{ Rarity::COMMON };
 	AEGfxVertexList* mesh{};
-	bool cardFollowsCursor{ false }; // bool to anchor card to cursor pos
 	AABB boundingBox{}; // collision bounding box
-	bool selected{ false };
+	bool hoveredOn{ false };
+	DECK from{}; // to be updated every time card is shifted
 
 	// MEMBER FUNCTIONS
 

@@ -21,7 +21,7 @@ namespace {
 	// num of cards available to be displayed to player
 	int num_shopCards      { 3 };
 	int num_activeCards    { 5 };
-	int num_inventoryCards { 5 };
+	int num_inventoryCards { 15 };
 
 	// declare array for cards
 	std::array<std::vector<Card>, 3>    allCards;	// vector for all cards
@@ -29,8 +29,8 @@ namespace {
 	std::vector<Card>& shopCards      = allCards[0];// reference to shop cards
 	std::vector<Card>& activeCards    = allCards[1];// ref to active cards
 	std::vector<Card>& inventoryCards = allCards[2];// reference to cards in bag
-	// boolean for selected card
-	bool cardSelected{};
+	// pointer to selected card
+	Card* pSelectedCard{nullptr};
 
 	// init shop texts
 	std::vector<GfxText> shopTexts{
@@ -64,31 +64,13 @@ namespace {
 		// create 3 cards for shop
 		Card card{};
 		for (int i{ 0 }; i < num_shopCards; ++i) {
+			card.from = DECK::SHOP;
 			card.generateCard();  // generate card stats
 			shop.push_back(card); // push card into vector
 		}
 	}
 
-	// FOR TESTING ONLY DELETE LATER
-	void initActiveCards(std::vector<Card>& shop) {
-		// create 3 cards for shop
-		Card card{};
-		for (int i{ 0 }; i < num_activeCards; ++i) {
-			card.generateCard();  // generate card stats
-			shop.push_back(card); // push card into vector
-		}
-	}
-
-	// FOR TESTING ONLY DELETE LATER
-	void initInventoryCards(std::vector<Card>& shop) {
-		// create 3 cards for shop
-		Card card{};
-		for (int i{ 0 }; i < num_inventoryCards; ++i) {
-			card.generateCard();  // generate card stats
-			shop.push_back(card); // push card into vector
-		}
-	}
-
+	// Computes the home positions of an array of cards within a bounded range
 	void computeXCardPositions(std::vector<Card>& arr, f32 start, f32 end, f32 y, f32 scale = 10, f32 maxGap = 100.f) {
 		// EDGECASE: if array empty, return
 		if (arr.empty()) return;
@@ -116,7 +98,7 @@ namespace {
 		for (int i{ 0 }; i < displayCards; ++i) {
 			// EDGECASE: ONLY compute if more than 1 card
 			if (arr.size() <= 1) {
-				arr[i].pos.x = (0.5f*range); // centers one card
+				arr[i].pos.x = start + (0.5f*range); // centers one card
 				arr[i].pos.y = y;
 				// assigns homepos to computed pos
 				arr[i].homepos = arr[i].pos;
@@ -130,8 +112,10 @@ namespace {
 			// assigns homepos to computed pos
 			arr[i].homepos = arr[i].pos;
 		}
+		return;
 	}
 
+	// TO BE PHASED OUT IN FAVOUR OF HARD CODED POSITIONS
 	void computeYCardPositions(std::vector<Card>& arr, f32 start, f32 end, f32 x, f32 scale = 10) {
 		// EDGECASE: if array empty, return
 		if (arr.empty()) return;
@@ -162,72 +146,218 @@ namespace {
 			// assigns homepos to computed pos
 			arr[i].homepos = arr[i].pos;
 		}
+		return;
 	}
 
-	// only called if theres a card selected (via updateCardPosition)
-	Card& findSelectedCard() {
-		// Check shop
-		for (Card& card : shopCards) {
-			if (card.selected) return card;
+	// Calculates home positions of cards in Inventory Deck
+	void computeBagCardPositions() {
+		// init hardcoded positions of the inventory cards
+		std::vector <float> xpos{ 487.5f, 575.f, 662.5f };
+		std::vector <float> ypos{ 287.5f, 145.f, 2.5f, -140.f, -282.5f };
+		
+		//// assign inventory cards
+		//int xIndex{}, yIndex{};
+		//for (Card& card : inventoryCards) {
+		//	// if run out of defined grid positions, break
+		//	if (yIndex >= ypos.size()) break;
+		//	// if new row, increment y index
+		//	if (xIndex == 3) ++yIndex;
+		//	// normalise xIndex within [0,3)
+		//	xIndex = xIndex % 3;
+		//	// set homepos
+		//	card.homepos = { xpos[xIndex++], ypos[yIndex] };
+		//	card.pos = card.homepos;
+		//}
+
+		for (int i = 0; i < inventoryCards.size(); ++i) {
+			int row = i / 3;
+			int col = i % 3;
+
+			// if run out of defined grid positions, break
+			if (row >= ypos.size()) break;
+
+			inventoryCards[i].homepos = { xpos[col], ypos[row] };
+			inventoryCards[i].pos = inventoryCards[i].homepos;
 		}
-		// Check active
-		for (Card& card : activeCards) {
-			if (card.selected) return card;
+
+		return;
+	}
+
+	// Driver for Calulating Home Positions of ALL cards
+	void computeCardHomePos() {
+		// if vector is not empty, calc positions
+		if (!activeCards.empty()) {
+			computeXCardPositions(activeCards, -550.f, 300.f, -300.f, ACTIVE_CARD_SCALE, 150.f);
+			for (Card& card : activeCards) {
+				card.homepos = card.pos;
+				Comp::computeBoundingBox(card.boundingBox, card.homepos, card.size, ACTIVE_CARD_SCALE * 10);
+			}
 		}
-		// Check inventory
-		for (Card& card : inventoryCards) {
-			if (card.selected) return card;
+		if (!shopCards.empty()) {
+			computeXCardPositions(shopCards, -700.f, 300.f, 20.f, CARD_SHOP_SCALE, 300.f);
+			for (Card& card : shopCards) {
+				card.homepos = card.pos;
+				Comp::computeBoundingBox(card.boundingBox, card.homepos, card.size, CARD_SHOP_SCALE * 10);
+			}
+		}
+		if (!inventoryCards.empty()) {
+			computeBagCardPositions();
+			for (Card& card : inventoryCards) {
+				card.homepos = card.pos;
+				Comp::computeBoundingBox(card.boundingBox, card.homepos, card.size, INVENTORY_CARD_SCALE * 10);
+			}
+		}
+		return;
+	}
+
+	void removeFromSource(Card& card) {
+		// determine and create pointer to sourceDeck
+		std::vector<Card>* sourceDeck = &shopCards; // default shopCards
+		switch (card.from) {
+		case DECK::ACTIVE: sourceDeck = &activeCards; break;
+		case DECK::BAG:    sourceDeck = &inventoryCards; break;
+		}
+
+		// for loop to find index of card in sourceDeck
+		for (size_t i = 0; i < (*sourceDeck).size(); ++i) {
+			// if homepos matches (homepos is unique to each card)
+			if (Comp::AEVec2Equal((*sourceDeck)[i].homepos, card.homepos)) {
+				// erase card from old deck
+				(*sourceDeck).erase((*sourceDeck).begin() + i);
+				break; // break out of loop
+			}
+		}
+	}
+
+	// triggers when pSelectedCard != nullptr
+	void handleCardDrop() {
+		Card& card = *pSelectedCard;
+		// if dropped in bag
+		if (Comp::collisionPointRect(card.pos, { 575, 0 }, { 350,800 })) {
+			// only trigger if not from bag AND have space
+			if ((card.from == DECK::BAG) || (inventoryCards.size() >= num_inventoryCards)) return;
+			
+			// reset pSelectedCard
+			pSelectedCard = nullptr;
+			
+			// add card to bag deck, delete from old deck
+			Card newCard = card;
+			newCard.from = DECK::BAG;
+			inventoryCards.push_back(newCard);
+
+			removeFromSource(card);
+			computeCardHomePos();
+		}
+		// else if dropped in active
+		else if (Comp::collisionPointRect(card.pos, { -125, -300 }, { 950, 200 })) {
+			// only trigger if not from active AND have space
+			if ((card.from == DECK::ACTIVE) || (activeCards.size() >= num_activeCards)) return;
+			
+			// reset pSelectedCard
+			pSelectedCard = nullptr;
+
+			// add card to active deck, delete from old deck
+			Card newCard = card;
+			newCard.from = DECK::ACTIVE;
+			activeCards.push_back(newCard);
+
+			removeFromSource(card);
+			computeCardHomePos();
+		}
+		// trash
+		else if (Comp::collisionPointRect(card.pos, { -700, -300 }, { 100, 100 })) {
+			// only trigger if not from shop
+			if (card.from == DECK::SHOP) return;
+			
+			// reset pSelectedCard
+			pSelectedCard = nullptr;
+			
+			// trash card
+			removeFromSource(card);
+			computeCardHomePos();
 		}
 	}
 
 	void updateCardPosition() {
 		// get selected card
-		Card &card = findSelectedCard();
+		Card &card = *pSelectedCard;
 
 		// update card position
 		AEVec2 deltacursorpos{};
 		Comp::getDeltaCursorPos(deltacursorpos);
 		card.pos.x += deltacursorpos.x;
 		card.pos.y -= deltacursorpos.y;
-
+		
 		// if user NOT holding left click
 		if (!AEInputCheckCurr(AEVK_LBUTTON)) {
-			// deselect card
-			card.selected = false;
+			handleCardDrop();
 			// reset to home pos
 			card.pos = card.homepos;
-			// set global bool to false
-			cardSelected = false;
+			// set selected card ptr to null
+			pSelectedCard  = nullptr;
 		}
 	}
 
-	bool checkCardCollision() {
+	void checkCardCollision() {
 		// get cursor position
 		AEVec2 cursorpos{};
 		Comp::getCursorPos(cursorpos);
 
 		// for every card in ALL arrays, check for a hit
-		// if hit, set selected boolean to true and return hit
+		// if hit, assign card to ptr IF left button is triggered
 		for (Card &card : shopCards) {
 			if (Comp::collisionPointRect(cursorpos, card.boundingBox)) {
-				card.selected = true;
-				return 1;
+				if (AEInputCheckTriggered(AEVK_LBUTTON)) pSelectedCard = &card;
+				return;
 			}
 		}
 		for (Card &card : activeCards) {
 			if (Comp::collisionPointRect(cursorpos, card.boundingBox)) {
-				card.selected = true;
-				return 1;
+				if (AEInputCheckTriggered(AEVK_LBUTTON)) pSelectedCard = &card;
+				return;
 			}
 		}
 		for (Card &card : inventoryCards) {
 			if (Comp::collisionPointRect(cursorpos, card.boundingBox)) {
-				card.selected = true;
-				return 1;
+				if (AEInputCheckTriggered(AEVK_LBUTTON)) pSelectedCard = &card;
+				return;
 			}
 		}
-		// else return no hit
-		return 0;
+		// else return no hit at all
+		return;
+	}
+
+	void drawPrompts() {
+		Card& card = *pSelectedCard;
+		// check collision with non-shop inventories
+
+		// bag deck prompt
+		if (Comp::collisionPointRect(card.pos, { 575, 0 }, { 350,800 })) {
+			// dont display if selectedCard was from the bag deck
+			if ((card.from == DECK::BAG)) return;
+			// display bag deck prompt
+			Gfx::printMesh(bag, { 575,0 }, { 350,800 });
+		}
+		// active deck prompt
+		else if (Comp::collisionPointRect(card.pos, { -125, -300 }, { 950, 200 })) {
+			// dont display if selectedCard was from the active deck
+			if ((card.from == DECK::ACTIVE)) return;
+			// display active deck prompt
+			Gfx::printMesh(cardSlots, { -125, -300 }, { 950, 200 });
+		}
+	}
+
+	void drawSelectedCard() {
+		// determine card size based on card type
+		Card& card = *pSelectedCard;
+		f32 scale{};
+		// determine scale
+		switch (card.from) {
+		case DECK::SHOP:   scale = CARD_SHOP_SCALE; break;
+		case DECK::ACTIVE: scale = ACTIVE_CARD_SCALE; break;
+		case DECK::BAG:    scale = INVENTORY_CARD_SCALE; break;
+		}
+		Gfx::printMesh(rectMesh, *pSelectedCard, scale);
 	}
 }
 
@@ -246,45 +376,28 @@ void InitializeDebug4() {
 	trash = Gfx::createRectMesh("center", ctrash);
 
 	// [ DO NOT TOUCH ] Reserve space in memory for different card categories
-	shopCards.reserve(4);
-	activeCards.reserve(8);
-	inventoryCards.reserve(16);
+	shopCards.reserve(4);       // max cards allowed
+	activeCards.reserve(10);    // max cards allowed
+	inventoryCards.reserve(15); // max cards allowed
 
 	// initializes shop cards
 	initCardShop(shopCards);
-	computeXCardPositions(shopCards, -700, 300, 20, CARD_SHOP_SCALE, 300.f);
-	for (Card &card : shopCards) {
-		card.homepos = card.pos;
-		Comp::computeBoundingBox(card.boundingBox, card.homepos, card.size, CARD_SHOP_SCALE*10);
-	}
-	// set selected card boolean to false
-	cardSelected = false;
-
-	// [ FOR DEMO ONLY. DELETE LATER ] init other cards
-	initActiveCards(activeCards);
-	computeXCardPositions(activeCards, -550, 300, -300, ACTIVE_CARD_SCALE, 150.f);
-	initInventoryCards(inventoryCards);
-	computeYCardPositions(inventoryCards, -335, 340, 575, INVENTORY_CARD_SCALE);
+	computeCardHomePos();
 }
 
 void UpdateDebug4() {
 	// if theres a card selected, update selected card position
-	if (cardSelected) {
+	if (pSelectedCard) {
 		updateCardPosition();
 	}
-	// else if user clicked left click
-	else if (AEInputCheckTriggered(AEVK_LBUTTON)) {
-		// check for collision for ALL cards
-		// if theres a hit, set bool to true
-		if (checkCardCollision()) cardSelected = true;
-	} 
-	// else set selected card bool to false
-	else cardSelected = false;
-	// endif
+	// else check collision for ALL cards
+	else {
+		checkCardCollision();
+	} // endif
 }
+
 // -600 -200 200
 void DrawDebug4() {
-	//AEGfxStart();
 	// gray bg
 	AEGfxSetBackgroundColor(0.82f, 0.82f, 0.82f);
 	// object drawing settings
@@ -298,7 +411,7 @@ void DrawDebug4() {
 	Gfx::printMesh(desc, { -200, 325 }, { 1100, 150 });
 	Gfx::printMesh(cardSlots, { -125, -300 }, { 950, 200 });
 	Gfx::printMesh(trash, { -700, -300 }, { 100, 100 });
-	
+
 	// TEXTS
 	for (GfxText text : shopTexts) {
 		Gfx::printText(text, boldPixels);
@@ -315,15 +428,19 @@ void DrawDebug4() {
 	for (Card& indivCard : inventoryCards) {
 		Gfx::printMesh(rectMesh, indivCard, INVENTORY_CARD_SCALE);
 	}
+	// if theres a card selected, draw prompts
+	if (pSelectedCard) {
+		drawPrompts();
+		drawSelectedCard(); // ensure selected card always on top
+	}
 }
 
 void FreeDebug4() {
-	// free font
-	AEGfxDestroyFont(boldPixels);
-	// free mesh
-	AEGfxMeshFree(rectMesh);
-	// clear shop array
-	shopCards.clear();
-	activeCards.clear();
-	inventoryCards.clear();
+	AEGfxMeshFree(rectMesh); // free mesh
+	shopCards.clear(); // clear shop array
+}
+
+void UnloadDebug4() {
+	// unload assets
+	AEGfxDestroyFont(boldPixels); // font
 }

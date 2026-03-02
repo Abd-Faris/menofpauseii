@@ -18,13 +18,6 @@ void LoadDebug3();
 void DrawDebug3();
 void FreeDebug3();
 
-// debug4.cpp
-void LoadDebug4();
-void InitializeDebug4();
-void UpdateDebug4();
-void DrawDebug4();
-void FreeDebug4();
-
 // debug5.cpp
 void LoadDebug5();
 void DrawDebug5();

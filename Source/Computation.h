@@ -3,6 +3,7 @@
 
 // USAGE: Comp::<function-name>
 namespace Computation {
+	
 	//--------------- CONVERSIONS ----------------//
 
 	// Normalizes RGBA
@@ -23,6 +24,11 @@ namespace Computation {
 	// Fetches Current Cursor Position in WORLD COORDS
 	void getCursorPos(AEVec2& inputVec);
 	void getDeltaCursorPos(AEVec2& inputVec);
+
+	//---------------- QOL FUNCTIONS -------------//
+	
+	// Checks if 2 AEVec2 are equal (INCLUDING EPSILON)
+	bool AEVec2Equal(const AEVec2& lhs, const AEVec2& rhs);
 
 	//---------------- COLLISION -----------------//
 	
