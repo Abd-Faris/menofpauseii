@@ -142,18 +142,21 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
     }
 
     case BossState::COOLDOWN:
+
         boss.shootTimer += deltaTime;
 
         // Shoot once shortly after the lunge lands
-        if (boss.shootTimer >= 0.1f) {
+        if (!boss.hasShot && boss.shootTimer >= 0.1f) {
             BossShootRing(boss);
             boss.shootTimer = boss.cooldownDuration; // prevent shooting again this cooldown
+            boss.hasShot = true;
         }
 
         if (boss.stateTimer >= boss.cooldownDuration) {
             boss.state = BossState::IDLE;
             boss.stateTimer = 0.f;
             boss.shootTimer = 0.f; // reset for next lunge
+            boss.hasShot = false;
         }
         break;
     }

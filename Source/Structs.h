@@ -132,6 +132,7 @@ struct Boss {
 	float cooldownDuration = 0.8f;
 	float shootTimer = 0.f;
 	int bulletCount = 8;
+	bool hasShot = false;
 };
 
 struct PlayerStats {
