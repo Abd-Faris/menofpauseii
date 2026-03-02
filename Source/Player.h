@@ -1,6 +1,7 @@
 #pragma once
 
 extern BulletObj bulletList[GameConfig::MAX_BULLETS_COUNT];
+
 extern float bulletFireTimer;
 extern bool bigcannon;
 
@@ -12,3 +13,4 @@ void rotatePlayer(shape& player);
 void ShootBullet(shape& player, float deltaTime);
 void drawBigCannon(shape& player);
 void updateBullets(shape& player, float deltaTime);
+void updateOrbit(shape& player, float deltaTime);

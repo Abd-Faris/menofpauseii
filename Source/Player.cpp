@@ -8,6 +8,10 @@ BulletObj bulletList[GameConfig::MAX_BULLETS_COUNT];
 float bulletFireTimer = 0.0f;
 bool bigcannon = false;
 bool dualback = false;
+bool orbitActive = false;
+float orbitAngle = 0.0f;
+float orbitPosX = 0.0f;
+float orbitPosY = 0.0f;
 
 void DrawMultiBarrels(int count, float gap, float pivotOffset, float tankRot, float tankX, float tankY, float barrelWidth, float barrelLength, AEGfxVertexList* MeshRect) {
     if (count <= 0) return;
@@ -54,23 +58,27 @@ void drawBigTank(shape &player) {
     }
 }
 
-void movePlayer(shape &player, float deltaTime) {
+void movePlayer(shape& player, float deltaTime) {
     float playerSpeed = calculate_max_stats(2);
-	float moveAmount = playerSpeed * deltaTime;
-	float nextPosX = player.pos_x;
-	float nextPosY = player.pos_y;
+    float moveAmount = playerSpeed * deltaTime;
 
-	if (AEInputCheckCurr(AEVK_W) || AEInputCheckCurr(AEVK_UP)) nextPosY += moveAmount;
-	if (AEInputCheckCurr(AEVK_S) || AEInputCheckCurr(AEVK_DOWN)) nextPosY -= moveAmount;
-	if (AEInputCheckCurr(AEVK_A) || AEInputCheckCurr(AEVK_LEFT)) nextPosX -= moveAmount;
-    if (AEInputCheckCurr(AEVK_D) || AEInputCheckCurr(AEVK_RIGHT)) nextPosX += moveAmount;
+    float nextX = player.pos_x;
+    float nextY = player.pos_y;
 
-    //check for collision between world border
-    if (!World::CheckCollision(nextPosX, nextPosY)) {
-        player.pos_x = nextPosX;
-        player.pos_y = nextPosY;
+    if (AEInputCheckCurr(AEVK_W) || AEInputCheckCurr(AEVK_UP))    nextY += moveAmount;
+    if (AEInputCheckCurr(AEVK_S) || AEInputCheckCurr(AEVK_DOWN))  nextY -= moveAmount;
+    if (AEInputCheckCurr(AEVK_A) || AEInputCheckCurr(AEVK_LEFT))  nextX -= moveAmount;
+    if (AEInputCheckCurr(AEVK_D) || AEInputCheckCurr(AEVK_RIGHT)) nextX += moveAmount;
+
+	//collision checks for the new position before applying it
+    if (!World::CheckCollision(nextX, player.pos_y, player.scale, player.currentAngle)) {
+        player.pos_x = nextX;
+    }
+    if (!World::CheckCollision(player.pos_x, nextY, player.scale, player.currentAngle)) {
+        player.pos_y = nextY;
     }
 }
+
 
 void rotatePlayer(shape &player) {
     s32 mouseX, mouseY;
@@ -85,7 +93,12 @@ void rotatePlayer(shape &player) {
         float angleDifference = targetAngle - player.currentAngle;
         while (angleDifference > PI) angleDifference -= TWO_PI;
         while (angleDifference < -PI) angleDifference += TWO_PI;
-        player.currentAngle += angleDifference * 0.1f;
+        float nextAngle = player.currentAngle + angleDifference * 0.1f;
+
+		//check for collision at the new angle before applying it
+		if (!World::CheckCollision(player.pos_x, player.pos_y, player.scale, nextAngle)) {
+            player.currentAngle = nextAngle;
+        }
     }
 }
 
@@ -195,6 +208,23 @@ void ShootBullet(shape &player, float deltaTime) {
     }
 }
 
+void updateOrbit(shape& player, float deltaTime) {
+    if (AEInputCheckTriggered(AEVK_C)) {
+        orbitActive = !orbitActive;
+    }
+
+    if (orbitActive) {
+        float orbitSpeed = 4.0f; // Spin speed
+        float orbitRadius = 150.0f * (player.scale / GameConfig::Tank::SCALE); // Distance from tank
+
+        orbitAngle += orbitSpeed * deltaTime;
+        if (orbitAngle > TWO_PI) orbitAngle -= TWO_PI;
+
+        orbitPosX = player.pos_x + cosf(orbitAngle) * orbitRadius;
+        orbitPosY = player.pos_y + sinf(orbitAngle) * orbitRadius;
+    }
+}
+
 void drawBigCannon(shape& player) {
     if (AEInputCheckTriggered(AEVK_U)) {
         bigcannon = !bigcannon;
@@ -221,6 +251,19 @@ void updateBullets(shape& player, float deltaTime) {
             float diffY = boolet.posY - player.pos_y;
             if ((diffX * diffX + diffY * diffY) > GameConfig::DESPAWN_DISTANCE_SQ) {
                 boolet.isActive = false;
+            }
+        }
+    }
+    for (auto& eBullet : enemyBulletList) {
+        if (eBullet.isActive) {
+            eBullet.posX += eBullet.directionX * eBullet.speed * deltaTime;
+            eBullet.posY += eBullet.directionY * eBullet.speed * deltaTime;
+
+            // Despawn if they get too far from the player
+            float diffX = eBullet.posX - player.pos_x;
+            float diffY = eBullet.posY - player.pos_y;
+            if ((diffX * diffX + diffY * diffY) > GameConfig::DESPAWN_DISTANCE_SQ) {
+                eBullet.isActive = false;
             }
         }
     }

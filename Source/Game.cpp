@@ -5,7 +5,8 @@
 // ===========================================================================
 // GLOBAL OBJECTS
 // ===========================================================================
-extern bool dualback;
+extern bool dualback, orbitActive;
+extern float orbitAngle, orbitPosX, orbitPosY;
 namespace {
     // -- Assets --
     s8 boldPixelsFont;
@@ -41,7 +42,19 @@ void circlerectcollision() {
             }
                 
         }
+        if (orbitActive) {
+            float diffX = orbitPosX - currentEnemy.pos.x;
+            float diffY = orbitPosY - currentEnemy.pos.y;
+            float distanceSquared = (diffX * diffX) + (diffY * diffY);
 
+            float orbitSize = 20.0f; // Radius of the ball
+            float collisionRadius = (currentEnemy.scale * GameConfig::Enemy::HITBOX_RATIO) + orbitSize;
+
+            if (distanceSquared < (collisionRadius * collisionRadius)) {
+                currentEnemy.hp = 0;
+                TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale);
+            }
+        }
         for (auto& boolet : bulletList) {
             if (!boolet.isActive) continue;
 
@@ -60,6 +73,24 @@ void circlerectcollision() {
 					//triggers explosion animation at enemy position
                     TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale);
                 }
+            }
+        }
+        for (auto& enBullet : enemyBulletList) {
+            if (!enBullet.isActive) continue;
+
+            float differenceX = enBullet.posX - player.pos_x;
+            float differenceY = enBullet.posY - player.pos_y;
+            float distanceSquared = (differenceX * differenceX) + (differenceY * differenceY);
+
+            // Calculate collision radius (Player scale + bullet size)
+            float collisionRadius = player.scale + enBullet.size;
+
+            if (distanceSquared < (collisionRadius * collisionRadius)) {
+                player_init.current_hp -= 10; // player
+                enBullet.isActive = false;     // Destroy the enemy bullet
+
+
+                TriggerExplosion(player.pos_x, player.pos_y, 20.0f);
             }
         }
     }
@@ -124,6 +155,8 @@ void UpdateGame() {
 		// 3. Shooting (UPDATED FOR MULTI-BARREL)
 		ShootBullet(player, deltaTime);
 
+        updateOrbit(player, deltaTime);
+
 		// 4. Move Bullets
 		updateBullets(player, deltaTime);
 
@@ -159,6 +192,19 @@ void DrawGame() {
         if (boolet.isActive) {
             Gfx::printMesh(MeshCircle, { boolet.posX, boolet.posY }, { boolet.size, boolet.size }, 0.0f);
         }
+    }
+    //enemy bullets
+    AEGfxSetColorToMultiply(1.0f, 0.2f, 0.2f, 1.0f); // Bright Red
+    for (const auto& enBullet : enemyBulletList) {
+        if (enBullet.isActive) {
+            Gfx::printMesh(MeshCircle, { enBullet.posX, enBullet.posY }, { enBullet.size, enBullet.size }, 0.0f);
+        }
+    }
+
+    if (orbitActive) {
+        AEGfxSetColorToMultiply(0.0f, 1.0f, 1.0f, 1.0f); // Bright Cyan
+        float orbitSize = 40.0f;
+        Gfx::printMesh(MeshCircle, { orbitPosX, orbitPosY }, { orbitSize, orbitSize }, orbitAngle);
     }
 
     // -- Draw Player Tank --

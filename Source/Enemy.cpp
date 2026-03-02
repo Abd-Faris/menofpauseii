@@ -3,6 +3,8 @@
 std::array<Enemies, GameConfig::MAX_ENEMIES_COUNT> enemyPool;
 f64 enemySpawnTimer = 0;
 
+BulletObj enemyBulletList[GameConfig::MAX_BULLETS_COUNT];
+
 void ResetEnemy(Enemies* enemyToReset) {
     enemyToReset->alive = false;
     enemyToReset->pos.x = GameConfig::OFF_SCREEN_COORD;
@@ -100,6 +102,7 @@ void SpawnShooterEnemy(shape player) {
             newEnemy.scale = GameConfig::Enemy::SIZE_BIG;
             newEnemy.enemtype = SHOOTER;
 
+            newEnemy.cooldown = 2.0f;//2 seconds initial cooldown
             int initialHP = (int)(GameConfig::Enemy::HP_BIG);
             newEnemy.hp = initialHP;
             newEnemy.maxhp = initialHP;
@@ -116,6 +119,7 @@ void EnemySpawner(shape &player, float deltaTime) {
         if (player_init.player_level >= 5)
         {
             SpawnAttackEnemy(player);
+            SpawnShooterEnemy(player);
         }
         enemySpawnTimer = 0;
     }
@@ -163,6 +167,62 @@ void updateEnemyPhysics(shape &player, float deltaTime) {
                 currentEnemy.velocity.y *= GameConfig::Enemy::FRICTION;
                 currentEnemy.pos.x += currentEnemy.velocity.x * deltaTime;
                 currentEnemy.pos.y += currentEnemy.velocity.y * deltaTime;
+            }
+        }
+        // --- NEW: SHOOTER LOGIC ---
+        if (currentEnemy.enemtype == SHOOTER) {
+            AEVec2 PlayerPos = { player.pos_x, player.pos_y };
+            AEVec2 EnemyPos = { currentEnemy.pos.x, currentEnemy.pos.y };
+            AEVec2 dir = {};
+            AEVec2Sub(&dir, &PlayerPos, &EnemyPos);
+
+            f32 hyp = sqrt(dir.x * dir.x + dir.y * dir.y);
+
+            // 1. Aim at the player (Rotation visual)
+            if ((dir.x * dir.x) + (dir.y * dir.y) > GameConfig::MOUSE_JITTER_THRESHOLD) {
+                float targetAngle = atan2f(dir.y, dir.x) * (180.f / PI);
+                float angleDifference = targetAngle - currentEnemy.rotation;
+                while (angleDifference > 180.f) angleDifference -= 360.f;
+                while (angleDifference < -180.f) angleDifference += 360.f;
+                currentEnemy.rotation += angleDifference * 0.1f;
+            }
+
+            // Normalize the direction vector so we can use it for movement and shooting
+            if (hyp > 0) {
+                dir.x /= hyp;
+                dir.y /= hyp;
+            }
+
+            // 2. Keep Distance (Move closer only if further than 400 units)
+            if (hyp > 400.0f) {
+                currentEnemy.velocity.x += dir.x * 300 * deltaTime;
+                currentEnemy.velocity.y += dir.y * 300 * deltaTime;
+            }
+
+            // 3. Shooting Logic
+            currentEnemy.cooldown -= deltaTime; // Ensure your struct uses 'cooldown' here
+
+            // If timer is up AND player is close enough to see (e.g., within 800 units), FIRE!
+            if (currentEnemy.cooldown <= 0.0f && hyp < 800.0f) {
+                currentEnemy.cooldown = 1.5f; // Reset cooldown to 1.5 seconds
+
+                // Find an empty bullet slot
+                for (auto& eBullet : enemyBulletList) {
+                    if (!eBullet.isActive) {
+                        eBullet.isActive = true;
+                        eBullet.posX = currentEnemy.pos.x;
+                        eBullet.posY = currentEnemy.pos.y;
+
+                        // Shoot exactly in the direction of the player
+                        eBullet.directionX = dir.x;
+                        eBullet.directionY = dir.y;
+
+                        eBullet.speed = 400.0f; // Speed of the red bullet
+                        eBullet.size = 15.0f;
+                        eBullet.damagemul = 1.0f;
+                        break; // Stop after firing 1 bullet
+                    }
+                }
             }
         }
 

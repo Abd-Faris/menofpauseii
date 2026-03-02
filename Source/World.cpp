@@ -8,7 +8,7 @@ namespace World {
 
 	void Load_World() {
 		if (pWallTex != nullptr || pWallMesh != nullptr) return;
-		pWallTex = AEGfxTextureLoad("./Assets/wall.png");
+		pWallTex = AEGfxTextureLoad("./Assets/wall.jpg");
 
 		AEGfxMeshStart();
 		AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
@@ -38,30 +38,57 @@ namespace World {
 		}
 	}
 
-	bool CheckCollision(float x, float y) {
-		//
-		float tank_radius = GameConfig::Tank::SCALE / 2.0f;
-		//check the four corners of the tank's bounding box for collision with walls or world borders
-		
-		float pointsX[] = { x + tank_radius, x - tank_radius, x,x };
-		float pointsY[] = { y, y, y + tank_radius, y - tank_radius };
 
-		//loop through each corner point and check for collision
+	bool IsPointColliding(float worldX, float worldY) {
+		//convert world coordinates to grid indices
+		int col = static_cast<int>((worldX + World::HALF_WIDTH) / World::TILE_SIZE);
+		int row = static_cast<int>((World::HALF_HEIGHT - worldY) / World::TILE_SIZE);
+
+		//check if the indices are out of bounds, if yes, treat it as a collision
+		if (col < 0 || col >= World::WORLD_COLS || row < 0 || row >= World::WORLD_ROWS) return true;
+		return (World::mapGrid[row][col] == 1);
+	}
+
+
+	bool CheckCollision(float x, float y, float playerScale, float playerRotation) {
+		//corners of the tank and barrel in local space 
+		float h = (playerScale * 0.9f);
+		AEVec2 tankPoints[4] = {
+			{ h,  h }, { h, -h },
+			{-h,  h }, {-h, -h }
+		};
+
+		float barrelLen = GameConfig::Tank::BARREL_LENGTH * (playerScale / GameConfig::Tank::SCALE);
+		float halfBWidth = 11.0f;
+
+		AEVec2 barrelPoints[4] = {
+		{ -halfBWidth, barrelLen }, 
+		{  halfBWidth, barrelLen }, 
+		{ -halfBWidth, barrelLen * 0.5f }, 
+		{  halfBWidth, barrelLen * 0.5f }
+		};
+
+		float cosA = cosf(playerRotation);
+		float sinA = sinf(playerRotation);
+
+		//rotate and translate each point to world space, then check for collision
 		for (int i = 0; i < 4; i++) {
-			int col = static_cast<int>((pointsX[i] + HALF_WIDTH) / TILE_SIZE);
-			int row = static_cast<int>((HALF_HEIGHT - pointsY[i]) / TILE_SIZE);
+			float worldX = x + (tankPoints[i].x * cosA - tankPoints[i].y * sinA);
+			float worldY = y + (tankPoints[i].x * sinA + tankPoints[i].y * cosA);
 
-			//check if the point is outside the world boundaries or if it collides with a wall tile
-			if (row < 0 || row >= WORLD_ROWS || col < 0 || col >= WORLD_COLS) {
-				return true;
-			}
-			if (mapGrid[row][col] == 1) {
-				return true;
-			}
+			if (IsPointColliding(worldX, worldY)) return true;
 		}
-		//if no collide
+		//also check the barrel points for collision
+		for (int i = 0; i < 4; i++) {
+			float worldX = x + (barrelPoints[i].x * cosA - barrelPoints[i].y * sinA);
+			float worldY = y + (barrelPoints[i].x * sinA + barrelPoints[i].y * cosA);
+
+			if (IsPointColliding(worldX, worldY)) return true;
+		}
+
 		return false;
 	}
+
 
 	void Draw_World(){
 		if (pWallMesh == nullptr || pWallTex == nullptr) {
