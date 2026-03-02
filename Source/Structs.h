@@ -25,10 +25,21 @@ enum Type {
 	NUM_OF_TYPES
 };
 
+enum struct DECK {
+	SHOP,
+	ACTIVE,
+	BAG,
+	TRASH
+};
+
 enum EnemyType {
 	PASSIVE = 0,
 	ATTACK,
 	SHOOTER
+};
+enum BossType {
+	BOSS1,
+	BOSS2
 };
 
 struct AABB {
@@ -42,9 +53,9 @@ struct Card {
 	AEVec2 size{ 25, 35 };
 	int type{}, val{}, rarity{ Rarity::COMMON };
 	AEGfxVertexList* mesh{};
-	bool cardFollowsCursor{ false }; // bool to anchor card to cursor pos
 	AABB boundingBox{}; // collision bounding box
-	bool selected{ false };
+	bool hoveredOn{ false };
+	DECK from{}; // to be updated every time card is shifted
 
 	// MEMBER FUNCTIONS
 
@@ -86,11 +97,42 @@ struct Enemies {
 	float scale;
 	float rotation;
 	bool alive = false;
-	int hp;
-	int maxhp;
+	int hp{};
+	int maxhp{};
 	int enemtype = PASSIVE;
 	bool detect = false;
-	float cooldown;
+	float cooldown{};
+};
+
+enum class BossState { IDLE, TELEGRAPHING, LUNGING, COOLDOWN };
+
+struct Boss {
+	AEVec2 pos;
+	AEVec2 velocity;
+	int xp{};
+	float scale{};
+	float rotation{};
+	bool alive = false;
+	int hp{};
+	int maxhp{};
+	int bosstype = BOSS1;
+	bool detect = false;
+
+	// Lunge state machine
+	BossState state = BossState::IDLE;
+	float stateTimer = 0.f;
+	AEVec2 lungeDirection = { 0, 0 }; // locked in during telegraph
+
+	// Per-phase tuning (set on spawn, vary by bosstype)
+	float chaseSpeed = 150.f;
+	float lungeSpeed = 1400.f;
+	float idleDuration = 1.5f;
+	float telegraphDuration = 0.6f;
+	float lungeDuration = 0.25f;
+	float cooldownDuration = 0.8f;
+	float shootTimer = 0.f;
+	int bulletCount = 8;
+	bool hasShot = false;
 };
 
 struct PlayerStats {

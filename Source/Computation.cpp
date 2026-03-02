@@ -70,6 +70,14 @@ namespace Computation {
 		AEInputGetCursorPositionDelta(&mouseX, &mouseY);
 		inputVec = { (float)mouseX, (float)mouseY };
 	}
+
+	//---------------- QOL FUNCTIONS -------------//
+ 
+	// Checks if 2 AEVec2 are equal (INCLUDING EPSILON)
+	bool AEVec2Equal(const AEVec2& lhs, const AEVec2& rhs) {
+		return (std::abs(lhs.x - rhs.x) < EPSILON &&
+			    std::abs(lhs.y - rhs.y) < EPSILON);
+	}
 	
 	//---------------- COLLISION -----------------//
 	

@@ -58,23 +58,27 @@ void drawBigTank(shape &player) {
     }
 }
 
-void movePlayer(shape &player, float deltaTime) {
+void movePlayer(shape& player, float deltaTime) {
     float playerSpeed = calculate_max_stats(2);
-	float moveAmount = playerSpeed * deltaTime;
-	float nextPosX = player.pos_x;
-	float nextPosY = player.pos_y;
+    float moveAmount = playerSpeed * deltaTime;
 
-	if (AEInputCheckCurr(AEVK_W) || AEInputCheckCurr(AEVK_UP)) nextPosY += moveAmount;
-	if (AEInputCheckCurr(AEVK_S) || AEInputCheckCurr(AEVK_DOWN)) nextPosY -= moveAmount;
-	if (AEInputCheckCurr(AEVK_A) || AEInputCheckCurr(AEVK_LEFT)) nextPosX -= moveAmount;
-    if (AEInputCheckCurr(AEVK_D) || AEInputCheckCurr(AEVK_RIGHT)) nextPosX += moveAmount;
+    float nextX = player.pos_x;
+    float nextY = player.pos_y;
 
-    //check for collision between world border
-    if (!World::CheckCollision(nextPosX, nextPosY)) {
-        player.pos_x = nextPosX;
-        player.pos_y = nextPosY;
+    if (AEInputCheckCurr(AEVK_W) || AEInputCheckCurr(AEVK_UP))    nextY += moveAmount;
+    if (AEInputCheckCurr(AEVK_S) || AEInputCheckCurr(AEVK_DOWN))  nextY -= moveAmount;
+    if (AEInputCheckCurr(AEVK_A) || AEInputCheckCurr(AEVK_LEFT))  nextX -= moveAmount;
+    if (AEInputCheckCurr(AEVK_D) || AEInputCheckCurr(AEVK_RIGHT)) nextX += moveAmount;
+
+	//collision checks for the new position before applying it
+    if (!World::CheckCollision(nextX, player.pos_y, player.scale, player.currentAngle)) {
+        player.pos_x = nextX;
+    }
+    if (!World::CheckCollision(player.pos_x, nextY, player.scale, player.currentAngle)) {
+        player.pos_y = nextY;
     }
 }
+
 
 void rotatePlayer(shape &player) {
     s32 mouseX, mouseY;
@@ -89,7 +93,12 @@ void rotatePlayer(shape &player) {
         float angleDifference = targetAngle - player.currentAngle;
         while (angleDifference > PI) angleDifference -= TWO_PI;
         while (angleDifference < -PI) angleDifference += TWO_PI;
-        player.currentAngle += angleDifference * 0.1f;
+        float nextAngle = player.currentAngle + angleDifference * 0.1f;
+
+		//check for collision at the new angle before applying it
+		if (!World::CheckCollision(player.pos_x, player.pos_y, player.scale, nextAngle)) {
+            player.currentAngle = nextAngle;
+        }
     }
 }
 

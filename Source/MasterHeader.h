@@ -28,6 +28,7 @@
 // Game States
 #include "MainMenu.h"
 #include "Game.h"
+#include "Cards.h"
 #include "DebugMenus.h"
 
 // Graphics & Animations
@@ -36,6 +37,7 @@
 // Game Objects
 #include "Player.h"
 #include "Enemy.h"
+#include "Boss.h"
 	
 // Game World
 #include "World.h"
