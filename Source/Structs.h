@@ -90,6 +90,7 @@ struct Enemies {
 	int maxhp;
 	int enemtype = PASSIVE;
 	bool detect = false;
+	float cooldown;
 };
 
 struct PlayerStats {
