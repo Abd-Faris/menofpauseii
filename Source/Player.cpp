@@ -245,4 +245,17 @@ void updateBullets(shape& player, float deltaTime) {
             }
         }
     }
+    for (auto& eBullet : enemyBulletList) {
+        if (eBullet.isActive) {
+            eBullet.posX += eBullet.directionX * eBullet.speed * deltaTime;
+            eBullet.posY += eBullet.directionY * eBullet.speed * deltaTime;
+
+            // Despawn if they get too far from the player
+            float diffX = eBullet.posX - player.pos_x;
+            float diffY = eBullet.posY - player.pos_y;
+            if ((diffX * diffX + diffY * diffY) > GameConfig::DESPAWN_DISTANCE_SQ) {
+                eBullet.isActive = false;
+            }
+        }
+    }
 }

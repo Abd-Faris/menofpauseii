@@ -75,6 +75,24 @@ void circlerectcollision() {
                 }
             }
         }
+        for (auto& enBullet : enemyBulletList) {
+            if (!enBullet.isActive) continue;
+
+            float differenceX = enBullet.posX - player.pos_x;
+            float differenceY = enBullet.posY - player.pos_y;
+            float distanceSquared = (differenceX * differenceX) + (differenceY * differenceY);
+
+            // Calculate collision radius (Player scale + bullet size)
+            float collisionRadius = player.scale + enBullet.size;
+
+            if (distanceSquared < (collisionRadius * collisionRadius)) {
+                player_init.current_hp -= 10; // player
+                enBullet.isActive = false;     // Destroy the enemy bullet
+
+
+                TriggerExplosion(player.pos_x, player.pos_y, 20.0f);
+            }
+        }
     }
 }
 
@@ -173,6 +191,13 @@ void DrawGame() {
     for (const auto& boolet : bulletList) {
         if (boolet.isActive) {
             Gfx::printMesh(MeshCircle, { boolet.posX, boolet.posY }, { boolet.size, boolet.size }, 0.0f);
+        }
+    }
+    //enemy bullets
+    AEGfxSetColorToMultiply(1.0f, 0.2f, 0.2f, 1.0f); // Bright Red
+    for (const auto& enBullet : enemyBulletList) {
+        if (enBullet.isActive) {
+            Gfx::printMesh(MeshCircle, { enBullet.posX, enBullet.posY }, { enBullet.size, enBullet.size }, 0.0f);
         }
     }
 

@@ -2,6 +2,7 @@
 
 extern std::array<Enemies, GameConfig::MAX_ENEMIES_COUNT> enemyPool;
 extern f64 enemySpawnTimer;
+extern BulletObj enemyBulletList[GameConfig::MAX_BULLETS_COUNT];
 
 void ResetEnemy(Enemies* enemyToReset);
 void SpawnOneEnemy(bool isBigEnemy, shape player);

@@ -1,6 +1,7 @@
 #pragma once
 
 extern BulletObj bulletList[GameConfig::MAX_BULLETS_COUNT];
+
 extern float bulletFireTimer;
 extern bool bigcannon;
 
