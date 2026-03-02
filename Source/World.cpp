@@ -8,7 +8,7 @@ namespace World {
 
 	void Load_World() {
 		if (pWallTex != nullptr || pWallMesh != nullptr) return;
-		pWallTex = AEGfxTextureLoad("./Assets/wall.png");
+		pWallTex = AEGfxTextureLoad("./Assets/wall.jpg");
 
 		AEGfxMeshStart();
 		AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,

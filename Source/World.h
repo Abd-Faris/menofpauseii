@@ -2,9 +2,9 @@
 
 namespace World {
 	//initialise world dimensions and tile size
-	const int WORLD_COLS = 54;
-	const int WORLD_ROWS = 30;
-	const float TILE_SIZE = 60.0f;
+	const int WORLD_COLS = 40;
+	const int WORLD_ROWS = 23;
+	const float TILE_SIZE = 80.0f;
 
 	//half dimensions for collision checks
 	const float HALF_WIDTH = (WORLD_COLS * TILE_SIZE) / 2.0f;
