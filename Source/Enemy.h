@@ -10,3 +10,4 @@ void SpawnAttackEnemy(shape player);
 void SpawnShooterEnemy(shape player);
 void EnemySpawner(shape& player, float deltaTime);
 void updateEnemyPhysics(shape &player, float deltaTime);
+void updateEnemyBullets(float deltaTime);

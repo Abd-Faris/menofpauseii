@@ -167,6 +167,9 @@ void UpdateGame() {
 
 		// 6. Enemy Physics
 		updateEnemyPhysics(player, deltaTime);
+
+		// 7. Enemy Bullets
+		updateEnemyBullets(deltaTime);
 	}
 	circlerectcollision();
 	AEGfxSetCamPosition(player.pos_x, player.pos_y);

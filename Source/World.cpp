@@ -39,7 +39,7 @@ namespace World {
 	}
 
 
-	bool IsPointColliding(float worldX, float worldY) {
+	bool isPointColliding(float worldX, float worldY) {
 		//convert world coordinates to grid indices
 		int col = static_cast<int>((worldX + World::HALF_WIDTH) / World::TILE_SIZE);
 		int row = static_cast<int>((World::HALF_HEIGHT - worldY) / World::TILE_SIZE);
@@ -76,14 +76,14 @@ namespace World {
 			float worldX = x + (tankPoints[i].x * cosA - tankPoints[i].y * sinA);
 			float worldY = y + (tankPoints[i].x * sinA + tankPoints[i].y * cosA);
 
-			if (IsPointColliding(worldX, worldY)) return true;
+			if (isPointColliding(worldX, worldY)) return true;
 		}
 		//also check the barrel points for collision
 		for (int i = 0; i < 4; i++) {
 			float worldX = x + (barrelPoints[i].x * cosA - barrelPoints[i].y * sinA);
 			float worldY = y + (barrelPoints[i].x * sinA + barrelPoints[i].y * cosA);
 
-			if (IsPointColliding(worldX, worldY)) return true;
+			if (isPointColliding(worldX, worldY)) return true;
 		}
 
 		return false;

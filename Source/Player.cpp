@@ -254,6 +254,16 @@ void updateBullets(shape& player, float deltaTime) {
             boolet.posX += boolet.directionX * boolet.speed * deltaTime;
             boolet.posY += boolet.directionY * boolet.speed * deltaTime;
 
+			//check for edges of the bullet for more accurate collision
+			float edgeX = boolet.posX + (boolet.size * boolet.directionX);
+			float edgeY = boolet.posY + (boolet.size * boolet.directionY);
+
+            //bullet to border collision check
+			if (World::isPointColliding(edgeX, edgeY)) {
+                boolet.isActive = false;
+                continue;
+            }
+
             float diffX = boolet.posX - player.pos_x;
             float diffY = boolet.posY - player.pos_y;
             if ((diffX * diffX + diffY * diffY) > GameConfig::DESPAWN_DISTANCE_SQ) {

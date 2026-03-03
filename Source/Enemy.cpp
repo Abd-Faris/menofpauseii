@@ -259,3 +259,19 @@ void updateEnemyPhysics(shape &player, float deltaTime) {
     }
 
 }
+
+void updateEnemyBullets(float deltaTime) {
+    for (auto& eBullet : enemyBulletList) {
+        if (!eBullet.isActive) continue;
+        eBullet.posX += eBullet.directionX * eBullet.speed * deltaTime;
+        eBullet.posY += eBullet.directionY * eBullet.speed * deltaTime;
+
+		float edgeX = eBullet.posX + (eBullet.size * eBullet.directionX);
+		float edgeY = eBullet.posY + (eBullet.size * eBullet.directionY);
+        
+		if (World::isPointColliding(edgeX, edgeY)) {
+            eBullet.isActive = false;
+            continue;
+        }
+    }
+}
