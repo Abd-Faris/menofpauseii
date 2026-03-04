@@ -89,6 +89,14 @@ struct bullets {
 	f32 speed;
 };
 
+struct EnemyTypeInfo {
+	int id;
+	int cost;
+	int baseWeight;
+	float growthRate;
+	int minWave;
+	int maxWave;
+};
 
 struct Enemies {
 	AEVec2 pos;
@@ -180,8 +188,9 @@ struct SmokeParticle {
 	float size;
 	bool isActive;
 };
-extern SmokeParticle smokes[100];
 
 // Externs
 extern PlayerStats player_init;
+extern SmokeParticle smokes[100];
+
 

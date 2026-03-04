@@ -12,6 +12,7 @@
 #include <array>
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 // System Headers
 #include "System.h" // Program Initialisation
@@ -39,5 +40,6 @@
 #include "Enemy.h"
 #include "Boss.h"
 	
-// Game World
+// Game World & Waves
 #include "World.h"
+#include "Wave.h"
