@@ -171,12 +171,13 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
         boss.alive = false;
     }
 }
-void BossCollision(Boss& boss, shape &player) {
+void BossCollision(Boss& boss, shape &player, bool orbitActive, float orbitPosX, float orbitPosY) {
     if (!boss.alive) return;
 
-    // Bullet hits
+    // Bullets hit boss
     for (auto& boolet : bulletList) {
         if (!boolet.isActive) continue;
+
         float dx = boolet.posX - boss.pos.x;
         float dy = boolet.posY - boss.pos.y;
         float distSq = dx * dx + dy * dy;
@@ -189,7 +190,39 @@ void BossCollision(Boss& boss, shape &player) {
         }
     }
 
-    // Player ram
+    // Orbit hits boss
+    if (orbitActive) {
+        float dx = orbitPosX - boss.pos.x;
+        float dy = orbitPosY - boss.pos.y;
+        float distSq = dx * dx + dy * dy;
+        float orbitSize = 20.0f;
+        float colRadius = (boss.scale * GameConfig::Enemy::HITBOX_RATIO) + orbitSize;
+
+        if (distSq < colRadius * colRadius) {
+            float dmg = calculate_max_stats(1);
+            boss.hp -= (int)dmg;
+        }
+    }
+    for (auto& enBullet : enemyBulletList) {
+        if (!enBullet.isActive) continue;
+
+        float differenceX = enBullet.posX - player.pos_x;
+        float differenceY = enBullet.posY - player.pos_y;
+        float distanceSquared = (differenceX * differenceX) + (differenceY * differenceY);
+
+        // Calculate collision radius (Player scale + bullet size)
+        float collisionRadius = player.scale + enBullet.size;
+
+        if (distanceSquared < (collisionRadius * collisionRadius)) {
+            player_init.current_hp -= 10; // player
+            enBullet.isActive = false;     // Destroy the enemy bullet
+
+
+            TriggerExplosion(player.pos_x, player.pos_y, 20.0f);
+        }
+    }
+
+    // Player touches boss — player takes damage, boss is fine
     float dx = player.pos_x - boss.pos.x;
     float dy = player.pos_y - boss.pos.y;
     float distSq = dx * dx + dy * dy;
@@ -197,7 +230,6 @@ void BossCollision(Boss& boss, shape &player) {
 
     if (distSq < colRadius * colRadius) {
         player_init.current_hp -= boss.maxhp / 5;
-        
     }
 }
 
@@ -216,17 +248,21 @@ void DrawBoss(Boss& boss, AEGfxVertexList* MeshRect, AEGfxVertexList* MeshCircle
     float rotRad = boss.rotation * (PI / 180.f);
     Gfx::printMesh(MeshRect, boss.pos, { boss.scale, boss.scale }, rotRad);
 
+}
+
+void DrawBossHP(Boss& boss, AEGfxVertexList* MeshRect, AEGfxVertexList* MeshCircle, shape& player) {
+
     // HP bar above boss
     float hpPct = (float)boss.hp / (float)boss.maxhp;
-    float barWidth = 400.f;
+    float barWidth = 1000.f;
     float barY = boss.pos.y + boss.scale + 20.f;
 
     AEGfxSetColorToMultiply(0.3f, 0.f, 0.f, 1.f); // background
-    Gfx::printMesh(MeshRect, { boss.pos.x, barY }, { barWidth, 18.f }, 0.f);
+    Gfx::printMesh(MeshRect, { player.pos_x + 100, player.pos_y + 400.f}, { barWidth, 50.f}, 0.f);
 
     AEGfxSetColorToMultiply(1.f, 0.f, 0.f, 1.f);  // foreground
     float filledWidth = barWidth * hpPct;
     Gfx::printMesh(MeshRect,
-        { boss.pos.x - (barWidth - filledWidth) / 2.f, barY },
-        { filledWidth, 18.f }, 0.f);
+        { player.pos_x + 100 - (barWidth - filledWidth) / 2.f, player.pos_y + 400 },
+        { filledWidth, 50.f }, 0.f);
 }

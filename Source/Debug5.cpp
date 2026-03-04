@@ -19,67 +19,67 @@ namespace {
 // ===========================================================================
 // COLLISION LOGIC
 // ===========================================================================
-void BossCollision() {
-    if (!boss.alive) return;
-
-    // Bullets hit boss
-    for (auto& boolet : bulletList) {
-        if (!boolet.isActive) continue;
-
-        float dx = boolet.posX - boss.pos.x;
-        float dy = boolet.posY - boss.pos.y;
-        float distSq = dx * dx + dy * dy;
-        float colRadius = (boss.scale * GameConfig::Enemy::HITBOX_RATIO) + boolet.size;
-
-        if (distSq < colRadius * colRadius) {
-            float dmg = calculate_max_stats(1);
-            boss.hp -= (int)(dmg * boolet.damagemul);
-            boolet.isActive = false;
-        }
-    }
-
-    // Orbit hits boss
-    if (orbitActive) {
-        float dx = orbitPosX - boss.pos.x;
-        float dy = orbitPosY - boss.pos.y;
-        float distSq = dx * dx + dy * dy;
-        float orbitSize = 20.0f;
-        float colRadius = (boss.scale * GameConfig::Enemy::HITBOX_RATIO) + orbitSize;
-
-        if (distSq < colRadius * colRadius) {
-            float dmg = calculate_max_stats(1);
-            boss.hp -= (int)dmg;
-        }
-    }
-    for (auto& enBullet : enemyBulletList) {
-        if (!enBullet.isActive) continue;
-
-        float differenceX = enBullet.posX - player.pos_x;
-        float differenceY = enBullet.posY - player.pos_y;
-        float distanceSquared = (differenceX * differenceX) + (differenceY * differenceY);
-
-        // Calculate collision radius (Player scale + bullet size)
-        float collisionRadius = player.scale + enBullet.size;
-
-        if (distanceSquared < (collisionRadius * collisionRadius)) {
-            player_init.current_hp -= 10; // player
-            enBullet.isActive = false;     // Destroy the enemy bullet
-
-
-            TriggerExplosion(player.pos_x, player.pos_y, 20.0f);
-        }
-    }
-
-    // Player touches boss — player takes damage, boss is fine
-    float dx = player.pos_x - boss.pos.x;
-    float dy = player.pos_y - boss.pos.y;
-    float distSq = dx * dx + dy * dy;
-    float colRadius = (boss.scale * GameConfig::Enemy::HITBOX_RATIO) + player.scale;
-
-    if (distSq < colRadius * colRadius) {
-        player_init.current_hp -= boss.maxhp / 5;
-    }
-}
+//void BossCollision() {
+//    if (!boss.alive) return;
+//
+//    // Bullets hit boss
+//    for (auto& boolet : bulletList) {
+//        if (!boolet.isActive) continue;
+//
+//        float dx = boolet.posX - boss.pos.x;
+//        float dy = boolet.posY - boss.pos.y;
+//        float distSq = dx * dx + dy * dy;
+//        float colRadius = (boss.scale * GameConfig::Enemy::HITBOX_RATIO) + boolet.size;
+//
+//        if (distSq < colRadius * colRadius) {
+//            float dmg = calculate_max_stats(1);
+//            boss.hp -= (int)(dmg * boolet.damagemul);
+//            boolet.isActive = false;
+//        }
+//    }
+//
+//    // Orbit hits boss
+//    if (orbitActive) {
+//        float dx = orbitPosX - boss.pos.x;
+//        float dy = orbitPosY - boss.pos.y;
+//        float distSq = dx * dx + dy * dy;
+//        float orbitSize = 20.0f;
+//        float colRadius = (boss.scale * GameConfig::Enemy::HITBOX_RATIO) + orbitSize;
+//
+//        if (distSq < colRadius * colRadius) {
+//            float dmg = calculate_max_stats(1);
+//            boss.hp -= (int)dmg;
+//        }
+//    }
+//    for (auto& enBullet : enemyBulletList) {
+//        if (!enBullet.isActive) continue;
+//
+//        float differenceX = enBullet.posX - player.pos_x;
+//        float differenceY = enBullet.posY - player.pos_y;
+//        float distanceSquared = (differenceX * differenceX) + (differenceY * differenceY);
+//
+//        // Calculate collision radius (Player scale + bullet size)
+//        float collisionRadius = player.scale + enBullet.size;
+//
+//        if (distanceSquared < (collisionRadius * collisionRadius)) {
+//            player_init.current_hp -= 10; // player
+//            enBullet.isActive = false;     // Destroy the enemy bullet
+//
+//
+//            TriggerExplosion(player.pos_x, player.pos_y, 20.0f);
+//        }
+//    }
+//
+//    // Player touches boss — player takes damage, boss is fine
+//    float dx = player.pos_x - boss.pos.x;
+//    float dy = player.pos_y - boss.pos.y;
+//    float distSq = dx * dx + dy * dy;
+//    float colRadius = (boss.scale * GameConfig::Enemy::HITBOX_RATIO) + player.scale;
+//
+//    if (distSq < colRadius * colRadius) {
+//        player_init.current_hp -= boss.maxhp / 5;
+//    }
+//}
 
 // ===========================================================================
 // LOAD
@@ -134,7 +134,7 @@ void UpdateDebug5() {
         UpdateBossPhysics(boss, player, deltaTime);
     }
 
-    BossCollision();
+    BossCollision(boss, player, orbitActive,  orbitPosX,  orbitPosY);
     AEGfxSetCamPosition(player.pos_x, player.pos_y);
 
     //// Win condition
@@ -214,30 +214,8 @@ void DrawDebug5() {
 
     // -- Draw Boss --
     if (boss.alive) {
-        bool telegraphing = (boss.state == BossState::TELEGRAPHING);
-        // Flash white on telegraph, red otherwise
-        AEGfxSetColorToMultiply(
-            1.0f,
-            telegraphing ? 1.0f : 0.0f,
-            telegraphing ? 1.0f : 0.0f,
-            1.0f
-        );
-        float rotRad = boss.rotation * (PI / 180.f);
-        Gfx::printMesh(MeshRect, boss.pos, { boss.scale, boss.scale }, rotRad);
-
-        // HP bar above boss
-        float hpPct = (float)boss.hp / (float)boss.maxhp;
-        float barWidth = 400.f;
-        float barY = boss.pos.y + boss.scale + 20.f;
-
-        AEGfxSetColorToMultiply(0.3f, 0.0f, 0.0f, 1.f);
-        Gfx::printMesh(MeshRect, { boss.pos.x, barY }, { barWidth, 18.f }, 0.f);
-
-        AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.f);
-        float filledWidth = barWidth * hpPct;
-        Gfx::printMesh(MeshRect,
-            { boss.pos.x - (barWidth - filledWidth) / 2.f, barY },
-            { filledWidth, 18.f }, 0.f);
+        DrawBoss(boss, MeshRect, MeshCircle);
+        DrawBossHP(boss, MeshRect, MeshCircle, player);
     }
 
     Animations_Draw();
