@@ -5,10 +5,12 @@ namespace World {
 	int mapGrid[WORLD_ROWS][WORLD_COLS];
 	static AEGfxVertexList* pWallMesh = nullptr;
 	static AEGfxTexture* pWallTex = nullptr;
+	static AEGfxTexture* pGroundTex = nullptr;
 
 	void Load_World() {
-		if (pWallTex != nullptr || pWallMesh != nullptr) return;
+		if (pWallTex != nullptr || pGroundTex != nullptr || pWallMesh != nullptr) return;
 		pWallTex = AEGfxTextureLoad("./Assets/wall.jpg");
+		pGroundTex = AEGfxTextureLoad("./Assets/sand.png");
 
 		AEGfxMeshStart();
 		AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
@@ -91,13 +93,9 @@ namespace World {
 
 
 	void Draw_World(){
-		if (pWallMesh == nullptr || pWallTex == nullptr) {
-			return;
-		}
 
 		//set up the graphics state for drawing the world
 		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-		AEGfxTextureSet(pWallTex, 0.0f, 0.0f);
 		AEGfxSetTransparency(1.0f);
 		AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
 		AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
@@ -106,7 +104,13 @@ namespace World {
 		for (int row = 0; row < WORLD_ROWS; row++) {
 			for (int col = 0; col < WORLD_COLS; col++) {
 				if (mapGrid[row][col] == 1) {
-					AEVec2 position;
+					AEGfxTextureSet(pWallTex, 0, 0);
+				}
+				else { 
+					AEGfxTextureSet(pGroundTex, 0, 0);
+				}
+
+				AEVec2 position{};
 					//the position is calculated by taking the column and row indices, 
 					//multiplying them by the tile size, and then adjusting for the center 
 					//of the tile and the entire world dimension
@@ -121,10 +125,11 @@ namespace World {
 					AEGfxSetTransform(finalTransform.m);
 					AEGfxMeshDraw(pWallMesh, AE_GFX_MDM_TRIANGLES);
 					
-				}
+			
 			}
 		}
 	}
+
 
 	void Free_World() {
 		if (pWallMesh != nullptr) {
@@ -134,6 +139,10 @@ namespace World {
 		if (pWallTex != nullptr) {
 			AEGfxTextureUnload(pWallTex);
 			pWallTex = nullptr;
+		}
+		if (pGroundTex != nullptr) {
+			AEGfxTextureUnload(pGroundTex);
+			pGroundTex = nullptr;
 		}
 	}
 }

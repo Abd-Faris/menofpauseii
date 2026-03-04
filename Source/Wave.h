@@ -1,3 +1,5 @@
 #include "MasterHeader.h"
 
-void GenerateWave(int waveNumber, const std::vector<EnemyType>& enemyPool);
+void GenerateWave(int waveNumber, shape& player);
+bool IsWaveCleared();
+void skipWave(shape& player);

@@ -1,14 +1,10 @@
-#include "DebugMenus.h"
 #include "MasterHeader.h"
-#include "AEEngine.h"
-#include "AEGraphics.h"
-#include "Structs.h"
-#include "array"
 
-// -- ENEMY POOL --
+// --- GLOBALS FROM GAME.CPP ---
 extern std::array<Enemies, 50> enemyPool;
+extern int currentWave;
 
-// -- INITIAL PLAYER STATS --
+// --- INITIAL PLAYER STATS ---
 PlayerStats	player_init = {
 	// -- HP DMG SPEED FIRERATE XP --
 	100.0f, 10.0f, 250.0f, 0.5f, 1.0f, 
@@ -229,7 +225,7 @@ void handle_menu_input(float camX, float camY) {
 
 void debug_inputs(float max_hp) {
 	if (AEInputCheckTriggered(AEVK_R)) {
-		player_init.current_hp += 10.0f;
+		player_init.current_hp += 100.0f;
 		if (player_init.current_hp > max_hp)
 			player_init.current_hp = max_hp;
 	}
@@ -243,7 +239,7 @@ void debug_inputs(float max_hp) {
 
 	//press E for xp
 	if (AEInputCheckCurr(AEVK_E)) {
-		float xp_multiplier = 1.0f + (player_init.upgradeLevels[4] * 0.5f); //get total multiplier for xp
+		float xp_multiplier = 1.0f + (player_init.upgradeLevels[4] * 5.0f); //get total multiplier for xp
 		player_init.current_xp += 5.0f * xp_multiplier; //calculate player xp
 	}
 }
@@ -373,15 +369,15 @@ void DrawDebug1() {
 		xpPopuptimer -= dt;
 	}
 
-	//print hp and lvl text
-	char hudHP[64], hudXP[64], level[32];
+	// --- PRINT HP, LEVEL, WAVE TEXT ---
+	char hudHP[64], level[32], wave[32];
 	sprintf_s(hudHP, "%.0f / %.0f", player_init.current_hp, max_hp);
-	//sprintf_s(hudXP, "XP: %.0f / %.0f", player_init.current_xp, xp_needed);
 	sprintf_s(level, "LEVEL %d", player_init.player_level);
+	sprintf_s(wave, "WAVE %d", currentWave);
 
 	AEGfxPrint(boldPixels, hudHP, -0.07f, -0.91f, 0.35f, 1.0f, 1.0f, 1.0f, 1.0f);
-	//AEGfxPrint(boldPixels, hudXP, -0.05f, -0.96f, 0.25f, 0.0f, 0.0f, 0.0f, 1.0f);
-	AEGfxPrint(boldPixels, level, -0.18f, -0.84f, 0.4f, 1.0f, 1.0f, 1.0f, 1.0f);
+	AEGfxPrint(boldPixels, level, -0.18f, -0.84f, 0.4f, 0.0f, 0.0f, 0.0f, 1.0f);	
+	AEGfxPrint(boldPixels, wave, 0.06f, -0.84f, 0.4f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 	//print the 5 main stats
 	for (int i = 0; i < 5; ++i) {

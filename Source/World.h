@@ -2,8 +2,8 @@
 
 namespace World {
 	//initialise world dimensions and tile size
-	const int WORLD_COLS = 46;
-	const int WORLD_ROWS = 26;
+	const int WORLD_COLS = 35;
+	const int WORLD_ROWS = 20;
 	const float TILE_SIZE = 70.0f;
 
 	//half dimensions for collision checks

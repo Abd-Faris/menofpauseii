@@ -8,6 +8,7 @@
 extern bool dualback, orbitActive;
 extern float orbitAngle, orbitPosX, orbitPosY;
 bool mousereleased = false;
+int currentWave;
 namespace {
     // -- Assets --
     s8 boldPixelsFont;
@@ -127,6 +128,9 @@ void circlerectcollision() {
 // LOAD GAME
 // ===========================================================================
 void LoadGame() {
+    //seed the rng
+	srand(static_cast<unsigned int>(time(NULL)));
+
     LoadDebug1();
     Animations_Load();
     boldPixelsFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
@@ -152,6 +156,10 @@ void LoadGame() {
     for (int i = 0; i < GameConfig::MAX_BULLETS_COUNT; i++) bulletList[i].isActive = false;
     for (int i = 0; i < GameConfig::MAX_ENEMIES_COUNT; i++) ResetEnemy(&enemyPool[i]);
     for (int i = 0; i < 5; i++) SpawnOneEnemy(false, player);
+
+	// Initialize Wave
+	currentWave = 1;
+	GenerateWave(currentWave, player);
 }
 
 // ===========================================================================
@@ -190,8 +198,16 @@ void UpdateGame() {
 
         updateSmoke(deltaTime);
 
-		// 5. Spawn Enemies
-		EnemySpawner(player, deltaTime);
+		// 5. Wave Management (calls wave clear, then generates new wave if cleared)
+		if(IsWaveCleared()) {
+			currentWave++;
+			GenerateWave(currentWave, player);
+		}
+
+		// FOR DEBUGGING: Skip wave with Z
+        if (AEInputCheckTriggered(AEVK_Z)) {
+            skipWave(player);
+		}
 
 		// 6. Enemy Physics
 		updateEnemyPhysics(player, deltaTime);
