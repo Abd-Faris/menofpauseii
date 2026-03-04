@@ -133,6 +133,8 @@ struct Boss {
 	float shootTimer = 0.f;
 	int bulletCount = 8;
 	bool hasShot = false;
+	float spawnTimer = 0.f;
+	float spawnInterval = 2.f;
 };
 
 struct PlayerStats {

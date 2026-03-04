@@ -39,9 +39,9 @@ void SpawnBoss(BossType type, shape& player) {
         boss.xp = 400;
         boss.chaseSpeed = 220.f;
         boss.lungeSpeed = 1800.f;
-        boss.idleDuration = 1.0f;
+        boss.idleDuration = 1.5f;
         boss.telegraphDuration = 0.4f;
-        boss.lungeDuration = 0.2f;
+        boss.lungeDuration = 0.75f;
         boss.cooldownDuration = 0.6f;
     }
 
@@ -77,6 +77,7 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
 
     boss.stateTimer += deltaTime;
 
+    if (boss.bosstype == BOSS1 || boss.bosstype == BOSS2) {
     switch (boss.state) {
 
     case BossState::IDLE:
@@ -106,15 +107,6 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
 
     case BossState::TELEGRAPHING:
         boss.velocity = { 0, 0 };
-
-        //// Keep smoothly rotating toward player during windup
-        //if (dist > 1.f) {
-        //    float targetRotation = atan2f(toPlayer.y, toPlayer.x) * (180.f / PI);
-        //    float angleDiff = targetRotation - boss.rotation;
-        //    while (angleDiff > 180.f) angleDiff -= 360.f;
-        //    while (angleDiff < -180.f) angleDiff += 360.f;
-        //    boss.rotation += angleDiff * 8.0f * deltaTime;
-        //}
 
         if (boss.stateTimer >= boss.telegraphDuration) {
             boss.state = BossState::LUNGING;
@@ -159,6 +151,7 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
             boss.hasShot = false;
         }
         break;
+    }
     }
 
 

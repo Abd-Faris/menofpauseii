@@ -107,7 +107,7 @@ void LoadDebug5() {
     for (int i = 0; i < GameConfig::MAX_BULLETS_COUNT; i++) bulletList[i].isActive = false;
 
     // Spawn boss
-    SpawnBoss(BOSS1, player);
+    SpawnBoss(BOSS2, player);
 }
 
 // ===========================================================================
