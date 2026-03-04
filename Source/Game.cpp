@@ -85,12 +85,38 @@ void circlerectcollision() {
             // Calculate collision radius (Player scale + bullet size)
             float collisionRadius = player.scale + enBullet.size;
 
-            if (distanceSquared < (collisionRadius * collisionRadius)) {
+			bool hit = (distanceSquared < (collisionRadius * collisionRadius));
+            
+            if (!hit) {
+                //check for collision along the barrel
+				float barrelLen = GameConfig::Tank::BARREL_LENGTH * (player.scale / GameConfig::Tank::SCALE); 
+				float cosA = cosf(player.currentAngle);
+				float sinA = sinf(player.currentAngle);
+
+                //3 points on the barrel
+				float checkpoints[3] = { 0.5f, 0.75f, 1.0f };
+
+				//check each point for collision
+				for (int p = 0; p < 3; p++) {
+					//get worldposition of the checkpoint
+                    float checkX = player.pos_x + (0.0f * cosA - (barrelLen * checkpoints[p]) * sinA);
+                    float checkY = player.pos_y + (0.0f * sinA + (barrelLen * checkpoints[p]) * cosA);
+					//check distance from bullet to checkpoint
+                    float diffX = enBullet.posX - checkX;
+                    float diffY = enBullet.posY - checkY;
+                    float distSq = (diffX * diffX) + (diffY * diffY);
+                    float checkRadius = enBullet.size;
+                    if (distSq < (checkRadius * checkRadius)) {
+                        hit = true;
+                        break;
+                    }
+                }
+            }
+
+            if (hit){
                 player_init.current_hp -= 10; // player
                 enBullet.isActive = false;     // Destroy the enemy bullet
 
-
-                TriggerExplosion(player.pos_x, player.pos_y, 20.0f);
             }
         }
     }
@@ -292,10 +318,15 @@ void DrawGame() {
 }
 
 void FreeGame() {
-    AEGfxDestroyFont(boldPixelsFont);
+    AEGfxSetCamPosition(0.0f, 0.0f);
     if (MeshRect) AEGfxMeshFree(MeshRect);
     if (MeshCircle) AEGfxMeshFree(MeshCircle);
     FreeDebug1();
     Animations_Free();
 	World::Free_World();
+}
+
+void UnloadGame() {
+    AEGfxDestroyFont(boldPixelsFont);
+
 }

@@ -1,4 +1,5 @@
 #include "MasterHeader.h"
+#include "MasterHeader.h"
 
 std::array<Enemies, GameConfig::MAX_ENEMIES_COUNT> enemyPool;
 f64 enemySpawnTimer = 0;

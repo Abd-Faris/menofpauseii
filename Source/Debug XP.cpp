@@ -165,7 +165,10 @@ void level_up(float xp_needed) {
 		player_init.current_xp -= xp_needed; //ensures the excess xp gets carried over
 		player_init.player_level++; //add level
 		player_init.skill_point++; //add 1 sp
-		player_init.menu_open = true; //opens menu
+
+		if (player_init.player_level < 26) {
+			player_init.menu_open = true; //opens menu
+		}
 
 		//heal player hp every level up
 		float max_hp = calculate_max_stats(0);
