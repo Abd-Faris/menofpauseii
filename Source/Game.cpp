@@ -7,6 +7,7 @@
 // ===========================================================================
 extern bool dualback, orbitActive;
 extern float orbitAngle, orbitPosX, orbitPosY;
+bool mousereleased = false;
 namespace {
     // -- Assets --
     s8 boldPixelsFont;
@@ -131,6 +132,7 @@ void LoadGame() {
     boldPixelsFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 	World::Load_World();
 	World::Init_World();
+    !AEInputCheckCurr(AEVK_LBUTTON);
     
     // Create Meshes
     MeshCircle = Gfx::createCircleMesh(0xFFFFFFFF);

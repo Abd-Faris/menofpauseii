@@ -59,7 +59,7 @@ namespace GameConfig {
 }
 
 extern std::array<Enemies, GameConfig::MAX_ENEMIES_COUNT> enemyPool;
-
+extern bool mousereleased;
 void LoadGame();
 void UpdateGame();
 void DrawGame();

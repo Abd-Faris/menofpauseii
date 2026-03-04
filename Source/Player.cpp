@@ -206,6 +206,15 @@ void DualBack(shape& player) {
 }
 
 void ShootBullet(shape &player, float deltaTime) {
+
+    if (!mousereleased){
+        if (!AEInputCheckCurr(AEVK_LBUTTON)) {
+            mousereleased = true;
+        }
+        else {
+            return;
+        }
+    }
     if (AEInputCheckCurr(AEVK_SPACE) || AEInputCheckCurr(AEVK_LBUTTON)) {
         bulletFireTimer -= deltaTime;
 
