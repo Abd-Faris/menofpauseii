@@ -143,6 +143,7 @@ struct Boss {
 	bool hasShot = false;
 	float spawnTimer = 0.f;
 	float spawnInterval = 2.f;
+	int minionCount = 6;
 };
 
 struct PlayerStats {
