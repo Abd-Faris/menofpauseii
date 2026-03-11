@@ -39,7 +39,8 @@ enum EnemyType {
 };
 enum BossType {
 	BOSS1,
-	BOSS2
+	BOSS2,
+	BOSS3
 };
 
 struct AABB {
@@ -113,7 +114,7 @@ struct Enemies {
 };
 
 enum class BossState { IDLE, TELEGRAPHING, LUNGING, COOLDOWN };
-
+enum class Boss3Attack { NONE, SPIRAL, AIMED };
 struct Boss {
 	AEVec2 pos;
 	AEVec2 velocity;
@@ -144,6 +145,14 @@ struct Boss {
 	float spawnTimer = 0.f;
 	float spawnInterval = 2.f;
 	int minionCount = 6;
+	
+	Boss3Attack currentAttack = Boss3Attack::NONE;
+	float attackTimer = 0.f;
+	float attackDuration = 3.f;  // how long each attack lasts
+	float betweenAttackTimer = 0.f;
+	float betweenAttackDelay = 2.f;  // pause between attacks
+	float spiralAngle = 0.f;  // tracks the current spiral angle
+	bool attackSelected = false;
 };
 
 struct PlayerStats {

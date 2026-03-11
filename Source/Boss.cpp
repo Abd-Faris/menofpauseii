@@ -1,7 +1,7 @@
 #include "MasterHeader.h"
 
 std::array<Enemies, MAX_MINIONS_COUNT> minionPool;
-
+extern int currentWave;
 
 Boss boss;
 
@@ -9,6 +9,7 @@ void SpawnBoss(BossType type, shape& player) {
 	
     float spawnX = player.pos_x + 400.f;
     float spawnY = player.pos_y + 400.f;
+    float mult = (1 + (currentWave / 5 * 0.5f));
 
     boss.pos = { spawnX, spawnY };
     boss.velocity = { 0, 0 };
@@ -21,9 +22,9 @@ void SpawnBoss(BossType type, shape& player) {
 
     if (type == BOSS1) {
         boss.scale = GameConfig::Enemy::SIZE_BIG * 2.f;
-        boss.hp = 500;
-        boss.maxhp = 500;
-        boss.xp = 200;
+        boss.hp = static_cast<int>(500.f * mult);
+        boss.maxhp = static_cast<int>(500.f * mult);
+        boss.xp = static_cast<int>(200.f * mult);
         boss.chaseSpeed = 150.f;
         boss.lungeSpeed = 1500.f;
         boss.idleDuration = 1.5f;
@@ -34,13 +35,26 @@ void SpawnBoss(BossType type, shape& player) {
     else if (type == BOSS2) {
         // Faster, more aggressive
     boss.scale            = GameConfig::Enemy::SIZE_BIG * 3.f;
-    boss.hp               = 800;
-    boss.xp               = 400;
+    boss.hp               = static_cast<int>(800.f * mult);
+    boss.xp               = static_cast<int>(400.f * mult);
     boss.idleDuration     = 999.f; // never lunges
     boss.telegraphDuration = 999.f;
     boss.lungeDuration    = 999.f;
     boss.cooldownDuration = 999.f;
-    boss.spawnInterval    =5.f;
+    boss.spawnInterval    = 5.f;
+    }
+
+    else if (type == BOSS3) {
+        boss.scale = GameConfig::Enemy::SIZE_BIG * 2.f;
+        boss.hp = 600;
+        boss.xp = 300;
+        boss.idleDuration = 999.f; // stationary like BOSS2
+        boss.chaseSpeed = 250.f;
+        boss.telegraphDuration = 999.f;
+        boss.lungeDuration = 999.f;
+        boss.cooldownDuration = 999.f;
+        boss.attackDuration = 3.f;
+        boss.betweenAttackDelay = 2.f;
     }
 
     boss.maxhp = boss.hp;
@@ -61,6 +75,67 @@ void BossShootRing(Boss& boss) {
             boolet.speed = GameConfig::Bullet::BASE_SPEED;
             boolet.size = GameConfig::Bullet::DEFAULT_SIZE;
             boolet.damagemul = 0.5f;
+            break;
+        }
+    }
+}
+
+void Boss3Spiral(Boss& boss, float deltaTime) {
+    float spiralSpeed = 10.f;
+    float bulletSpeed = GameConfig::Bullet::BASE_SPEED * 0.5f;
+    int   arms = 3;  // number of arms
+
+    boss.shootTimer += deltaTime;
+    if (boss.shootTimer < 0.15f) return;
+    boss.shootTimer = 0.f;
+
+    float angleStep = (2.f * PI) / arms; // evenly space the arms
+
+    for (int i = 0; i < arms; i++) {
+        float angle = boss.spiralAngle + angleStep * i; // offset each arm
+
+        for (auto& boolet : enemyBulletList) {
+            if (boolet.isActive) continue;
+
+            boolet.isActive = true;
+            boolet.posX = boss.pos.x;
+            boolet.posY = boss.pos.y;
+            boolet.directionX = cosf(angle);
+            boolet.directionY = sinf(angle);
+            boolet.speed = bulletSpeed;
+            boolet.size = 13.f;
+            boolet.damagemul = 0.5f;
+            break;
+        }
+    }
+
+    boss.spiralAngle += spiralSpeed * deltaTime;
+}
+
+void Boss3AimedShot(Boss& boss, shape& player) {
+    AEVec2 toPlayer = { player.pos_x - boss.pos.x,
+                        player.pos_y - boss.pos.y };
+    float dist = sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y);
+    if (dist < 1.f) return;
+
+    // Fire a tight cluster of 3 bullets straight at the player
+    float baseAngle = atan2f(toPlayer.y, toPlayer.x);
+    float spreadStep = 0.15f; // radians between each bullet in the cluster
+    int   count = 3;
+
+    for (int i = 0; i < count; i++) {
+        float angle = baseAngle + spreadStep * (i - count / 2);
+        for (auto& boolet : enemyBulletList) {
+            if (boolet.isActive) continue;
+
+            boolet.isActive = true;
+            boolet.posX = boss.pos.x;
+            boolet.posY = boss.pos.y;
+            boolet.directionX = cosf(angle);
+            boolet.directionY = sinf(angle);
+            boolet.speed = GameConfig::Bullet::BASE_SPEED * 0.8;
+            boolet.size = 15.f;  // slightly bigger than spiral bullets
+            boolet.damagemul = 1.0f;  // full damage
             break;
         }
     }
@@ -178,7 +253,76 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
 
         return; // skip lunge state machine entirely
     }
+    if (boss.bosstype == BOSS3) {
+        // Face player
+        AEVec2 toPlayer = { player.pos_x - boss.pos.x,
+                                player.pos_y - boss.pos.y };
+        float dist = sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y);
 
+        // Chase player
+        if (dist > 1.f) {
+            boss.velocity.x += (toPlayer.x / dist) * boss.chaseSpeed * deltaTime;
+            boss.velocity.y += (toPlayer.y / dist) * boss.chaseSpeed * deltaTime;
+
+            // Smooth rotation toward player
+            float targetRotation = atan2f(toPlayer.y, toPlayer.x) * (180.f / PI);
+            float angleDiff = targetRotation - boss.rotation;
+            while (angleDiff > 180.f) angleDiff -= 360.f;
+            while (angleDiff < -180.f) angleDiff += 360.f;
+            boss.rotation += angleDiff * 5.f * deltaTime;
+        }
+        boss.velocity.x *= GameConfig::Enemy::FRICTION;
+        boss.velocity.y *= GameConfig::Enemy::FRICTION;
+        boss.pos.x += boss.velocity.x * deltaTime;
+        boss.pos.y += boss.velocity.y * deltaTime;
+
+
+        // Between attacks — pick next attack randomly
+        if (boss.currentAttack == Boss3Attack::NONE) {
+            boss.betweenAttackTimer += deltaTime;
+            if (boss.betweenAttackTimer >= boss.betweenAttackDelay) {
+                // Randomly pick spiral or aimed
+                boss.currentAttack = (AERandFloat() > 0.5f)
+                    ? Boss3Attack::SPIRAL
+                    : Boss3Attack::AIMED;
+                boss.attackTimer = 0.f;
+                boss.betweenAttackTimer = 0.f;
+                boss.spiralAngle = 0.f; // reset spiral each time
+            }
+        }
+
+        // Run the selected attack
+        if (boss.currentAttack == Boss3Attack::SPIRAL) {
+            boss.attackTimer += deltaTime;
+            Boss3Spiral(boss, deltaTime);  // <-- pass deltaTime
+
+            if (boss.attackTimer >= boss.attackDuration) {
+                boss.currentAttack = Boss3Attack::NONE;
+                boss.shootTimer = 0.f; // reset for next attack
+            }
+        }
+        else if (boss.currentAttack == Boss3Attack::AIMED) {
+            boss.attackTimer += deltaTime;
+
+            // Fire a burst every 0.4s during the attack window
+            if (boss.attackTimer >= boss.attackDuration) {
+                boss.currentAttack = Boss3Attack::NONE;
+            }
+            else if (fmodf(boss.attackTimer, 0.4f) < deltaTime) {
+                Boss3AimedShot(boss, player);
+            }
+        }
+
+        // Death check
+        if (boss.hp <= 0) {
+            player_init.current_xp += boss.xp;
+            TriggerXpPopup((float)boss.xp);
+            TriggerExplosion(boss.pos.x, boss.pos.y, boss.scale);
+            boss.alive = false;
+        }
+
+        return;
+    }
 
     // Death check
     if (boss.hp <= 0) {

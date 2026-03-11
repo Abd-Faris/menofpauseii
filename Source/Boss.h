@@ -11,3 +11,5 @@ void updateMinionPhysics(shape& player, float deltaTime);
 extern Boss boss;
 constexpr int MAX_MINIONS_COUNT = 30;
 extern std::array<Enemies, MAX_MINIONS_COUNT> minionPool;
+void Boss3Spiral(Boss& boss, float deltaTime);
+void Boss3AimedShot(Boss& boss, shape& player);
