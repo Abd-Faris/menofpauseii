@@ -8,7 +8,7 @@
 extern bool dualback, orbitActive;
 extern float orbitAngle, orbitPosX, orbitPosY;
 bool mousereleased = false;
-int currentWave;
+int currentWave = 1;
 float playerFlashTimer = 0.0f;
 
 namespace {
@@ -188,7 +188,6 @@ void LoadGame() {
     for (int i = 0; i < 5; i++) SpawnOneEnemy(false, player);
 
 	// Initialize Wave
-	currentWave = 1;
 	GenerateWave(currentWave, player);
 }
 
