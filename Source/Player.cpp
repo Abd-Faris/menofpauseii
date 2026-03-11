@@ -25,8 +25,12 @@ void DrawMultiBarrels(int count, float gap, float pivotOffset, float tankRot, fl
     float formationWidth = (float)(count - 1) * gap;
     float startX = -formationWidth / 2.0f;
 
-    // Set barrel color (Dark Grey)
-    AEGfxSetColorToMultiply(0.3f, 0.3f, 0.3f, 1.0f);
+    if (playerFlashTimer > 0.0f) {
+        AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); // Flash Red
+    }
+    else {
+        AEGfxSetColorToMultiply(0.3f, 0.3f, 0.3f, 1.0f); // Normal Dark Grey
+    }
 
     for (int i = 0; i < count; i++) {
         // 2. Calculate local position relative to the tank's center

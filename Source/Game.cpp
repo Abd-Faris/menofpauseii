@@ -9,6 +9,8 @@ extern bool dualback, orbitActive;
 extern float orbitAngle, orbitPosX, orbitPosY;
 bool mousereleased = false;
 int currentWave;
+float playerFlashTimer = 0.0f;
+
 namespace {
     // -- Assets --
     s8 boldPixelsFont;
@@ -146,7 +148,7 @@ void circlerectcollision() {
             if (hit){
                 player_init.current_hp -= 10; // player
                 enBullet.isActive = false;     // Destroy the enemy bullet
-
+                playerFlashTimer = 0.15f;
             }
         }
     }
@@ -237,6 +239,10 @@ void UpdateGame() {
             skipWave(player);
 		}
 
+        if (playerFlashTimer > 0.0f) {
+            playerFlashTimer -= deltaTime;
+        }
+
 		// 6. Enemy Physics
 		updateEnemyPhysics(player, deltaTime);
 
@@ -296,7 +302,12 @@ void DrawGame() {
     float visualScale = player.scale / GameConfig::Tank::SCALE;
 
     // 1. Draw Tracks
-    AEGfxSetColorToMultiply(0.1f, 0.1f, 0.1f, 1.0f);
+    if (playerFlashTimer > 0.0f) {
+        AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); // Flash Red
+    }
+    else {
+        AEGfxSetColorToMultiply(0.1f, 0.1f, 0.1f, 1.0f); // Normal Dark Grey
+    }
     AEVec2 trackSize = { GameConfig::Tank::TRACK_WIDTH * visualScale, GameConfig::Tank::TRACK_HEIGHT* visualScale };
     float scaledTrackOffset = GameConfig::Tank::TRACK_OFFSET_X * visualScale;
 
@@ -307,7 +318,13 @@ void DrawGame() {
     Gfx::printMesh(MeshRect, playerPos, trackSize, player.currentAngle, { scaledTrackOffset, 0.0f });
 
     // 2. Draw Main Body
-    AEGfxSetColorToMultiply(0.2f, 0.6f, 0.2f, 1.0f);
+    if (playerFlashTimer > 0.0f) {
+        AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); // Bright Red (or use 1,1,1 for White)
+    }
+    else {
+        AEGfxSetColorToMultiply(0.2f, 0.6f, 0.2f, 1.0f); // Normal Green
+    }
+
     Gfx::printMesh(MeshRect, playerPos, { GameConfig::Tank::BODY_WIDTH * visualScale, GameConfig::Tank::BODY_HEIGHT * visualScale }, player.currentAngle);
     float cannonwidthnow = bigcannon ? GameConfig::Tank::BARREL_WIDTH * 2.0f : GameConfig::Tank::BARREL_WIDTH;
     // 3. Draw Barrels
@@ -334,7 +351,12 @@ void DrawGame() {
     }
 
     // 4. Draw Turret
-    AEGfxSetColorToMultiply(0.3f, 0.7f, 0.3f, 1.0f);
+    if (playerFlashTimer > 0.0f) {
+        AEGfxSetColorToMultiply(1.0f, 0.0f, 0.0f, 1.0f); // Flash Red
+    }
+    else {
+        AEGfxSetColorToMultiply(0.3f, 0.7f, 0.3f, 1.0f); // Normal Light Green
+    }
     Gfx::printMesh(MeshCircle, playerPos, { GameConfig::Tank::TURRET_SIZE * visualScale, GameConfig::Tank::TURRET_SIZE * visualScale }, player.currentAngle);
 
     // -- Draw Enemies --

@@ -60,6 +60,7 @@ namespace GameConfig {
 
 extern std::array<Enemies, GameConfig::MAX_ENEMIES_COUNT> enemyPool;
 extern bool mousereleased;
+extern float playerFlashTimer;
 void LoadGame();
 void UpdateGame();
 void DrawGame();
