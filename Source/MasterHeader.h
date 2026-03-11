@@ -30,7 +30,7 @@
 // Game States
 #include "MainMenu.h"
 #include "Game.h"
-#include "Cards.h"
+#include "CardShop.h"
 #include "DebugMenus.h"
 
 // Graphics & Animations

@@ -42,7 +42,7 @@
     <ClCompile Include="..\Source\Debug3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\Debug4.cpp">
+    <ClCompile Include="..\Source\CardShop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\Debug5.cpp">
@@ -123,6 +123,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\Wave.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\CardShop.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

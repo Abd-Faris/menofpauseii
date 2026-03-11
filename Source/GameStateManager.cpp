@@ -23,7 +23,7 @@ GSFunctions GS_Functions;
 // Array of Gamestate Function Pointers
 // ENSURE THE ORDER MATCHES THE ENUM IN GameStateManager.h!!!
 std::vector<GSFunctions> gamestates{
-	//
+	// Game States
 	{LoadMainMenu, InitializeMainMenu, UpdateMainMenu, DrawMainMenu, nullptr, UnloadMainMenu},
 	{LoadGame, nullptr, UpdateGame, DrawGame, FreeGame, nullptr},
 

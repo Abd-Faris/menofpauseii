@@ -230,12 +230,14 @@ void UpdateGame() {
 		// 5. Wave Management (calls wave clear, then generates new wave if cleared)
 		if(IsWaveCleared()) {
 			currentWave++;
-			GenerateWave(currentWave, player);
+            GS_next = GS_CARD_SHOP;
+			//GenerateWave(currentWave, player);
 		}
 
 		// FOR DEBUGGING: Skip wave with Z
         if (AEInputCheckTriggered(AEVK_Z)) {
             skipWave(player);
+            GS_next = GS_CARD_SHOP;
 		}
 
         if (playerFlashTimer > 0.0f) {

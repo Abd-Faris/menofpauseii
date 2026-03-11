@@ -1,4 +1,5 @@
 #include "MasterHeader.h"
+#include <sstream>
 
 namespace {
 	AEGfxVertexList* rectMeshCenter(u32 colour) {
@@ -80,28 +81,6 @@ namespace Graphics {
 	
 		return AEGfxMeshEnd();
 	}
-	// Prints a mesh using TRS
-	//void printMesh(AEGfxVertexList *mesh, AEVec2 pos, AEVec2 size, f32 scalar) {
-	//	// if no mesh, return
-	//	if (!mesh) return;
-	//	// object drawing settings
-	//	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-	//	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
-	//	AEGfxSetTransparency(1.f);
-	//	// Translate Matrix
-	//	AEMtx33 translate{ 0 };
-	//	AEMtx33Trans(&translate, pos.x, pos.y);
-	//	// Scale Matrix
-	//	AEMtx33 scale{ 0 };
-	//	AEMtx33Scale(&scale, (size.x) * scalar, (size.y) * scalar);
-	//	// Resultant Transformation
-	//	AEMtx33 transform{ 0 };
-	//	AEMtx33Concat(&transform, &translate, &scale);	
-	//	// Apply transformation to mesh
-	//	AEGfxSetTransform(transform.m);
-	//	// Printing
-	//	AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
-	//}
 
 	// Prints mesh using RTS
 	void printMesh(AEGfxVertexList* mesh, AEVec2 pos, AEVec2 size, f32 angleRad, AEVec2 offset) {
@@ -165,6 +144,20 @@ namespace Graphics {
 
 	void printButton(GfxButton &button) {
 		printMesh(button.mesh, button.pos, button.size);
+	}
+
+	void printMultiline(GfxText& text, s8 font) {
+		std::istringstream stream(text.text);
+		std::string line;
+		float lineHeight = 50.0f * text.scale; // adjust to match your font size
+		int i = 0;
+
+		while (std::getline(stream, line)) {
+			GfxText gfxLine{ line, text.scale };
+			gfxLine.pos = { text.pos.x, text.pos.y - (lineHeight * i) };
+			Gfx::printText(gfxLine, font);
+			i++;
+		}
 	}
 }
 
