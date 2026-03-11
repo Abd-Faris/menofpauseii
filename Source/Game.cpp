@@ -152,6 +152,38 @@ void circlerectcollision() {
             }
         }
     }
+
+    for (auto& minion : minionPool) {
+        if (!minion.alive) continue;
+
+        // Player body collision
+        float dx = player.pos_x - minion.pos.x;
+        float dy = player.pos_y - minion.pos.y;
+        float distSq = (dx * dx) + (dy * dy);
+        float radius = (minion.scale * GameConfig::Enemy::HITBOX_RATIO) + player.scale;
+        if (distSq < radius * radius) {
+            player_init.current_hp -= minion.hp / 3.0f;
+            minion.hp = 0;
+            TriggerExplosion(minion.pos.x, minion.pos.y, minion.scale);
+        }
+
+        // Bullet collision
+        for (auto& boolet : bulletList) {
+            if (!boolet.isActive) continue;
+            float bdx = boolet.posX - minion.pos.x;
+            float bdy = boolet.posY - minion.pos.y;
+            float bdistSq = (bdx * bdx) + (bdy * bdy);
+            float bradius = (minion.scale * GameConfig::Enemy::HITBOX_RATIO) + boolet.size;
+            if (bdistSq < bradius * bradius) {
+                float dmg = calculate_max_stats(1);
+                minion.hp -= (int)(dmg * boolet.damagemul);
+                boolet.isActive = false;
+                if (minion.hp <= 0 && minion.alive) {
+                    TriggerExplosion(minion.pos.x, minion.pos.y, minion.scale);
+                }
+            }
+        }
+    }
 }
 
 // ===========================================================================
@@ -185,7 +217,6 @@ void LoadGame() {
 
     for (int i = 0; i < GameConfig::MAX_BULLETS_COUNT; i++) bulletList[i].isActive = false;
     for (int i = 0; i < GameConfig::MAX_ENEMIES_COUNT; i++) ResetEnemy(&enemyPool[i]);
-    for (int i = 0; i < 5; i++) SpawnOneEnemy(false, player);
 
 	// Initialize Wave
 	GenerateWave(currentWave, player);
@@ -249,6 +280,12 @@ void UpdateGame() {
 
 		// 7. Enemy Bullets
 		updateEnemyBullets(deltaTime);
+
+        // 8. Boss Updates
+        UpdateBossPhysics(boss, player, deltaTime);
+        BossCollision(boss, player, orbitActive, orbitPosX, orbitPosY);
+        updateMinionPhysics(player, deltaTime);
+
 	}
 	circlerectcollision();
 	AEGfxSetCamPosition(player.pos_x, player.pos_y);
@@ -382,6 +419,21 @@ void DrawGame() {
             Gfx::printMesh(MeshRect, currentEnemy.pos, { currentEnemy.scale, currentEnemy.scale }, rotationRad);
         }
     }
+
+    // -- Draw Minions --
+    for (const auto& minion : minionPool) {
+        if (minion.alive || minion.scale > 0) {
+            AEGfxSetColorToMultiply(0.6f, 0.2f, 0.6f, 1);
+            float rotationRad = minion.rotation * (PI / 180.0f);
+            Gfx::printMesh(MeshTriangle, minion.pos, { minion.scale, minion.scale }, rotationRad);
+        }
+    }
+
+    if (boss.alive) {
+        DrawBoss(boss, MeshRect, MeshCircle);
+        DrawBossHP(boss, MeshRect, MeshCircle, player);
+    }
+
     Animations_Draw();
     DrawDebug1();
 }

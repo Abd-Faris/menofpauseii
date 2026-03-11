@@ -419,12 +419,12 @@ void DrawBossHP(Boss& boss, AEGfxVertexList* MeshRect, AEGfxVertexList* MeshCirc
     float barY = boss.pos.y + boss.scale + 20.f;
 
     AEGfxSetColorToMultiply(0.3f, 0.f, 0.f, 1.f); // background
-    Gfx::printMesh(MeshRect, { player.pos_x + 100, player.pos_y + 400.f}, { barWidth, 50.f}, 0.f);
+    Gfx::printMesh(MeshRect, { player.pos_x, player.pos_y + 400.f}, { barWidth, 50.f}, 0.f);
 
     AEGfxSetColorToMultiply(1.f, 0.f, 0.f, 1.f);  // foreground
     float filledWidth = barWidth * hpPct;
     Gfx::printMesh(MeshRect,
-        { player.pos_x + 100 - (barWidth - filledWidth) / 2.f, player.pos_y + 400 },
+        { player.pos_x - (barWidth - filledWidth) / 2.f, player.pos_y + 400 },
         { filledWidth, 50.f }, 0.f);
 }
 

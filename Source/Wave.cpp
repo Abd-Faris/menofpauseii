@@ -14,6 +14,23 @@ extern int currentWave;
 //@param player: the player's shape, used to determine spawn locations and difficulty scaling
 void GenerateWave(int waveNumber, shape& player) {
 
+	// ---- BOSS WAVE ----
+	//check if wave is multiple of 5
+	if (waveNumber % 5 == 0) {
+		BossType type;
+		//get cycle count so its repeating
+		int cycle = ((waveNumber / 5) - 1) % 3; 
+		//wave 5, 20, 35..
+		if (cycle == 0) type = BOSS1; 
+		//wave 10, 25, 40..
+		else if (cycle == 1) type = BOSS2; 
+		//wave 15, 30, 45..
+		else                 type = BOSS3; 
+		//call to spawn boss
+		SpawnBoss(type, player);
+		return;
+	}
+
 	// ---- ID, COST, BASE WEIGHT, GROWTH RATE, MIN WAVE ----
 	// CAN CHANGE ANYTIME
 	EnemyTypeInfo passive1 = { 1, 2, 80, -5.0f, 1 }; //passive small
@@ -122,6 +139,15 @@ void GenerateWave(int waveNumber, shape& player) {
 
 //checks if all enemies are dead
 bool IsWaveCleared() {
+	//clear boss
+	if (currentWave % 5 == 0 && boss.alive) return false;
+
+	//clear minions from boss
+	for (int i = 0; i < MAX_MINIONS_COUNT; ++i) {
+		if (minionPool[i].alive) return false;
+	}
+
+	//clear enemies in general
 	for (int i = 0; i < GameConfig::MAX_ENEMIES_COUNT; ++i) {
 		if (enemyPool[i].alive) return false;
 	}
@@ -133,6 +159,7 @@ void skipWave(shape& player) {
 	for (int i = 0; i < GameConfig::MAX_ENEMIES_COUNT; ++i) {
 		enemyPool[i].alive = false;
 	}
+	boss.alive = false;
 	currentWave++;
 	GenerateWave(currentWave, player);
 }
