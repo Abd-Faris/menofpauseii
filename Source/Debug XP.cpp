@@ -128,17 +128,31 @@ void TriggerXpPopup(float xpAmount) {
 
 // --- FUNCTION TO RESET GAME  ---
 void reset_game() {
+	currentWave = 1;
+	//reset enemies
+	for (auto& enemy : enemyPool) {
+		enemy.alive = false;
+		enemy.hp = 0;
+	}
+
+	//reset bullets
+	for (auto& bullet : bulletList) {
+		bullet.isActive = false;
+	}
+	for (auto& enBullet : enemyBulletList) {
+		enBullet.isActive = false;
+	}
+
 	//reset player stats
 	player_init.player_level = 0;
 	player_init.current_xp = 0;
 	player_init.skill_point = 0;
 	player_init.menu_open = false;
-
-	//fill upgrade with 0
 	for (int i = 0; i < 5; ++i) {
 		player_init.upgradeLevels[i] = 0;
 	}
-	player_init.current_hp = player_init.baseHp; //set base hp to current hp
+	player_init.current_hp = player_init.baseHp;
+
 }
 
 

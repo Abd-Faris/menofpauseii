@@ -29,7 +29,6 @@ void circlerectcollision() {
     for (auto& currentEnemy : enemyPool) {
         if (!currentEnemy.alive) continue;
 
-        if (1) {
             float differenceX = player.pos_x - currentEnemy.pos.x;
             float differenceY = player.pos_y - currentEnemy.pos.y;
             float distanceSquared = (differenceX * differenceX) + (differenceY * differenceY);
@@ -38,11 +37,40 @@ void circlerectcollision() {
             float currentdmg = calculate_max_stats(1);
 
             if (distanceSquared < (collisionRadius * collisionRadius)) {
-                player_init.current_hp -= currentEnemy.hp / 5;
+                player_init.current_hp -= currentEnemy.hp / 3.0f;
                 currentEnemy.hp = 0;
                 TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale);
             }
-                
+
+        else {
+            //check for collision along the barrel
+            float barrelLen = GameConfig::Tank::BARREL_LENGTH * (player.scale / GameConfig::Tank::SCALE);
+            float cosA = cosf(player.currentAngle);
+            float sinA = sinf(player.currentAngle);
+
+            //3 points on the barrel
+            float checkpoints[3] = { 0.5f, 0.75f, 1.0f };
+
+            //check each point for collision
+            for (int p = 0; p < 3; p++) {
+                //get worldposition of the checkpoint
+                float checkX = player.pos_x + (0.0f * cosA - (barrelLen * checkpoints[p]) * sinA);
+                float checkY = player.pos_y + (0.0f * sinA + (barrelLen * checkpoints[p]) * cosA);
+                //check distance from bullet to checkpoint
+                float diffX = currentEnemy.pos.x - checkX;
+                float diffY = currentEnemy.pos.y - checkY;
+                float distSq = (diffX * diffX) + (diffY * diffY);
+                float enemyRadius = currentEnemy.scale * GameConfig::Enemy::HITBOX_RATIO;
+
+                float barrelWidth = 22.0f;
+                float collisionThreshold = (barrelWidth / 2.0f) + enemyRadius;
+                if (distSq < (collisionThreshold * collisionThreshold)) {
+                    player_init.current_hp -= currentEnemy.hp / 3.0f;
+                    currentEnemy.hp = 0;
+                    TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale);
+                    break;
+                }
+            }
         }
         if (orbitActive) {
             float diffX = orbitPosX - currentEnemy.pos.x;
