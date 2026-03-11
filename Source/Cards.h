@@ -1,12 +1,12 @@
 #pragma once
 #include "MasterHeader.h"
 
-void LoadDebug4();
+void LoadCardShop();
 
-void InitializeDebug4();
+void InitializeCardShop();
 
-void UpdateDebug4();
+void UpdateCardShop();
 
-void DrawDebug4();
+void DrawCardShop();
 
-void FreeDebug4();
+void FreeCardShop();

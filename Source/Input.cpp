@@ -6,7 +6,7 @@ void Debug_States() {
 	else if (AEInputCheckCurr(AEVK_1)) GS_next = DEBUG1;
 	else if (AEInputCheckCurr(AEVK_2)) GS_next = DEBUG2;
 	else if (AEInputCheckCurr(AEVK_3)) GS_next = DEBUG3;
-	else if (AEInputCheckCurr(AEVK_4)) GS_next = DEBUG4;
+	else if (AEInputCheckCurr(AEVK_4)) GS_next = GS_CARD_SHOP;
 	else if (AEInputCheckCurr(AEVK_5)) GS_next = DEBUG5;
 	else if (AEInputCheckCurr(AEVK_6)) GS_next = GS_GAME;
 }
