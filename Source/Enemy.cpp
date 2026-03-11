@@ -1,5 +1,4 @@
 #include "MasterHeader.h"
-#include "MasterHeader.h"
 
 std::array<Enemies, GameConfig::MAX_ENEMIES_COUNT> enemyPool;
 f64 enemySpawnTimer = 0;
@@ -17,11 +16,14 @@ void ResetEnemy(Enemies* enemyToReset) {
 void SpawnOneEnemy(bool isBigEnemy, shape player) {
     for (auto& newEnemy : enemyPool) {
         if (!newEnemy.alive) {
-            float windowWidth = (float)AEGfxGetWindowWidth();
-            float windowHeight = (float)AEGfxGetWindowHeight();
+            // Spawn within world borders (one tile inset from each edge)
+            float minX = -World::HALF_WIDTH + World::TILE_SIZE * 1.5f;
+            float maxX = World::HALF_WIDTH - World::TILE_SIZE * 1.5f;
+            float minY = -World::HALF_HEIGHT + World::TILE_SIZE * 1.5f;
+            float maxY = World::HALF_HEIGHT - World::TILE_SIZE * 1.5f;
 
-            float spawnX = (AERandFloat() * windowWidth) - windowWidth / 2.0f;
-            float spawnY = (AERandFloat() * windowHeight) - windowHeight / 2.0f;
+            float spawnX = minX + (AERandFloat() * (maxX - minX));
+            float spawnY = minY + (AERandFloat() * (maxY - minY));
 
             float differenceX = spawnX - player.pos_x;
             float differenceY = spawnY - player.pos_y;
@@ -29,6 +31,7 @@ void SpawnOneEnemy(bool isBigEnemy, shape player) {
 
             if (distanceToPlayer < GameConfig::Enemy::SPAWN_SAFE_ZONE) {
                 spawnX += GameConfig::Enemy::SPAWN_PUSH_DIST;
+                spawnX = AEClamp(spawnX, minX, maxX);
             }
 
             newEnemy.pos = { spawnX, spawnY };
@@ -49,11 +52,14 @@ void SpawnOneEnemy(bool isBigEnemy, shape player) {
 void SpawnAttackEnemy(shape player) {
     for (auto& newEnemy : enemyPool) {
         if (!newEnemy.alive) {
-            float windowWidth = (float)AEGfxGetWindowWidth();
-            float windowHeight = (float)AEGfxGetWindowHeight();
+            // Spawn within world borders (one tile inset from each edge)
+            float minX = -World::HALF_WIDTH + World::TILE_SIZE * 1.5f;
+            float maxX = World::HALF_WIDTH - World::TILE_SIZE * 1.5f;
+            float minY = -World::HALF_HEIGHT + World::TILE_SIZE * 1.5f;
+            float maxY = World::HALF_HEIGHT - World::TILE_SIZE * 1.5f;
 
-            float spawnX = (AERandFloat() * windowWidth) - windowWidth / 2.0f;
-            float spawnY = (AERandFloat() * windowHeight) - windowHeight / 2.0f;
+            float spawnX = minX + (AERandFloat() * (maxX - minX));
+            float spawnY = minY + (AERandFloat() * (maxY - minY));
 
             float differenceX = spawnX - player.pos_x;
             float differenceY = spawnY - player.pos_y;
@@ -61,6 +67,7 @@ void SpawnAttackEnemy(shape player) {
 
             if (distanceToPlayer < GameConfig::Enemy::SPAWN_SAFE_ZONE) {
                 spawnX += GameConfig::Enemy::SPAWN_PUSH_DIST;
+                spawnX = AEClamp(spawnX, minX, maxX);
             }
 
             newEnemy.pos = { spawnX, spawnY };
@@ -78,15 +85,17 @@ void SpawnAttackEnemy(shape player) {
     }
 }
 
-
 void SpawnShooterEnemy(shape player) {
     for (auto& newEnemy : enemyPool) {
         if (!newEnemy.alive) {
-            float windowWidth = (float)AEGfxGetWindowWidth();
-            float windowHeight = (float)AEGfxGetWindowHeight();
+            // Spawn within world borders (one tile inset from each edge)
+            float minX = -World::HALF_WIDTH + World::TILE_SIZE * 1.5f;
+            float maxX = World::HALF_WIDTH - World::TILE_SIZE * 1.5f;
+            float minY = -World::HALF_HEIGHT + World::TILE_SIZE * 1.5f;
+            float maxY = World::HALF_HEIGHT - World::TILE_SIZE * 1.5f;
 
-            float spawnX = (AERandFloat() * windowWidth) - windowWidth / 2.0f;
-            float spawnY = (AERandFloat() * windowHeight) - windowHeight / 2.0f;
+            float spawnX = minX + (AERandFloat() * (maxX - minX));
+            float spawnY = minY + (AERandFloat() * (maxY - minY));
 
             float differenceX = spawnX - player.pos_x;
             float differenceY = spawnY - player.pos_y;
@@ -94,6 +103,7 @@ void SpawnShooterEnemy(shape player) {
 
             if (distanceToPlayer < GameConfig::Enemy::SPAWN_SAFE_ZONE) {
                 spawnX += GameConfig::Enemy::SPAWN_PUSH_DIST;
+                spawnX = AEClamp(spawnX, minX, maxX);
             }
 
             newEnemy.pos = { spawnX, spawnY };
@@ -103,7 +113,7 @@ void SpawnShooterEnemy(shape player) {
             newEnemy.scale = GameConfig::Enemy::SIZE_BIG;
             newEnemy.enemtype = SHOOTER;
 
-            newEnemy.cooldown = 2.0f;//2 seconds initial cooldown
+            newEnemy.cooldown = 2.0f; // 2 seconds initial cooldown
             int initialHP = (int)(GameConfig::Enemy::HP_BIG);
             newEnemy.hp = initialHP;
             newEnemy.maxhp = initialHP;
@@ -112,7 +122,7 @@ void SpawnShooterEnemy(shape player) {
     }
 }
 
-void EnemySpawner(shape &player, float deltaTime) {
+void EnemySpawner(shape& player, float deltaTime) {
     enemySpawnTimer += deltaTime;
     if (enemySpawnTimer >= GameConfig::Enemy::SPAWN_INTERVAL) {
         bool spawnBig = (AERandFloat() * 10.0f) < 4.0f;
@@ -126,7 +136,7 @@ void EnemySpawner(shape &player, float deltaTime) {
     }
 }
 
-void updateEnemyPhysics(shape &player, float deltaTime) {
+void updateEnemyPhysics(shape& player, float deltaTime) {
     for (auto& currentEnemy : enemyPool) {
         if (!currentEnemy.alive) continue;
 
@@ -140,14 +150,9 @@ void updateEnemyPhysics(shape &player, float deltaTime) {
 
             if (hyp <= 600) {
                 currentEnemy.detect = true;
-                /*GfxText exclaim{ "!", 1, 255, 0, 0, 255, {currentEnemy.pos.x, currentEnemy.pos.y + 50.f} };
-                Gfx::printText(exclaim, boldPixelsFont);*/
             }
 
             if (currentEnemy.detect || currentEnemy.hp < currentEnemy.maxhp) {
-
-                /*f32 enemydir = atan2f(dir.y, dir.x) - HALF_PI;
-                currentEnemy.rotation = enemydir;*/
 
                 if ((dir.x * dir.x) + (dir.y * dir.y) > GameConfig::MOUSE_JITTER_THRESHOLD) {
                     float targetAngle = atan2f(dir.y, dir.x) * (180.f / PI);
@@ -157,10 +162,8 @@ void updateEnemyPhysics(shape &player, float deltaTime) {
                     currentEnemy.rotation += angleDifference * 0.1f;
                 }
 
-
                 dir.x /= hyp;
                 dir.y /= hyp;
-
 
                 currentEnemy.velocity.x += dir.x * 500 * deltaTime;
                 currentEnemy.velocity.y += dir.y * 500 * deltaTime;
@@ -170,7 +173,8 @@ void updateEnemyPhysics(shape &player, float deltaTime) {
                 currentEnemy.pos.y += currentEnemy.velocity.y * deltaTime;
             }
         }
-        // --- NEW: SHOOTER LOGIC ---
+
+        // --- SHOOTER LOGIC ---
         if (currentEnemy.enemtype == SHOOTER) {
             AEVec2 PlayerPos = { player.pos_x, player.pos_y };
             AEVec2 EnemyPos = { currentEnemy.pos.x, currentEnemy.pos.y };
@@ -188,46 +192,41 @@ void updateEnemyPhysics(shape &player, float deltaTime) {
                 currentEnemy.rotation += angleDifference * 0.1f;
             }
 
-            // Normalize the direction vector so we can use it for movement and shooting
+            // Normalize direction
             if (hyp > 0) {
                 dir.x /= hyp;
                 dir.y /= hyp;
             }
 
-            // 2. Keep Distance (Move closer only if further than 400 units)
+            // 2. Keep Distance (move closer only if further than 400 units)
             if (hyp > 400.0f) {
                 currentEnemy.velocity.x += dir.x * 300 * deltaTime;
                 currentEnemy.velocity.y += dir.y * 300 * deltaTime;
             }
 
             // 3. Shooting Logic
-            currentEnemy.cooldown -= deltaTime; // Ensure your struct uses 'cooldown' here
+            currentEnemy.cooldown -= deltaTime;
 
-            // If timer is up AND player is close enough to see (e.g., within 800 units), FIRE!
             if (currentEnemy.cooldown <= 0.0f && hyp < 800.0f) {
-                currentEnemy.cooldown = 1.5f; // Reset cooldown to 1.5 seconds
+                currentEnemy.cooldown = 1.5f; // Reset cooldown
 
-                // Find an empty bullet slot
                 for (auto& eBullet : enemyBulletList) {
                     if (!eBullet.isActive) {
                         eBullet.isActive = true;
                         eBullet.posX = currentEnemy.pos.x;
                         eBullet.posY = currentEnemy.pos.y;
-
-                        // Shoot exactly in the direction of the player
                         eBullet.directionX = dir.x;
                         eBullet.directionY = dir.y;
-
-                        eBullet.speed = 400.0f; // Speed of the red bullet
+                        eBullet.speed = 400.0f;
                         eBullet.size = 15.0f;
                         eBullet.damagemul = 1.0f;
-                        break; // Stop after firing 1 bullet
+                        break;
                     }
                 }
             }
         }
 
-        AEVec2 separationForce = { 0,0 };
+        AEVec2 separationForce = { 0, 0 };
         for (auto& otherEnemy : enemyPool) {
             if (&currentEnemy == &otherEnemy || !otherEnemy.alive) continue;
             float diffX = currentEnemy.pos.x - otherEnemy.pos.x;
@@ -255,10 +254,8 @@ void updateEnemyPhysics(shape &player, float deltaTime) {
             player_init.current_xp += finalReward;
             TriggerXpPopup(finalReward);
             ResetEnemy(&currentEnemy);
-
         }
     }
-
 }
 
 void updateEnemyBullets(float deltaTime) {
@@ -267,10 +264,10 @@ void updateEnemyBullets(float deltaTime) {
         eBullet.posX += eBullet.directionX * eBullet.speed * deltaTime;
         eBullet.posY += eBullet.directionY * eBullet.speed * deltaTime;
 
-		float edgeX = eBullet.posX + (eBullet.size * eBullet.directionX);
-		float edgeY = eBullet.posY + (eBullet.size * eBullet.directionY);
-        
-		if (World::isPointColliding(edgeX, edgeY)) {
+        float edgeX = eBullet.posX + (eBullet.size * eBullet.directionX);
+        float edgeY = eBullet.posY + (eBullet.size * eBullet.directionY);
+
+        if (World::isPointColliding(edgeX, edgeY)) {
             eBullet.isActive = false;
             continue;
         }
