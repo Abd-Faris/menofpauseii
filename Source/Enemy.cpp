@@ -250,7 +250,7 @@ void updateEnemyPhysics(shape &player, float deltaTime) {
 
         if (currentEnemy.hp <= 0) {
             float xp_multiplier = calculate_max_stats(4);
-            float baseReward = (currentEnemy.maxhp >= (int)GameConfig::Enemy::HP_BIG) ? 80.0f : 20.0f;
+            float baseReward = (currentEnemy.maxhp >= (int)GameConfig::Enemy::HP_BIG) ? 60.0f : 10.0f;
             float finalReward = baseReward * xp_multiplier;
             player_init.current_xp += finalReward;
             TriggerXpPopup(finalReward);

@@ -18,7 +18,7 @@ PlayerStats	player_init = {
 };
 
 namespace {
-	//for font
+	//for font6
 	s8 boldPixels;
 	//to create the mesh
 	AEGfxVertexList* pBlackRectMesh = nullptr;
@@ -321,7 +321,7 @@ void UpdateDebug1() {
 	AEGfxGetCamPosition(&camX, &camY);
 
 	//updates levels, and maxhp 
-	float xp_needed = 100.0f + (player_init.player_level * 50.0f);
+	float xp_needed = 100.0f + (powf((float)player_init.player_level, 1.5f) * 25.0f);
 	float max_hp = calculate_max_stats(0);
 	float max_dmg = calculate_max_stats(1);
 	float max_speed = calculate_max_stats(2);
