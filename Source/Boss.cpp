@@ -335,6 +335,18 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
 void BossCollision(Boss& boss, shape &player, bool orbitActive, float orbitPosX, float orbitPosY) {
     if (!boss.alive) return;
 
+    //collision check with world border
+    float margin = boss.scale * 0.5f + World::TILE_SIZE;
+    float minX = -World::HALF_WIDTH + margin;
+    float maxX = World::HALF_WIDTH - margin;
+    float minY = -World::HALF_HEIGHT + margin;
+    float maxY = World::HALF_HEIGHT - margin;
+
+    if (boss.pos.x < minX) { boss.pos.x = minX; boss.velocity.x = 0.f; }
+    if (boss.pos.x > maxX) { boss.pos.x = maxX; boss.velocity.x = 0.f; }
+    if (boss.pos.y < minY) { boss.pos.y = minY; boss.velocity.y = 0.f; }
+    if (boss.pos.y > maxY) { boss.pos.y = maxY; boss.velocity.y = 0.f; }
+
     // Bullets hit boss
     for (auto& boolet : bulletList) {
         if (!boolet.isActive) continue;
