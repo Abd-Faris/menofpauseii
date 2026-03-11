@@ -6,55 +6,54 @@ extern int currentWave;
 Boss boss;
 
 void SpawnBoss(BossType type, shape& player) {
-	
-    float spawnX = player.pos_x + 400.f;
-    float spawnY = player.pos_y + 400.f;
-    float mult = (1 + (currentWave / 5 * 0.5f));
-
-    boss.pos = { spawnX, spawnY };
+    boss = {};  // zero everything out first
+    f32 mult = (1 + (currentWave / 5 * 0.5f));
+    boss.pos = { player.pos_x + 400.f, player.pos_y + 400.f };
     boss.velocity = { 0, 0 };
     boss.alive = true;
     boss.rotation = 0.f;
     boss.bosstype = type;
     boss.state = BossState::IDLE;
     boss.stateTimer = 0.f;
-    boss.lungeDirection = { 0, 0 };
+    boss.currentAttack = Boss3Attack::NONE;
 
-    if (type == BOSS1) {
+    switch (type) {
+    case BOSS1:
         boss.scale = GameConfig::Enemy::SIZE_BIG * 2.f;
         boss.hp = static_cast<int>(500.f * mult);
-        boss.maxhp = static_cast<int>(500.f * mult);
-        boss.xp = static_cast<int>(200.f * mult);
+        boss.xp = 200;
         boss.chaseSpeed = 150.f;
-        boss.lungeSpeed = 1500.f;
+        boss.lungeSpeed = 1400.f;
         boss.idleDuration = 1.5f;
         boss.telegraphDuration = 0.6f;
         boss.lungeDuration = 0.75f;
         boss.cooldownDuration = 0.8f;
-    }
-    else if (type == BOSS2) {
-        // Faster, more aggressive
-    boss.scale            = GameConfig::Enemy::SIZE_BIG * 3.f;
-    boss.hp               = static_cast<int>(800.f * mult);
-    boss.xp               = static_cast<int>(400.f * mult);
-    boss.idleDuration     = 999.f; // never lunges
-    boss.telegraphDuration = 999.f;
-    boss.lungeDuration    = 999.f;
-    boss.cooldownDuration = 999.f;
-    boss.spawnInterval    = 5.f;
-    }
+        boss.bulletCount = 8;
+        break;
 
-    else if (type == BOSS3) {
+    case BOSS2:
+        boss.scale = GameConfig::Enemy::SIZE_BIG * 2.5f;
+        boss.hp = static_cast<int>(800.f * mult);
+        boss.xp = 400;
+        boss.chaseSpeed = 0.f;    // stationary
+        boss.idleDuration = 3.f;
+        boss.telegraphDuration = 1.0f;
+        boss.lungeDuration = 0.1f;   // instant spawn then move on
+        boss.cooldownDuration = 5.0f;
+        boss.minionCount = 6;
+        break;
+
+    case BOSS3:
         boss.scale = GameConfig::Enemy::SIZE_BIG * 2.f;
-        boss.hp = 600;
+        boss.hp = static_cast<int>(600.f * mult);
         boss.xp = 300;
-        boss.idleDuration = 999.f; // stationary like BOSS2
-        boss.chaseSpeed = 250.f;
-        boss.telegraphDuration = 999.f;
-        boss.lungeDuration = 999.f;
-        boss.cooldownDuration = 999.f;
-        boss.attackDuration = 3.f;
-        boss.betweenAttackDelay = 2.f;
+        boss.chaseSpeed = 120.f;
+        boss.idleDuration = 2.f;
+        boss.telegraphDuration = 1.0f;
+        boss.lungeDuration = 3.f;    // how long attack runs
+        boss.cooldownDuration = 0.5f;
+        boss.bulletCount = 3;      // spiral arms
+        break;
     }
 
     boss.maxhp = boss.hp;
@@ -227,7 +226,7 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
     }
     }
     if (boss.bosstype == BOSS2) {
-        // Slowly rotate to face player
+        // Always face player
         if (dist > 1.f) {
             float targetRotation = atan2f(toPlayer.y, toPlayer.x) * (180.f / PI);
             float angleDiff = targetRotation - boss.rotation;
@@ -236,35 +235,57 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
             boss.rotation += angleDiff * 5.0f * deltaTime;
         }
 
-        // Spawn tracking enemies on interval
-        boss.spawnTimer += deltaTime;
-        if (boss.spawnTimer >= boss.spawnInterval) {
-            BossSpawnMinion(boss, player); //
-            boss.spawnTimer = 0.f;
+        boss.stateTimer += deltaTime;
+
+        switch (boss.state) {
+        case BossState::IDLE:
+            if (boss.stateTimer >= boss.idleDuration) {
+                boss.state = BossState::TELEGRAPHING;
+                boss.stateTimer = 0.f;
+            }
+            break;
+
+        case BossState::TELEGRAPHING:
+            // Just flash — no movement
+            if (boss.stateTimer >= boss.telegraphDuration) {
+                boss.state = BossState::LUNGING;
+                boss.stateTimer = 0.f;
+            }
+            break;
+
+        case BossState::LUNGING:
+            // Spawn the ring immediately then move on
+            BossSpawnMinion(boss, player);
+            boss.state = BossState::COOLDOWN;
+            boss.stateTimer = 0.f;
+            break;
+
+        case BossState::COOLDOWN:
+            if (boss.stateTimer >= boss.cooldownDuration) {
+                boss.state = BossState::IDLE;
+                boss.stateTimer = 0.f;
+            }
+            break;
         }
 
-        // Death check
         if (boss.hp <= 0) {
             player_init.current_xp += boss.xp;
             TriggerXpPopup((float)boss.xp);
             TriggerExplosion(boss.pos.x, boss.pos.y, boss.scale);
             boss.alive = false;
         }
-
-        return; // skip lunge state machine entirely
+        return;
     }
-    if (boss.bosstype == BOSS3) {
-        // Face player
-        AEVec2 toPlayer = { player.pos_x - boss.pos.x,
-                                player.pos_y - boss.pos.y };
-        float dist = sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y);
 
-        // Chase player
+    // -----------------------------------------------------------------------
+    // BOSS3 — chases player, random attack after telegraph
+    // -----------------------------------------------------------------------
+    if (boss.bosstype == BOSS3) {
+        // Always chase and face player
         if (dist > 1.f) {
             boss.velocity.x += (toPlayer.x / dist) * boss.chaseSpeed * deltaTime;
             boss.velocity.y += (toPlayer.y / dist) * boss.chaseSpeed * deltaTime;
 
-            // Smooth rotation toward player
             float targetRotation = atan2f(toPlayer.y, toPlayer.x) * (180.f / PI);
             float angleDiff = targetRotation - boss.rotation;
             while (angleDiff > 180.f) angleDiff -= 360.f;
@@ -276,51 +297,64 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
         boss.pos.x += boss.velocity.x * deltaTime;
         boss.pos.y += boss.velocity.y * deltaTime;
 
+        boss.stateTimer += deltaTime;
 
-        // Between attacks — pick next attack randomly
-        if (boss.currentAttack == Boss3Attack::NONE) {
-            boss.betweenAttackTimer += deltaTime;
-            if (boss.betweenAttackTimer >= boss.betweenAttackDelay) {
-                // Randomly pick spiral or aimed
+        switch (boss.state) {
+        case BossState::IDLE:
+            if (boss.stateTimer >= boss.idleDuration) {
+                // Pick attack before telegraphing so draw code can hint which is coming
                 boss.currentAttack = (AERandFloat() > 0.5f)
                     ? Boss3Attack::SPIRAL
                     : Boss3Attack::AIMED;
+                boss.state = BossState::TELEGRAPHING;
+                boss.stateTimer = 0.f;
+                boss.spiralAngle = 0.f;
+            }
+            break;
+
+        case BossState::TELEGRAPHING:
+            if (boss.stateTimer >= boss.telegraphDuration) {
+                boss.state = BossState::LUNGING; // attack phase
+                boss.stateTimer = 0.f;
                 boss.attackTimer = 0.f;
-                boss.betweenAttackTimer = 0.f;
-                boss.spiralAngle = 0.f; // reset spiral each time
             }
-        }
+            break;
 
-        // Run the selected attack
-        if (boss.currentAttack == Boss3Attack::SPIRAL) {
-            boss.attackTimer += deltaTime;
-            Boss3Spiral(boss, deltaTime);  // <-- pass deltaTime
-
-            if (boss.attackTimer >= boss.attackDuration) {
-                boss.currentAttack = Boss3Attack::NONE;
-                boss.shootTimer = 0.f; // reset for next attack
-            }
-        }
-        else if (boss.currentAttack == Boss3Attack::AIMED) {
+        case BossState::LUNGING:
+            // Run whichever attack was picked
             boss.attackTimer += deltaTime;
 
-            // Fire a burst every 0.4s during the attack window
-            if (boss.attackTimer >= boss.attackDuration) {
+            if (boss.currentAttack == Boss3Attack::SPIRAL) {
+                Boss3Spiral(boss, deltaTime);
+            }
+            else if (boss.currentAttack == Boss3Attack::AIMED) {
+                if (fmodf(boss.attackTimer, 0.4f) < deltaTime) {
+                    Boss3AimedShot(boss, player);
+                }
+            }
+
+            if (boss.attackTimer >= boss.lungeDuration) {
+                boss.state = BossState::COOLDOWN;
+                boss.stateTimer = 0.f;
                 boss.currentAttack = Boss3Attack::NONE;
+                boss.shootTimer = 0.f;
             }
-            else if (fmodf(boss.attackTimer, 0.4f) < deltaTime) {
-                Boss3AimedShot(boss, player);
+            break;
+
+        case BossState::COOLDOWN:
+            if (boss.stateTimer >= boss.cooldownDuration) {
+                boss.state = BossState::IDLE;
+                boss.stateTimer = 0.f;
             }
+            break;
         }
 
-        // Death check
         if (boss.hp <= 0) {
             player_init.current_xp += boss.xp;
             TriggerXpPopup((float)boss.xp);
             TriggerExplosion(boss.pos.x, boss.pos.y, boss.scale);
             boss.alive = false;
         }
-
         return;
     }
 

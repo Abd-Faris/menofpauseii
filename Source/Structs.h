@@ -127,32 +127,33 @@ struct Boss {
 	int bosstype = BOSS1;
 	bool detect = false;
 
-	// Lunge state machine
+	// State machine
 	BossState state = BossState::IDLE;
 	float stateTimer = 0.f;
-	AEVec2 lungeDirection = { 0, 0 }; // locked in during telegraph
 
-	// Per-phase tuning (set on spawn, vary by bosstype)
-	float chaseSpeed = 150.f;
+	// BOSS1 lunge
+	AEVec2 lungeDirection = { 0, 0 };
 	float lungeSpeed = 1400.f;
+
+	// Shared tuning
+	float chaseSpeed = 150.f;
 	float idleDuration = 1.5f;
 	float telegraphDuration = 0.6f;
 	float lungeDuration = 0.25f;
 	float cooldownDuration = 0.8f;
+
+	// Shooting
 	float shootTimer = 0.f;
-	int bulletCount = 8;
-	bool hasShot = false;
-	float spawnTimer = 0.f;
-	float spawnInterval = 2.f;
+	int   bulletCount = 8;
+	bool  hasShot = false;
+
+	// BOSS2
 	int minionCount = 6;
-	
+
+	// BOSS3
 	Boss3Attack currentAttack = Boss3Attack::NONE;
 	float attackTimer = 0.f;
-	float attackDuration = 3.f;  // how long each attack lasts
-	float betweenAttackTimer = 0.f;
-	float betweenAttackDelay = 2.f;  // pause between attacks
-	float spiralAngle = 0.f;  // tracks the current spiral angle
-	bool attackSelected = false;
+	float spiralAngle = 0.f;
 };
 
 struct PlayerStats {
