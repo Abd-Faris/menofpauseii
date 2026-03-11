@@ -15,6 +15,8 @@ PlayerStats	player_init = {
 
 	0, false,  //initial skill point, and menu state
 
+	100.0f // current hp
+
 };
 
 namespace {
@@ -114,9 +116,6 @@ void LoadDebug1() {
 	pGreenRectMesh = createmesh(0xFF00FF00);
 	pRedRectMesh = createmesh(0xFFFF0000);
 	pYellowRectMesh = createmesh(0xFFFFFF00);
-
-	//resets player hp to current hp
-	player_init.current_hp = player_init.baseHp;
 }
 
 
@@ -354,7 +353,7 @@ void DrawDebug1() {
 	//define max width for hp and xp bars, and calculate max hp and xp needed for level up for correct bar scaling
 	float max_width = 300.0f;
 	float max_hp = calculate_max_stats(0);
-	float xp_needed = 100.0f + (player_init.player_level * 50.0f);
+	float xp_needed = 100.0f + (powf((float)player_init.player_level, 1.5f) * 25.0f);
 
 	// --- DRAW ENEMY HEALTH BARS ---
 	for (int i = 0; i < 50; i++) {
