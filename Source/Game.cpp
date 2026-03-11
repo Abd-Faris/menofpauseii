@@ -217,6 +217,7 @@ void LoadGame() {
 
     for (int i = 0; i < GameConfig::MAX_BULLETS_COUNT; i++) bulletList[i].isActive = false;
     for (int i = 0; i < GameConfig::MAX_ENEMIES_COUNT; i++) ResetEnemy(&enemyPool[i]);
+    for (auto& minion : minionPool) ResetEnemy(&minion);
 
 	// Initialize Wave
 	GenerateWave(currentWave, player);
@@ -440,8 +441,9 @@ void DrawGame() {
 
 void FreeGame() {
     AEGfxSetCamPosition(0.0f, 0.0f);
-    if (MeshRect) AEGfxMeshFree(MeshRect);
-    if (MeshCircle) AEGfxMeshFree(MeshCircle);
+    if (MeshRect) { AEGfxMeshFree(MeshRect);     MeshRect = nullptr; }
+    if (MeshCircle) { AEGfxMeshFree(MeshCircle);   MeshCircle = nullptr; }
+    if (MeshTriangle) { AEGfxMeshFree(MeshTriangle); MeshTriangle = nullptr; }
     FreeDebug1();
     Animations_Free();
 	World::Free_World();

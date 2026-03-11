@@ -136,4 +136,5 @@ void DrawMainMenu() {
 void UnloadMainMenu() {
 	// unload font
 	AEGfxDestroyFont(boldPixels);
+	if (rectMesh) { AEGfxMeshFree(rectMesh); rectMesh = nullptr; }
 }
