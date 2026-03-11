@@ -361,12 +361,12 @@ namespace {
 	}
 }
 
-void LoadDebug4() {
+void LoadCardShop() {
 	// load font
 	boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 }
 
-void InitializeDebug4() {
+void InitializeCardShop() {
 	// create container meshes
 	rectMesh = Gfx::createRectMesh();
 	bag = Gfx::createRectMesh("center", cbag);
@@ -385,7 +385,7 @@ void InitializeDebug4() {
 	computeCardHomePos();
 }
 
-void UpdateDebug4() {
+void UpdateCardShop() {
 	// if theres a card selected, update selected card position
 	if (pSelectedCard) {
 		updateCardPosition();
@@ -397,7 +397,7 @@ void UpdateDebug4() {
 }
 
 // -600 -200 200
-void DrawDebug4() {
+void DrawCardShop() {
 	// gray bg
 	AEGfxSetBackgroundColor(0.82f, 0.82f, 0.82f);
 	// object drawing settings
@@ -435,12 +435,12 @@ void DrawDebug4() {
 	}
 }
 
-void FreeDebug4() {
+void FreeCardShop() {
 	AEGfxMeshFree(rectMesh); // free mesh
 	shopCards.clear(); // clear shop array
 }
 
-void UnloadDebug4() {
+void UnloadCardShop() {
 	// unload assets
 	AEGfxDestroyFont(boldPixels); // font
 }
