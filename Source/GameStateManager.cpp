@@ -26,7 +26,7 @@ std::vector<GSFunctions> gamestates{
 	// Game States
 	{LoadMainMenu, InitializeMainMenu, UpdateMainMenu, DrawMainMenu, nullptr, UnloadMainMenu},
 	{LoadGame, nullptr, UpdateGame, DrawGame, FreeGame, nullptr},
-
+	{LoadResults, nullptr, UpdateResults, DrawResults, FreeResults, nullptr},
 	// Debugging Game States
 	{LoadDebug1, nullptr, UpdateDebug1, DrawDebug1, FreeDebug1, nullptr},
 	{LoadDebug2, nullptr, nullptr, DrawDebug2, FreeDebug2, nullptr},

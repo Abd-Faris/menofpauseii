@@ -288,6 +288,11 @@ void UpdateGame() {
         BossCollision(boss, player, orbitActive, orbitPosX, orbitPosY);
         updateMinionPhysics(player, deltaTime);
 
+        if (player_init.current_hp <= 0) {
+            gameWon = false;       // Tell the results screen we lost!
+            GS_next = GS_RESULTS;  // Switch state
+        }
+
 	}
 	circlerectcollision();
 	AEGfxSetCamPosition(player.pos_x, player.pos_y);

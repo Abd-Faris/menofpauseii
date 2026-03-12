@@ -32,6 +32,7 @@ enum GS_STATES
 	// Main Game States
 	GS_MAIN_MENU = 0,
 	GS_GAME,
+	GS_RESULTS,
 
 	// Debugging Game States
 	DEBUG1,
@@ -39,6 +40,7 @@ enum GS_STATES
 	DEBUG3,
 	GS_CARD_SHOP,
 	DEBUG5,
+	
 
 	// Game Management States
 	GS_QUIT,
