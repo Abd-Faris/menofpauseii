@@ -9,7 +9,7 @@ namespace World {
 
 	void Load_World() {
 		if (pWallTex != nullptr || pGroundTex != nullptr || pWallMesh != nullptr) return;
-		pWallTex = AEGfxTextureLoad("./Assets/wall.jpg");
+		pWallTex = AEGfxTextureLoad("./Assets/wall.png");
 		pGroundTex = AEGfxTextureLoad("./Assets/sand.png");
 
 		AEGfxMeshStart();
