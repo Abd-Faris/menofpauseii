@@ -115,7 +115,27 @@ namespace Graphics {
 		AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
 	}
 
-		
+	// Prints mesh using RTS (texture mode)
+	void printMesh(AEGfxVertexList* mesh, AEVec2 pos, AEVec2 size, f32 angleRad, AEVec2 offset, bool useTexture) {
+		if (!mesh) return;
+		if (!useTexture) {
+			AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+			AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+			AEGfxSetBlendMode(AE_GFX_BM_NONE);
+			AEGfxSetTransparency(1.f);
+		}
+
+		AEMtx33 scale, rot, trans, localOffset, finalTransform;
+		AEMtx33Scale(&scale, size.x, size.y);
+		AEMtx33Rot(&rot, angleRad);
+		AEMtx33Trans(&trans, pos.x, pos.y);
+		AEMtx33Trans(&localOffset, offset.x, offset.y);
+		AEMtx33Concat(&finalTransform, &localOffset, &scale);
+		AEMtx33Concat(&finalTransform, &rot, &finalTransform);
+		AEMtx33Concat(&finalTransform, &trans, &finalTransform);
+		AEGfxSetTransform(finalTransform.m);
+		AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
+	}
 
 	// overload for card printing
 	void printMesh(AEGfxVertexList *mesh, Card& card,f32 scalar) {

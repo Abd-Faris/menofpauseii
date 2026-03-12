@@ -61,6 +61,8 @@ namespace GameConfig {
 extern std::array<Enemies, GameConfig::MAX_ENEMIES_COUNT> enemyPool;
 extern bool mousereleased;
 extern float playerFlashTimer;
+extern AEGfxTexture* pEnemyTex[4];
+extern AEGfxVertexList* pEnemyMesh;
 void LoadGame();
 void UpdateGame();
 void DrawGame();

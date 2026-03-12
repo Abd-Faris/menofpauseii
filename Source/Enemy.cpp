@@ -5,6 +5,32 @@ f64 enemySpawnTimer = 0;
 
 BulletObj enemyBulletList[GameConfig::MAX_BULLETS_COUNT];
 
+AEGfxTexture* pEnemyTex[4] = { nullptr, nullptr, nullptr, nullptr };
+AEGfxVertexList* pEnemyMesh = nullptr;
+
+//create an array of textures
+const char* enemyTextures[4] = {
+    "./Assets/smallbox.png",    // PASSIVE small
+    "./Assets/bigbox.png",      // PASSIVE big
+    "./Assets/kamikaze.png",   // ATTACK (kamikaze)
+    "./Assets/shooter.png"   // SHOOTER
+};
+
+void LoadEnemies() {
+    for (int i = 0; i < 4; ++i) {
+        pEnemyTex[i] = AEGfxTextureLoad(enemyTextures[i]);
+    }
+
+    AEGfxMeshStart();
+    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
+        0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+    AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+        0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
+        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+    pEnemyMesh = AEGfxMeshEnd();
+}
+
 void ResetEnemy(Enemies* enemyToReset) {
     enemyToReset->alive = false;
     enemyToReset->pos.x = GameConfig::OFF_SCREEN_COORD;
@@ -271,5 +297,17 @@ void updateEnemyBullets(float deltaTime) {
             eBullet.isActive = false;
             continue;
         }
+    }
+}
+
+void FreeEnemies() {
+    for (int i = 0; i < 4; ++i) {
+        if (pEnemyTex[i]) { 
+        AEGfxTextureUnload(pEnemyTex[i]); 
+        pEnemyTex[i] = nullptr; }
+    }
+    if (pEnemyMesh) { 
+        AEGfxMeshFree(pEnemyMesh); 
+        pEnemyMesh = nullptr; 
     }
 }

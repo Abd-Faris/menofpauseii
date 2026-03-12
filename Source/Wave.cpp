@@ -35,7 +35,7 @@ void GenerateWave(int waveNumber, shape& player) {
 	// CAN CHANGE ANYTIME
 	EnemyTypeInfo passive1 = { 1, 2, 80, -5.0f, 1 }; //passive small
 	EnemyTypeInfo passive2 = { 2, 6, 20, 2.0f, 1 }; //passive big
-	EnemyTypeInfo kamikaze = { 3, 10, 10, 8.0f, 3 }; //kamikaze
+	EnemyTypeInfo kamikaze = { 3, 10, 10, 7.5f, 3 }; //kamikaze
 	EnemyTypeInfo shooter = { 4, 10, 10, 7.5f, 7 }; //shooter
 	//can add more enemy/bosses
 

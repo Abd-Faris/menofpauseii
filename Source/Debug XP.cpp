@@ -32,7 +32,7 @@ namespace {
 	//mesh for icons
 	AEGfxVertexList* pIconMesh = nullptr;
 
-	// Per-stat icons (left squares) — placeholder filenames, replace with real assets
+	//stat icons
 	AEGfxTexture* upgradeIcons[5] = { nullptr, nullptr, nullptr, nullptr, nullptr };
 	const char* iconPaths[5] = {
 		"Assets/hp.png",
@@ -42,7 +42,7 @@ namespace {
 		"Assets/hp.png"
 	};
 
-	// Single icon for right squares
+	//+ icon
 	AEGfxTexture* upgradeConfirmIcon = nullptr;
 
 	//helper to create color mesh

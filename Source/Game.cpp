@@ -194,6 +194,7 @@ void LoadGame() {
 	srand(static_cast<unsigned int>(time(NULL)));
 
     LoadDebug1();
+    LoadEnemies();
     Animations_Load();
     boldPixelsFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 	World::Load_World();
@@ -399,27 +400,30 @@ void DrawGame() {
     Gfx::printMesh(MeshCircle, playerPos, { GameConfig::Tank::TURRET_SIZE * visualScale, GameConfig::Tank::TURRET_SIZE * visualScale }, player.currentAngle);
 
     // -- Draw Enemies --
+    AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+    AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+    AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
+    AEGfxSetTransparency(1.0f);
     for (const auto& currentEnemy : enemyPool) {
-        if (currentEnemy.alive || currentEnemy.scale > 0) {
-            // Set color based on enemy size
-            if (currentEnemy.enemtype == PASSIVE) {
-            if (currentEnemy.scale > (GameConfig::Enemy::SIZE_SMALL + 10.0f))
-                AEGfxSetColorToMultiply(0.2f, 0.2f, 0.8f, 1);
-            else
-                AEGfxSetColorToMultiply(0.8f, 0.2f, 0.2f, 1);
-            }
+        if (!currentEnemy.alive && currentEnemy.scale <= 0) continue;
 
-            if (currentEnemy.enemtype == ATTACK) {
-                AEGfxSetColorToMultiply(0.6f, 0.2f, 0.6f, 1);
-                float rotationRad = currentEnemy.rotation * (PI / 180.0f);
-                Gfx::printMesh(MeshTriangle, currentEnemy.pos, { currentEnemy.scale, currentEnemy.scale }, rotationRad);
-                continue;
-            }
-            // Convert degrees to radians for the rotation parameter
-            float rotationRad = currentEnemy.rotation * (PI / 180.0f);
-            Gfx::printMesh(MeshRect, currentEnemy.pos, { currentEnemy.scale, currentEnemy.scale }, rotationRad);
+        float rotationRad = currentEnemy.rotation * (PI / 180.0f);
+
+        if (currentEnemy.enemtype == PASSIVE) {
+            // index 0 = small, index 1 = big
+            int idx = (currentEnemy.scale > GameConfig::Enemy::SIZE_SMALL + 10.0f) ? 1 : 0;
+            AEGfxTextureSet(pEnemyTex[idx], 0, 0);
         }
+        else if (currentEnemy.enemtype == ATTACK) {
+            AEGfxTextureSet(pEnemyTex[2], 0, 0);
+        }
+        else if (currentEnemy.enemtype == SHOOTER) {
+            AEGfxTextureSet(pEnemyTex[3], 0, 0);
+        }
+
+        Gfx::printMesh(pEnemyMesh, currentEnemy.pos, { currentEnemy.scale, currentEnemy.scale }, rotationRad, { 0.f, 0.f }, true);
     }
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
     // -- Draw Minions --
     for (const auto& minion : minionPool) {
@@ -445,6 +449,7 @@ void FreeGame() {
     if (MeshCircle) { AEGfxMeshFree(MeshCircle);   MeshCircle = nullptr; }
     if (MeshTriangle) { AEGfxMeshFree(MeshTriangle); MeshTriangle = nullptr; }
     FreeDebug1();
+    FreeEnemies();
     Animations_Free();
 	World::Free_World();
 }

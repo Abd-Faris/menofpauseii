@@ -21,6 +21,7 @@ namespace Graphics {
 	//void printMesh(AEGfxVertexList* mesh, AEVec2 pos, AEVec2 size, f32 scalar=1);
 	void printMesh(AEGfxVertexList* mesh, AEVec2 pos, AEVec2 size, f32 angleRad = 0.f, AEVec2 offset = { 0,0 });
 	void printMesh(AEGfxVertexList* mesh, Card& card, f32 scalar = 1);
+	void printMesh(AEGfxVertexList* mesh, AEVec2 pos, AEVec2 size, f32 angleRad, AEVec2 offset, bool useTexture);
 	void printText(GfxText& text, s8 font);
 	void printButton(GfxButton& button);
 	void printMultiline(GfxText& text, s8 font);
