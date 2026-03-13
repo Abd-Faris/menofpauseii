@@ -289,8 +289,9 @@ void UpdateGame() {
         updateMinionPhysics(player, deltaTime);
 
         if (player_init.current_hp <= 0) {
-            gameWon = false;       // Tell the results screen we lost!
-            GS_next = GS_RESULTS;  // Switch state
+            gameWon = false;       
+            reset_game();
+            GS_next = GS_RESULTS; 
         }
 
 	}

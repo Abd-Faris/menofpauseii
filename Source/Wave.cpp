@@ -33,10 +33,10 @@ void GenerateWave(int waveNumber, shape& player) {
 
 	// ---- ID, COST, BASE WEIGHT, GROWTH RATE, MIN WAVE ----
 	// CAN CHANGE ANYTIME
-	EnemyTypeInfo passive1 = { 1, 2, 80, -5.0f, 1 }; //passive small
+	EnemyTypeInfo passive1 = { 1, 2, 70, -6.0f, 1 }; //passive small
 	EnemyTypeInfo passive2 = { 2, 6, 20, 2.0f, 1 }; //passive big
-	EnemyTypeInfo kamikaze = { 3, 10, 10, 7.5f, 3 }; //kamikaze
-	EnemyTypeInfo shooter = { 4, 10, 10, 7.5f, 7 }; //shooter
+	EnemyTypeInfo kamikaze = { 3, 10, 10, 7.5f, 2 }; //kamikaze
+	EnemyTypeInfo shooter = { 4, 10, 10, 7.5f, 6 }; //shooter
 	//can add more enemy/bosses
 
 	//this creates a pool of enemy types 
@@ -48,7 +48,7 @@ void GenerateWave(int waveNumber, shape& player) {
 	pool.push_back(shooter);
 
 	//calculate budget
-	float budget = 15.0f + (5.0f * powf((float)waveNumber, 1.5f)); 
+	float budget = 20.0f + (5.0f * powf((float)waveNumber, 1.5f)); 
 
 	//filtering & weighting
 	///create a struct for enemy type and weight for the current wave

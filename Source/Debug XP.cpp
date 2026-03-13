@@ -7,7 +7,7 @@ extern int currentWave;
 // --- INITIAL PLAYER STATS ---
 PlayerStats	player_init = {
 	// -- HP DMG SPEED FIRERATE XP --
-	100.0f, 10.0f, 250.0f, 0.5f, 1.0f,
+	100.0f, 10.0f, 280.0f, 0.5f, 1.0f,
 
 	{ 0, 0, 0, 0, 0 },   //initial upgrade amount
 
@@ -268,7 +268,7 @@ void debug_inputs(float max_hp) {
 	}
 
 	if (AEInputCheckTriggered(AEVK_T)) {
-		player_init.current_hp -= 10.0f;
+		player_init.current_hp -= 50.0f;
 		if (player_init.current_hp < 0.0f)
 			player_init.current_hp = 0.0f;
 	}
@@ -328,10 +328,6 @@ void draw_upgrade_rows(float camX, float camY) {
 
 
 void UpdateDebug1() {
-	if (player_init.current_hp <= 0) {
-		reset_game();
-	}
-
 	float camX, camY;
 	AEGfxGetCamPosition(&camX, &camY);
 

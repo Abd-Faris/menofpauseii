@@ -7,6 +7,7 @@ void DrawDebug1();
 void FreeDebug1();
 float calculate_max_stats(int i);
 void TriggerXpPopup(float xpAmount);
+void reset_game();
 
 // debug2.cpp
 void LoadDebug2();
