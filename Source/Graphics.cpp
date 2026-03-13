@@ -173,7 +173,7 @@ namespace Graphics {
 		int i = 0;
 
 		while (std::getline(stream, line)) {
-			GfxText gfxLine{ line, text.scale };
+			GfxText gfxLine{ line, text.scale, text.r, text.g, text.b, text.a};
 			gfxLine.pos = { text.pos.x, text.pos.y - (lineHeight * i) };
 			Gfx::printText(gfxLine, font);
 			i++;

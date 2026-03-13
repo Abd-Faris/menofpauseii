@@ -1,10 +1,17 @@
 #pragma once
 #include "MasterHeader.h"
+#include "../Extern/rapidjson/document.h"
+#include "../Extern/rapidjson/error/en.h"
+#include <fstream>
+#include <sstream>
 
-// global variables
+// declare array for ALL loaded cards in the game
+std::array<std::vector<CardStats>, NUM_OF_RARITIES> cardPool;
 // externs from other files
 extern int currentWave;
-namespace {
+
+namespace { // functions for InitializeCardShop()
+	
 	// declare font var
 	s8 boldPixels;
 
@@ -20,6 +27,13 @@ namespace {
 	f32 ACTIVE_CARD_SCALE{ 3 };
 	f32 INVENTORY_CARD_SCALE{ 3 };
 
+	// base num of cards availbale to player (without card effects applied)
+	const int base_shopCards     { 3 };
+	const int base_activeCards   { 5 };
+	const int base_inventoryCards{ 15 };
+	// base num of cards from shop buy-able
+	const int base_buyable	   { 1 };
+
 	// num of cards available to be displayed to player
 	int num_shopCards      { 3 };
 	int num_activeCards    { 5 };
@@ -28,29 +42,40 @@ namespace {
 	int num_buyable		   { 1 };
 	int buyable_left	   { 0 };
 
+	// rarity weights (out of 100)
+	const float RARITY_WEIGHTS[] = {
+		60.0f,  // COMMON
+		25.0f,  // RARE
+		10.0f,  // EPIC
+		5.0f,   // UNIQUE
+	};
+
 	// declare array for cards
 	std::array<std::vector<Card>, 3>    allCards;	// vector for all cards
 	// reference for easy ref
 	std::vector<Card>& shopCards      = allCards[0];// reference to shop cards
 	std::vector<Card>& activeCards    = allCards[1];// ref to active cards
 	std::vector<Card>& inventoryCards = allCards[2];// reference to cards in bag
-	// pointer to selected card
+	// pointer to selected card and hovered over card
 	Card* pSelectedCard{nullptr};
+	Card* pHoveredCard {nullptr};
 
 	// init shop texts
 	std::vector<GfxText> shopTexts{
 		{"BAG", 0.5f, 0, 0, 0, 255, {575, 375}},
 		{"SHOP", 0.8f, 0, 0, 0, 255, {-200, 195}},
-		{"ACTIVE CARDS", 0.5f, 0, 0, 0, 255, {-125, -225}},
-		{"DESCRIPTION GOES HERE", 0.5f, 255, 255, 255, 255, {-200, 325}}
+		{"ACTIVE CARDS", 0.5f, 0, 0, 0, 255, {-125, -225}}
 	};
 
+	// initialises the card shop array
 	void initCardShop(std::vector<Card>& shop) {
 		// create 3 cards for shop
 		Card card{};
 		for (int i{ 0 }; i < num_shopCards; ++i) {
+			// generate card FIRST
+			Cards::generateCard(card);
+			// assign other data members
 			card.from = DECK::SHOP;
-			//card.generateCard();  // generate card stats
 			shop.push_back(card); // push card into vector
 		}
 	}
@@ -280,12 +305,16 @@ namespace { // functions for UpdateCardShop()
 		// if hit, assign card to ptr IF left button is triggered
 		for (Card& card : activeCards) {
 			if (Comp::collisionPointRect(cursorpos, card.boundingBox)) {
+				// set card to display description
+				pHoveredCard = &card;
 				if (AEInputCheckTriggered(AEVK_LBUTTON)) pSelectedCard = &card;
 				return;
 			}
 		}
 		for (Card& card : inventoryCards) {
 			if (Comp::collisionPointRect(cursorpos, card.boundingBox)) {
+				// set card to display description
+				pHoveredCard = &card;
 				if (AEInputCheckTriggered(AEVK_LBUTTON)) pSelectedCard = &card;
 				return;
 			}
@@ -296,11 +325,14 @@ namespace { // functions for UpdateCardShop()
 		// print shop cards
 		for (Card& card : shopCards) {
 			if (Comp::collisionPointRect(cursorpos, card.boundingBox)) {
+				// set card to display description
+				pHoveredCard = &card;
 				if (AEInputCheckTriggered(AEVK_LBUTTON)) pSelectedCard = &card;
 				return;
 			}
 		}
 		// else return no hit at all
+		pHoveredCard = nullptr;
 		return;
 	}
 
@@ -324,6 +356,8 @@ void UpdateCardShop() {
 	// if theres a card selected, update selected card position
 	if (pSelectedCard) {
 		updateCardPosition();
+		// set selected card to display description
+		pHoveredCard = pSelectedCard;
 	}
 	// else check collision for ALL cards
 	else {
@@ -370,16 +404,6 @@ namespace { // functions for DrawCardShop()
 		// STATIC TEXTS
 		for (GfxText &text : shopTexts) {
 			Gfx::printText(text, boldPixels);
-			// init shop texts
-			//std::vector<GfxText> shopTexts{
-			//	{"BAG", 0.5f, 0, 0, 0, 255, {575, 375}},
-			//	{"SHOP", 0.8f, 0, 0, 0, 255, {-200, 195}},
-			//	{"ACTIVE CARDS", 0.5f, 0, 0, 0, 255, {-125, -225}},
-			//	{"X", 2.f, 0, 0, 0, 255, {-695, -300}},
-			//	//{"5/5", 0.5f, 0, 0, 0, 255, {-125, -375}},
-			//	{"5/15", 0.5f, 0, 0, 0, 255, {575, -375}},
-			//	{"DESCRIPTION GOES HERE", 0.5f, 255, 255, 255, 255, {-200, 325}}
-			//};
 		}
 		// DYNAMIC TEXTS
 		// ACTIVE
@@ -393,6 +417,7 @@ namespace { // functions for DrawCardShop()
 		Gfx::printText(cardCount, boldPixels);
 	}
 
+	// prompts to user to let go to drop into a diff inventory
 	void drawPrompts() {
 		Card& card = *pSelectedCard;
 		// check collision with non-shop inventories
@@ -419,6 +444,7 @@ namespace { // functions for DrawCardShop()
 		}
 	}
 
+	// draws the updated selected card's location based on where the cursor is
 	void drawSelectedCard() {
 		// determine card size based on card type
 		Card& card = *pSelectedCard;
@@ -430,6 +456,24 @@ namespace { // functions for DrawCardShop()
 		case DECK::BAG:    scale = INVENTORY_CARD_SCALE; break;
 		}
 		Gfx::printMesh(rectMesh, *pSelectedCard, scale);
+	}
+
+	// displays description of card
+	void drawCardDescription() {
+		// Defines GfxText object
+		GfxText desc{ "", 0.5f, 255, 255, 255, 255}; // set font colour to white
+		desc.pos = { -200, 360 };
+		
+		Card& card = *pHoveredCard;
+		// if active card effect array isnt empty, concatenate desc
+		if (!card.info.active.empty()) {
+			for (CardEffect& effect : card.info.active) {
+				desc.text += effect.desc + '\n';
+			}
+		}
+		
+		// print description
+		Gfx::printMultiline(desc, boldPixels);
 	}
 
 	void blockShop() {
@@ -470,6 +514,17 @@ void DrawCardShop() {
 		drawPrompts();
 		drawSelectedCard(); // ensure selected card always on top
 	}
+	// if a card is hovered over, display its description
+	if (pHoveredCard) {
+		drawCardDescription();
+	}
+	else {
+		// default description text
+		GfxText text{ "", 1.f , 255, 255, 255, 255};
+		text.pos = { -200, 325 };
+		text.text = "Select a card to continue!";
+		Gfx::printText(text, boldPixels);
+	}
 	// if user cant buy any more cards, block access to shop
 	if (buyable_left <= 0) blockShop();
 }
@@ -482,4 +537,103 @@ void FreeCardShop() {
 void UnloadCardShop() {
 	// unload assets
 	AEGfxDestroyFont(boldPixels); // font
+}
+
+namespace Cards {
+	// Parses a CardEffect array from a JSON array, allows for multiple effects per card
+	std::vector<CardEffect> parseEffects(const rapidjson::Value& effectArray) {
+		// declare resultant object
+		std::vector<CardEffect> effects;
+
+		// for each card effect
+		for (const auto& e : effectArray.GetArray()) {
+			// declare placeholder object
+			CardEffect effect;
+			// parse json values into object
+			effect.type = e["type"].GetString();
+			effect.desc = e["desc"].GetString();
+			effect.value = e["value"].GetFloat();
+			// append to resultant object
+			effects.push_back(effect);
+		}
+
+		return effects;
+	}
+
+	// Loads cards from JSON file into cardPool
+	// Documentation here: https://rapidjson.org/md_doc_stream.html#FileStreams
+	// code will run insya allah
+	void Load_Cards(std::string const& filename) {
+		// open filestream
+		std::ifstream file{ filename };
+		// produce error if file cannot be opened
+		if (!file.is_open()) {
+			std::cout << "[ ERROR ] " << filename << " failed to open!!\n";
+			return;
+		}
+
+		// creates string stream
+		std::stringstream buffer;
+		// read JSON file into string stream
+		buffer << file.rdbuf();
+		// assign contents of stream to string
+		std::string json = buffer.str();
+
+		// parses string into a type rapidjson::Document via c style strings
+		rapidjson::Document doc;
+		// copied this part from the documentation lol
+		// adapted from c to c++
+		rapidjson::ParseResult ok = doc.Parse(json.c_str());
+
+		// if somehow (god forbid) got error parsing, output error and return
+		if (ok.IsError()) {
+			std::cout << "[ ERROR ] JSON Parse Error: " << GetParseError_En(ok.Code())
+				<< " at offset " << ok.Offset() << '\n';
+			return;
+		}
+
+		// for every parsed card within the "cards" container
+		for (const auto& cardJson : doc["cards"].GetArray()) {
+			// placeholder CardStats object
+			CardStats card;
+			// translate parsing to object data members
+			card.ID = cardJson["id"].GetString();
+			card.rarity = cardJson["rarity"].GetInt();
+
+			// oursource this stuff to a helper function
+			card.active = parseEffects(cardJson["active"]);
+			card.passive = parseEffects(cardJson["passive"]);
+
+			// push complete Card Stats to corresponding rarity card pool
+			::cardPool[card.rarity].push_back(card);
+		}
+	}
+
+	// returns a rarity at random based on pre-set weights
+	Rarity randomiseRarity() {
+		// rand num and normalsie from 0 - 100
+		float rng = AERandFloat() * 100.0f;
+		float total = 0.0f;
+
+		// for each rarity, add its weight and compare to rand float
+		for (int i = 0; i < NUM_OF_RARITIES; i++) {
+			total += RARITY_WEIGHTS[i];
+			// if its a hit, return that rarity
+			if (rng < total) return static_cast<Rarity>(i);
+		}
+		// return default case
+		return COMMON;
+	}
+
+	// Assigns a random card of a random rarity from cardPool to the card param
+	void generateCard(Card& card) {
+		Rarity cardRarity;
+		do {
+			cardRarity = randomiseRarity();
+		} while (::cardPool[cardRarity].empty());
+
+		// random float and normalise within size of card pool of corresponding rarity
+		int index = (int)(AERandFloat() * ::cardPool[cardRarity].size());
+		card.info = ::cardPool[cardRarity][index];
+	}
 }

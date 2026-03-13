@@ -1,0 +1,62 @@
+{
+  "cards": [
+    {
+      "id": "common_dmg",
+      "rarity": 0,
+      "active": [
+        {
+          "type": "MOVE_SPEED",
+          "desc": "Move Speed UP (+25%)",
+          "value": 0.25
+        }
+      ],
+      "passive": []
+    },
+    {
+      "id": "rare_dmg",
+      "rarity": 1,
+      "active": [
+        {
+          "type": "DMG",
+          "desc": "Damage UP (+50%)",
+          "value": 0.5
+        },
+        {
+          "type": "HP",
+          "desc": "Health DOWN (-10)",
+          "value": -10
+        }
+      ],
+      "passive": []
+    },
+    {
+      "id": "epic_dmg",
+      "rarity": 2,
+      "active": [
+        {
+          "type": "DMG",
+          "desc": "Damage UP (+75%)",
+          "value": 0.5
+        },
+        {
+          "type": "HP",
+          "desc": "Fire Rate DOWN (-15)",
+          "value": -15
+        }
+      ],
+      "passive": []
+    },
+    {
+      "id": "unique_dmg",
+      "rarity": 3,
+      "active": [
+        {
+          "type": "DMG",
+          "desc": "Damage UP (+100%)\nNo Debuffs!",
+          "value": 1
+        }
+      ],
+      "passive": []
+    }
+  ]
+}

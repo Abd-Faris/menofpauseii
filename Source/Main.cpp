@@ -6,11 +6,11 @@
 */
 /*****************************************************************************/
 
-// csd1130_gsm.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
 #include "MasterHeader.h"
+#include <direct.h>
+
+
 
 //-----------------------------------------------------------//
 // This function defines the beginning of the program and
@@ -23,6 +23,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
     // System initialize
     Initialise_System(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+    
+    // DEBUG: Prints current directory
+    char buffer[256];
+    _getcwd(buffer, sizeof(buffer));
+    std::cout << "\nProgram Directory: " << buffer << "\n\n";
 
     Load_Global_Assets();
 
