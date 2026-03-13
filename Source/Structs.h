@@ -47,12 +47,14 @@ struct AABB {
 	AEVec2 max, min;
 };
 
+// individual card effects in a cardstat
 struct CardEffect {
 	std::string type;
 	std::string desc;
 	int value;
 };
 
+// card information
 struct CardStats {
 	std::string ID;
 	int rarity;
@@ -60,6 +62,7 @@ struct CardStats {
 	std::vector<CardEffect> passive;
 };
 
+// card object instance
 struct Card {
 	// MEMBERS
 	AEVec2 pos; // dynamic world coords
@@ -67,13 +70,8 @@ struct Card {
 	AEVec2 size{ 25, 35 };
 	AEGfxVertexList* mesh{};
 	AABB boundingBox{}; // collision bounding box
-	CardStats stats;
+	CardStats info;
 	DECK from{}; // to be updated every time card is shifted
-
-	// MEMBER FUNCTIONS
-
-	// generates new card
-	//void generateCard();
 };
 
 struct shape {
