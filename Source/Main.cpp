@@ -24,6 +24,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // System initialize
     Initialise_System(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 
+    Load_Global_Assets();
+
     // GSM initialize
     GSM_Initialize(GS_MAIN_MENU);
 
@@ -67,7 +69,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         GS_current = GS_next;
     }
 
-    //Systems exit (terminate)
-    //System_Exit();
+    // Exit Program
+    Unload_Global_Assets();
+
     return 0;
 }

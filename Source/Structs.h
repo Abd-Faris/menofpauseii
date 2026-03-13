@@ -47,31 +47,33 @@ struct AABB {
 	AEVec2 max, min;
 };
 
+struct CardEffect {
+	std::string type;
+	std::string desc;
+	int value;
+};
+
+struct CardStats {
+	std::string ID;
+	int rarity;
+	std::vector<CardEffect> active;
+	std::vector<CardEffect> passive;
+};
+
 struct Card {
 	// MEMBERS
 	AEVec2 pos; // dynamic world coords
 	AEVec2 homepos; // anchored world coords
 	AEVec2 size{ 25, 35 };
-	int type{}, val{}, rarity{ Rarity::COMMON };
 	AEGfxVertexList* mesh{};
 	AABB boundingBox{}; // collision bounding box
-	bool hoveredOn{ false };
+	CardStats stats;
 	DECK from{}; // to be updated every time card is shifted
 
 	// MEMBER FUNCTIONS
 
-	// generates new card and assigns to 
-	void generateCard() {
-		// randomise type
-		type = static_cast<int>(AERandFloat() * Type::NUM_OF_TYPES);
-		// alter percentage based on rarity
-		switch (rarity) {
-		case Rarity::COMMON: // 10-30%, range 20
-			val = 10 + static_cast<int>(AERandFloat() * 20);
-			break;
-		default: break;
-		};
-	}
+	// generates new card
+	//void generateCard();
 };
 
 struct shape {

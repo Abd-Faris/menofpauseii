@@ -42,35 +42,15 @@ namespace {
 		{"BAG", 0.5f, 0, 0, 0, 255, {575, 375}},
 		{"SHOP", 0.8f, 0, 0, 0, 255, {-200, 195}},
 		{"ACTIVE CARDS", 0.5f, 0, 0, 0, 255, {-125, -225}},
-		{"X", 2.f, 0, 0, 0, 255, {-695, -300}},
-		{"5/5", 0.5f, 0, 0, 0, 255, {-125, -375}},
-		{"5/15", 0.5f, 0, 0, 0, 255, {575, -375}},
 		{"DESCRIPTION GOES HERE", 0.5f, 255, 255, 255, 255, {-200, 325}}
 	};
-
-	// mesh pointers
-	void populateCardShop(std::vector<Card>& shop) {
-		int index{};
-		for (Card &slot : shop) {
-			// set mesh
-			slot.mesh = Gfx::createRectMesh();
-			// set card stats
-			slot.generateCard();
-			// set xpos ypos
-			slot.pos = { -400.f + (index++ * 400.f), 0.f };
-			// display card stats
-			std::cout << "Type: " << slot.type << '\n'
-					  << "Rarity: " << slot.rarity << '\n'
-					  << "xpos: " << AERandFloat() << "\n\n";
-		}
-	}
 
 	void initCardShop(std::vector<Card>& shop) {
 		// create 3 cards for shop
 		Card card{};
 		for (int i{ 0 }; i < num_shopCards; ++i) {
 			card.from = DECK::SHOP;
-			card.generateCard();  // generate card stats
+			//card.generateCard();  // generate card stats
 			shop.push_back(card); // push card into vector
 		}
 	}
@@ -387,20 +367,30 @@ namespace { // functions for DrawCardShop()
 	}
 
 	void drawTexts() {
-		// TEXTS
-		for (GfxText text : shopTexts) {
+		// STATIC TEXTS
+		for (GfxText &text : shopTexts) {
 			Gfx::printText(text, boldPixels);
 			// init shop texts
-			std::vector<GfxText> shopTexts{
-				{"BAG", 0.5f, 0, 0, 0, 255, {575, 375}},
-				{"SHOP", 0.8f, 0, 0, 0, 255, {-200, 195}},
-				{"ACTIVE CARDS", 0.5f, 0, 0, 0, 255, {-125, -225}},
-				{"X", 2.f, 0, 0, 0, 255, {-695, -300}},
-				{"5/5", 0.5f, 0, 0, 0, 255, {-125, -375}},
-				{"5/15", 0.5f, 0, 0, 0, 255, {575, -375}},
-				{"DESCRIPTION GOES HERE", 0.5f, 255, 255, 255, 255, {-200, 325}}
-			};
+			//std::vector<GfxText> shopTexts{
+			//	{"BAG", 0.5f, 0, 0, 0, 255, {575, 375}},
+			//	{"SHOP", 0.8f, 0, 0, 0, 255, {-200, 195}},
+			//	{"ACTIVE CARDS", 0.5f, 0, 0, 0, 255, {-125, -225}},
+			//	{"X", 2.f, 0, 0, 0, 255, {-695, -300}},
+			//	//{"5/5", 0.5f, 0, 0, 0, 255, {-125, -375}},
+			//	{"5/15", 0.5f, 0, 0, 0, 255, {575, -375}},
+			//	{"DESCRIPTION GOES HERE", 0.5f, 255, 255, 255, 255, {-200, 325}}
+			//};
 		}
+		// DYNAMIC TEXTS
+		// ACTIVE
+		GfxText cardCount{ "", 0.5f };
+		cardCount.pos = { -125, -375 };
+		cardCount.text = std::to_string(activeCards.size()) + "/" + std::to_string(num_activeCards);
+		Gfx::printText(cardCount, boldPixels);
+		// INVENTORY
+		cardCount.pos = { 575, -375 };
+		cardCount.text = std::to_string(inventoryCards.size()) + "/" + std::to_string(num_inventoryCards);
+		Gfx::printText(cardCount, boldPixels);
 	}
 
 	void drawPrompts() {
