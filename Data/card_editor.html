@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Card Editor</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f5f0;color:#1a1a1a;padding:2rem}
+h2{font-size:18px;font-weight:500;margin-bottom:1.5rem}
+h3{font-size:15px;font-weight:500;margin-bottom:.75rem}
+.card{background:#fff;border:1px solid #ddd;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem}
+label{font-size:13px;color:#666;display:block;margin-bottom:4px;margin-top:10px}
+label:first-child{margin-top:0}
+input,select{width:100%;font-size:14px;padding:6px 10px;border:1px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a}
+input:focus,select:focus{outline:2px solid #378ADD;outline-offset:1px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end}
+.effect-row{display:grid;grid-template-columns:1fr 2fr 0.7fr 0.7fr auto;gap:8px;align-items:end;margin-bottom:8px}
+button{font-size:13px;padding:6px 14px;border:1px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a;cursor:pointer}
+button:hover{background:#f0f0f0}
+.btn-add{color:#185FA5;border-color:#185FA5;margin-top:4px}
+.btn-add:hover{background:#E6F1FB}
+.btn-remove{color:#A32D2D;border-color:#A32D2D;padding:6px 10px}
+.btn-remove:hover{background:#FCEBEB}
+.btn-primary{background:#E6F1FB;color:#185FA5;border-color:#185FA5;font-weight:500;padding:8px 20px}
+.btn-primary:hover{background:#B5D4F4}
+.btn-export{background:#EAF3DE;color:#3B6D11;border-color:#3B6D11;font-weight:500;padding:8px 20px}
+.btn-export:hover{background:#C0DD97}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
+.rarity-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500}
+.r0{background:#eee;color:#555}
+.r1{background:#E6F1FB;color:#0C447C}
+.r2{background:#EDE6FB;color:#3C3489}
+.r3{background:#FAEEDA;color:#633806}
+.card-list-item{padding:12px 0;border-bottom:1px solid #eee}
+.card-list-item:last-child{border-bottom:none}
+.card-list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.item-left{display:flex;align-items:center;gap:8px;flex:1;min-width:0;flex-wrap:wrap}
+.item-actions{display:flex;gap:6px;flex-shrink:0;margin-left:8px}
+.effects-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.effects-section{background:#f9f9f7;border:1px solid #eee;border-radius:8px;padding:8px 10px}
+.effects-section-title{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:#999;margin-bottom:6px}
+.effect-chip-row{display:flex;flex-wrap:wrap;gap:4px}
+.effect-chip{font-size:11px;padding:3px 8px;border-radius:5px;background:#fff;border:1px solid #ddd;color:#444;line-height:1.4}
+.effect-chip .chip-type{font-family:monospace;font-weight:500;color:#185FA5;margin-right:4px}
+.effect-chip .chip-vtype{font-size:10px;color:#888;margin-left:3px}
+.effect-chip .chip-val{font-family:monospace;color:#3B6D11;margin-left:3px}
+.effect-chip .chip-val.neg{color:#A32D2D}
+.tabs{display:flex;gap:4px;margin-bottom:1rem;flex-wrap:wrap}
+.tab{padding:6px 16px;border:1px solid #ddd;border-radius:8px;cursor:pointer;font-size:13px;background:#fff;color:#666}
+.tab.active{background:#f0f0f0;color:#1a1a1a;border-color:#bbb}
+.export-box{background:#f5f5f0;border-radius:8px;padding:1rem;font-family:monospace;font-size:12px;white-space:pre-wrap;word-break:break-all;max-height:400px;overflow-y:auto;border:1px solid #ddd}
+.empty{color:#888;font-size:13px;padding:8px 0}
+.actions{display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap;align-items:center}
+.msg{font-size:13px;margin-top:8px;min-height:18px}
+code{font-family:monospace;font-size:12px;background:#eee;padding:1px 5px;border-radius:4px}
+.btn-edit{color:#185FA5;border-color:#185FA5;padding:6px 10px}
+.btn-edit:hover{background:#E6F1FB}
+.drop-zone{border:2px dashed #ccc;border-radius:10px;padding:2rem;text-align:center;color:#888;font-size:14px;cursor:pointer;transition:border-color .15s,background .15s;display:block}
+.drop-zone:hover,.drop-zone.drag-over{border-color:#378ADD;background:#f0f6ff;color:#185FA5}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:14px;padding:1.5rem;width:96%;max-width:700px;max-height:90vh;overflow-y:auto;position:relative}
+.modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:18px;cursor:pointer;color:#888;padding:2px 8px;border-radius:6px}
+.modal-close:hover{color:#1a1a1a;background:#f0f0f0}
+.modal-title{font-size:16px;font-weight:500}
+.section-label{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:#999;margin:1rem 0 4px}
+.effect-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+.effect-table th{text-align:left;color:#888;font-weight:400;padding:4px 8px 4px 0;border-bottom:1px solid #eee}
+.effect-table td{padding:6px 8px 6px 0;border-bottom:1px solid #f5f5f0;vertical-align:top}
+.effect-table tr:last-child td{border-bottom:none}
+.type-pill{display:inline-block;font-size:11px;padding:1px 7px;border-radius:5px;background:#eee;color:#444;font-family:monospace}
+</style>
+</head>
+<body>
+<h2>Card Editor</h2>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('add')">Add card</button>
+  <button class="tab" onclick="showTab('list')">Card list (<span id="count">0</span>)</button>
+  <button class="tab" onclick="showTab('import')">Import JSON</button>
+  <button class="tab" onclick="showTab('export')">Export JSON</button>
+</div>
+
+<!-- ADD TAB -->
+<div id="tab-add">
+  <div class="card">
+    <h3>Card identity</h3>
+    <div class="row">
+      <div><label>Card ID</label><input id="cid" placeholder="e.g. common_hp"/></div>
+      <div><label>Rarity</label>
+        <select id="crarity">
+          <option value="0">0 — Common</option>
+          <option value="1">1 — Rare</option>
+          <option value="2">2 — Epic</option>
+          <option value="3">3 — Unique</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-head"><h3>Active effects</h3><button class="btn-add" onclick="addEffect('active')">+ add effect</button></div>
+    <div id="active-effects"><p class="empty">No active effects yet.</p></div>
+  </div>
+  <div class="card">
+    <div class="section-head"><h3>Passive effects</h3><button class="btn-add" onclick="addEffect('passive')">+ add effect</button></div>
+    <div id="passive-effects"><p class="empty">No passive effects yet.</p></div>
+  </div>
+  <div class="actions">
+    <button class="btn-primary" onclick="addCard()">Add card to list</button>
+  </div>
+  <p id="form-msg" class="msg"></p>
+</div>
+
+<!-- LIST TAB -->
+<div id="tab-list" style="display:none">
+  <div class="card">
+    <div id="card-list"><p class="empty">No cards added yet.</p></div>
+  </div>
+</div>
+
+<!-- IMPORT TAB -->
+<div id="tab-import" style="display:none">
+  <div class="card">
+    <h3>Load existing JSON file</h3>
+    <p style="font-size:13px;color:#666;margin-bottom:1rem">Drag and drop your <code>cards.json</code> here, or click to browse. Imported cards are <strong>added</strong> to the current list — duplicate IDs are skipped.</p>
+    <label class="drop-zone" id="drop-zone" ondragover="dzDrag(event)" ondragleave="dzLeave()" ondrop="dzDrop(event)" onclick="document.getElementById('file-input').click()">
+      Drop .json file here, or click to browse
+      <input type="file" id="file-input" accept=".json,application/json" style="display:none" onchange="fileSelected(event)"/>
+    </label>
+    <p id="import-msg" class="msg"></p>
+  </div>
+  <div class="card" id="import-preview" style="display:none">
+    <h3>Preview (<span id="preview-count">0</span> cards)</h3>
+    <div id="import-preview-list"></div>
+    <div class="actions">
+      <button class="btn-primary" onclick="confirmImport()">Add to card list</button>
+      <button onclick="clearImportPreview()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT TAB -->
+<div id="tab-export" style="display:none">
+  <div class="card">
+    <h3>JSON output</h3>
+    <p style="font-size:13px;color:#666;margin-bottom:.75rem">Your cards wrapped in the correct <code>{"cards":[...]}</code> structure.</p>
+    <div class="export-box" id="export-box">Add some cards first.</div>
+    <div class="actions">
+      <button class="btn-export" onclick="copyJSON()">Copy JSON</button>
+      <button onclick="downloadJSON()">Download cards.json</button>
+    </div>
+    <p id="copy-msg" class="msg"></p>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="modal" onclick="maybeCloseModal(event)">
+  <div class="modal" id="modal-inner">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal" onclick="maybeCloseEditModal(event)">
+  <div class="modal" id="edit-modal-inner">
+    <button class="modal-close" onclick="closeEditModal()">✕</button>
+    <h3 style="margin-bottom:1rem">Edit card</h3>
+    <div style="background:#f9f9f7;border:1px solid #ddd;border-radius:10px;padding:1rem;margin-bottom:1rem">
+      <div class="row">
+        <div><label>Card ID</label><input id="edit-cid" placeholder="e.g. common_hp"/></div>
+        <div><label>Rarity</label>
+          <select id="edit-crarity">
+            <option value="0">0 — Common</option>
+            <option value="1">1 — Rare</option>
+            <option value="2">2 — Epic</option>
+            <option value="3">3 — Unique</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div style="background:#f9f9f7;border:1px solid #ddd;border-radius:10px;padding:1rem;margin-bottom:1rem">
+      <div class="section-head"><h3>Active effects</h3><button class="btn-add" onclick="addEditEffect('active')">+ add effect</button></div>
+      <div id="edit-active-effects"><p class="empty">No active effects.</p></div>
+    </div>
+    <div style="background:#f9f9f7;border:1px solid #ddd;border-radius:10px;padding:1rem;margin-bottom:1rem">
+      <div class="section-head"><h3>Passive effects</h3><button class="btn-add" onclick="addEditEffect('passive')">+ add effect</button></div>
+      <div id="edit-passive-effects"><p class="empty">No passive effects.</p></div>
+    </div>
+    <div class="actions">
+      <button class="btn-primary" onclick="saveEdit()">Save changes</button>
+      <button onclick="closeEditModal()">Cancel</button>
+      <button class="btn-remove" style="margin-left:auto" onclick="deleteFromEdit()">Delete card</button>
+    </div>
+    <p id="edit-msg" class="msg"></p>
+  </div>
+</div>
+
+<script>
+const TYPES = ["HP","DMG","FIRE_RATE","MOVE_SPEED","XP","PLAYER_UPGRADE",""];
+let cards = [];
+let activeEffects = [];
+let passiveEffects = [];
+let eidCounter = 0;
+let importBuffer = [];
+
+// edit modal state
+let editCardIndex = -1;
+let editActiveEffects = [];
+let editPassiveEffects = [];
+
+/* ── tabs ── */
+function showTab(t) {
+  ["add","list","import","export"].forEach((x,i) => {
+    document.getElementById("tab-"+x).style.display = x===t ? "block" : "none";
+    document.querySelectorAll(".tab")[i].classList.toggle("active", x===t);
+  });
+  if (t==="export") renderExport();
+  if (t==="list")   renderList();
+}
+
+/* ── effects form ── */
+function effectRowHTML(id, sect, preset) {
+  const p = preset || {};
+  const vtVal = p.valuetype !== undefined ? p.valuetype : "";
+  return `<div class="effect-row" id="erow-${sect}-${id}">
+    <div>
+      <label style="margin-top:0">Type</label>
+      <select onchange="syncDesc(this,'${sect}',${id})" id="etype-${sect}-${id}">
+        ${TYPES.map(t=>`<option value="${t}" ${p.type===t?"selected":""}>${t||"(none)"}</option>`).join("")}
+      </select>
+    </div>
+    <div>
+      <label style="margin-top:0">Description</label>
+      <input id="edesc-${sect}-${id}" placeholder="e.g. Health UP (+25%)"/>
+    </div>
+    <div>
+      <label style="margin-top:0">Value type</label>
+      <select id="evtype-${sect}-${id}">
+        <option value="" ${vtVal===""?"selected":""}>—</option>
+        <option value="mult" ${vtVal==="mult"?"selected":""}>mult</option>
+        <option value="base" ${vtVal==="base"?"selected":""}>base</option>
+      </select>
+    </div>
+    <div>
+      <label style="margin-top:0">Value</label>
+      <input id="eval-${sect}-${id}" placeholder="0.25 or -10" type="number" step="any" ${p.value!=null?`value="${p.value}"`:""}/>
+    </div>
+    <div style="padding-top:18px">
+      <button class="btn-remove" onclick="removeEffect('${sect}',${id})">✕</button>
+    </div>
+  </div>`;
+}
+
+function setEffectPreset(id, sect, p) {
+  if (!p) return;
+  // Real newlines from JSON become the visible two-char \n in the textbox
+  const descEl = document.getElementById(`edesc-${sect}-${id}`);
+  if (descEl) descEl.value = (p.desc || "").replace(/\n/g, "\\n");
+}
+
+function addEffect(sect, preset) {
+  const id = eidCounter++;
+  const cont = document.getElementById(sect+"-effects");
+  const ph = cont.querySelector(".empty");
+  if (ph) ph.remove();
+  if (sect==="active") activeEffects.push(id);
+  else passiveEffects.push(id);
+  const d = document.createElement("div");
+  d.innerHTML = effectRowHTML(id, sect, preset);
+  cont.appendChild(d.firstChild);
+  setEffectPreset(id, sect, preset);
+}
+
+function removeEffect(sect, id) {
+  // sect is either "active"/"passive" (add form) or "edit-active"/"edit-passive" (edit modal)
+  if (sect==="active")        activeEffects      = activeEffects.filter(x=>x!==id);
+  else if (sect==="passive")  passiveEffects     = passiveEffects.filter(x=>x!==id);
+  else if (sect==="edit-active")  editActiveEffects  = editActiveEffects.filter(x=>x!==id);
+  else if (sect==="edit-passive") editPassiveEffects = editPassiveEffects.filter(x=>x!==id);
+  document.getElementById(`erow-${sect}-${id}`)?.remove();
+  const cont = document.getElementById(sect+"-effects");
+  const base = sect.replace("edit-","");
+  if (cont && !cont.children.length) cont.innerHTML = `<p class="empty">No ${base} effects.</p>`;
+}
+
+function syncDesc(sel, sect, id) {
+  const type = sel.value;
+  const descEl = document.getElementById(`edesc-${sect}-${id}`);
+  if (!descEl.value && type) descEl.value = type.replace(/_/g," ") + " UP (+%)";
+}
+
+function getEffects(sect, ids) {
+  return ids.map(id => {
+    const type      = document.getElementById(`etype-${sect}-${id}`)?.value || "";
+    const desc      = document.getElementById(`edesc-${sect}-${id}`)?.value || "";
+    const valuetype = document.getElementById(`evtype-${sect}-${id}`)?.value ?? "";
+    const valRaw    = document.getElementById(`eval-${sect}-${id}`)?.value;
+    const value     = (valRaw===""||valRaw===null) ? null : parseFloat(valRaw);
+    return { type, desc, valuetype, value };
+  });
+}
+
+function addCard() {
+  const id = document.getElementById("cid").value.trim();
+  if (!id) { msg("form-msg","Please enter a card ID.","#A32D2D"); return; }
+  const rarity  = parseInt(document.getElementById("crarity").value);
+  const active  = getEffects("active",  activeEffects);
+  const passive = getEffects("passive", passiveEffects);
+  cards.push({ id, rarity, active, passive });
+  document.getElementById("count").textContent = cards.length;
+  msg("form-msg", `Card "${id}" added!`, "#3B6D11");
+  resetForm();
+}
+
+function resetForm() {
+  document.getElementById("cid").value = "";
+  document.getElementById("crarity").value = "0";
+  document.getElementById("active-effects").innerHTML  = '<p class="empty">No active effects yet.</p>';
+  document.getElementById("passive-effects").innerHTML = '<p class="empty">No passive effects yet.</p>';
+  activeEffects = []; passiveEffects = [];
+}
+
+/* ── helpers ── */
+function rarityLabel(r) {
+  const labels = ["Common","Rare","Epic","Unique"];
+  const cls    = ["r0","r1","r2","r3"];
+  return `<span class="rarity-badge ${cls[r]||"r0"}">${labels[r]||r}</span>`;
+}
+
+/* ── card list ── */
+function effectChipsHTML(effects) {
+  if (!(effects||[]).length) return '<span style="font-size:11px;color:#bbb">none</span>';
+  return effects.map(e => {
+    const val = e.value != null ? e.value : "";
+    const valClass = (val !== "" && parseFloat(val) < 0) ? "neg" : "";
+    const vtypeHTML = e.valuetype ? `<span class="chip-vtype">[${e.valuetype}]</span>` : "";
+    const valHTML   = val !== "" ? `<span class="chip-val ${valClass}">${val}</span>` : "";
+    const desc = e.desc ? `<span style="color:#666"> ${e.desc.replace(/\\n/g," ")}</span>` : "";
+    return `<span class="effect-chip"><span class="chip-type">${e.type||"—"}</span>${desc}${vtypeHTML}${valHTML}</span>`;
+  }).join("");
+}
+
+function renderList() {
+  const el = document.getElementById("card-list");
+  if (!cards.length) { el.innerHTML='<p class="empty">No cards added yet.</p>'; return; }
+  el.innerHTML = cards.map((c,i) => `
+    <div class="card-list-item">
+      <div class="card-list-header">
+        <div class="item-left">
+          <span style="font-size:14px;font-weight:500">${c.id}</span>
+          ${rarityLabel(c.rarity)}
+        </div>
+        <div class="item-actions">
+          <button class="btn-edit" onclick="editCard(${i})">Edit</button>
+          <button class="btn-remove" onclick="removeCard(${i})">✕</button>
+        </div>
+      </div>
+      <div class="effects-grid">
+        <div class="effects-section">
+          <div class="effects-section-title">Active</div>
+          <div class="effect-chip-row">${effectChipsHTML(c.active)}</div>
+        </div>
+        <div class="effects-section">
+          <div class="effects-section-title">Passive</div>
+          <div class="effect-chip-row">${effectChipsHTML(c.passive)}</div>
+        </div>
+      </div>
+    </div>`).join("");
+}
+
+function removeCard(i) {
+  cards.splice(i,1);
+  document.getElementById("count").textContent = cards.length;
+  renderList();
+}
+
+/* ── card detail modal ── */
+function effectsTableHTML(effects, label) {
+  const rows = (effects||[]).map(e => `
+    <tr>
+      <td><span class="type-pill">${e.type||"—"}</span></td>
+      <td style="padding-left:4px">${e.desc||"—"}</td>
+      <td style="text-align:center;font-family:monospace">${e.valuetype||"—"}</td>
+      <td style="text-align:right;font-family:monospace">${e.value!=null?e.value:"—"}</td>
+    </tr>`).join("");
+  return `<p class="section-label">${label}</p>` + (rows
+    ? `<table class="effect-table"><thead><tr><th>Type</th><th>Description</th><th style="text-align:center">Value type</th><th style="text-align:right">Value</th></tr></thead><tbody>${rows}</tbody></table>`
+    : `<p class="empty">None</p>`);
+}
+
+function viewCard(i) {
+  const c = cards[i];
+  document.getElementById("modal-content").innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem">
+      <span class="modal-title">${c.id}</span>
+      ${rarityLabel(c.rarity)}
+    </div>
+    ${effectsTableHTML(c.active,  "Active effects")}
+    ${effectsTableHTML(c.passive, "Passive effects")}
+    <div class="actions" style="margin-top:1.25rem">
+      <button class="btn-remove" onclick="removeCard(${i});closeModal()">Delete card</button>
+    </div>`;
+  document.getElementById("modal").classList.add("open");
+}
+
+function maybeCloseModal(e) { if (e.target===document.getElementById("modal")) closeModal(); }
+function closeModal() { document.getElementById("modal").classList.remove("open"); }
+
+/* ── edit modal ── */
+function editCard(i) {
+  const c = cards[i];
+  editCardIndex = i;
+  editActiveEffects = [];
+  editPassiveEffects = [];
+
+  document.getElementById("edit-cid").value = c.id;
+  document.getElementById("edit-crarity").value = c.rarity;
+
+  const aContainer = document.getElementById("edit-active-effects");
+  const pContainer = document.getElementById("edit-passive-effects");
+  aContainer.innerHTML = "";
+  pContainer.innerHTML = "";
+
+  (c.active||[]).forEach(e => addEditEffect("active", e));
+  (c.passive||[]).forEach(e => addEditEffect("passive", e));
+
+  if (!editActiveEffects.length)  aContainer.innerHTML = '<p class="empty">No active effects.</p>';
+  if (!editPassiveEffects.length) pContainer.innerHTML = '<p class="empty">No passive effects.</p>';
+
+  document.getElementById("edit-modal").classList.add("open");
+}
+
+function addEditEffect(sect, preset) {
+  const id = eidCounter++;
+  const cont = document.getElementById("edit-"+sect+"-effects");
+  const ph = cont.querySelector(".empty");
+  if (ph) ph.remove();
+  if (sect==="active") editActiveEffects.push(id);
+  else editPassiveEffects.push(id);
+  const d = document.createElement("div");
+  d.innerHTML = effectRowHTML(id, "edit-"+sect, preset);
+  cont.appendChild(d.firstChild);
+  setEffectPreset(id, "edit-"+sect, preset);
+}
+
+function removeEditEffect(sect, id) {
+  if (sect==="active") editActiveEffects = editActiveEffects.filter(x=>x!==id);
+  else editPassiveEffects = editPassiveEffects.filter(x=>x!==id);
+  document.getElementById(`erow-edit-${sect}-${id}`)?.remove();
+  const cont = document.getElementById("edit-"+sect+"-effects");
+  if (!cont.children.length) cont.innerHTML = `<p class="empty">No ${sect} effects.</p>`;
+}
+
+function saveEdit() {
+  const id = document.getElementById("edit-cid").value.trim();
+  if (!id) { msg("edit-msg","Please enter a card ID.","#A32D2D"); return; }
+  const rarity  = parseInt(document.getElementById("edit-crarity").value);
+  const active  = getEffects("edit-active",  editActiveEffects);
+  const passive = getEffects("edit-passive", editPassiveEffects);
+  cards[editCardIndex] = { id, rarity, active, passive };
+  document.getElementById("count").textContent = cards.length;
+  closeEditModal();
+  renderList();
+}
+
+function deleteFromEdit() {
+  removeCard(editCardIndex);
+  closeEditModal();
+}
+
+function maybeCloseEditModal(e) { if (e.target===document.getElementById("edit-modal")) closeEditModal(); }
+function closeEditModal() { document.getElementById("edit-modal").classList.remove("open"); }
+
+/* ── import ── */
+function dzDrag(e)  { e.preventDefault(); document.getElementById("drop-zone").classList.add("drag-over"); }
+function dzLeave()  { document.getElementById("drop-zone").classList.remove("drag-over"); }
+function dzDrop(e)  { e.preventDefault(); dzLeave(); const f=e.dataTransfer.files[0]; if(f) readFile(f); }
+function fileSelected(e) { const f=e.target.files[0]; if(f) readFile(f); }
+
+function readFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      // handle: {cards:[...]}, bare [...], or old [{cards:{...}}, ...]
+      let list = Array.isArray(parsed) ? parsed : (parsed.cards || []);
+      list = list.map(item => item.cards ? item.cards : item);
+      if (!list.length) { msg("import-msg","No cards found in file.","#A32D2D"); return; }
+      importBuffer = list;
+      showImportPreview(list);
+    } catch(err) {
+      msg("import-msg","Invalid JSON: "+err.message,"#A32D2D");
+    }
+  };
+  reader.readAsText(file);
+}
+
+function showImportPreview(list) {
+  const existing = new Set(cards.map(c=>c.id));
+  document.getElementById("preview-count").textContent = list.length;
+  document.getElementById("import-preview-list").innerHTML = list.map(c => {
+    const dupe = existing.has(c.id);
+    return `<div class="card-list-item">
+      <div class="item-left">
+        <span style="font-size:14px;font-weight:500">${c.id}</span>
+        ${rarityLabel(c.rarity||0)}
+        <span style="font-size:12px;color:#888">${(c.active||[]).length} active / ${(c.passive||[]).length} passive</span>
+        ${dupe?'<span style="font-size:11px;color:#A32D2D;background:#FCEBEB;padding:1px 7px;border-radius:5px">duplicate — will skip</span>':""}
+      </div>
+    </div>`;
+  }).join("");
+  document.getElementById("import-preview").style.display = "block";
+}
+
+function confirmImport() {
+  const existing = new Set(cards.map(c=>c.id));
+  let added = 0;
+  importBuffer.forEach(c => { if (!existing.has(c.id)) { cards.push(c); added++; } });
+  document.getElementById("count").textContent = cards.length;
+  msg("import-msg", `Imported ${added} card${added!==1?"s":""}.`, "#3B6D11");
+  clearImportPreview();
+}
+
+function clearImportPreview() {
+  importBuffer = [];
+  document.getElementById("import-preview").style.display = "none";
+  document.getElementById("import-preview-list").innerHTML = "";
+  document.getElementById("file-input").value = "";
+}
+
+/* ── export ── */
+function buildJSON() {
+  // Before stringifying, convert any literal \n (two chars) in desc fields
+  // to real newlines so JSON.stringify outputs them as \n (which C++ JSON parsers decode correctly)
+  const exportCards = cards.map(c => ({
+    ...c,
+    active:  (c.active ||[]).map(e => ({...e, desc: e.desc.replace(/\\n/g, "\n")})),
+    passive: (c.passive||[]).map(e => ({...e, desc: e.desc.replace(/\\n/g, "\n")})),
+  }));
+  return JSON.stringify({ cards: exportCards }, null, 3);
+}
+function renderExport() { document.getElementById("export-box").textContent = cards.length ? buildJSON() : "Add some cards first."; }
+
+function copyJSON() {
+  if (!cards.length) { msg("copy-msg","Nothing to copy yet.","#A32D2D"); return; }
+  navigator.clipboard.writeText(buildJSON()).then(() => msg("copy-msg","Copied!","#3B6D11"));
+}
+
+function downloadJSON() {
+  if (!cards.length) { msg("copy-msg","Nothing to download yet.","#A32D2D"); return; }
+  const a = document.createElement("a");
+  a.href = "data:application/json;charset=utf-8,"+encodeURIComponent(buildJSON());
+  a.download = "cards.json"; a.click();
+}
+
+function msg(id, text, color) {
+  const el = document.getElementById(id);
+  el.textContent = text; el.style.color = color;
+  if (text) setTimeout(() => el.textContent = "", 4000);
+}
+</script>
+</body>
+</html>
