@@ -51,7 +51,8 @@ struct AABB {
 struct CardEffect {
 	std::string type;
 	std::string desc;
-	int value;
+	std::string valuetype;
+	f32 value;
 };
 
 // card information

@@ -68,7 +68,7 @@ namespace { // functions for InitializeCardShop()
 	};
 
 	// initialises the card shop array
-	void initCardShop(std::vector<Card>& shop) {
+	void initCardShop(std::vector<Card>& cardShop) {
 		// create 3 cards for shop
 		Card card{};
 		for (int i{ 0 }; i < num_shopCards; ++i) {
@@ -76,7 +76,7 @@ namespace { // functions for InitializeCardShop()
 			Cards::generateCard(card);
 			// assign other data members
 			card.from = DECK::SHOP;
-			shop.push_back(card); // push card into vector
+			cardShop.push_back(card); // push card into vector
 		}
 	}
 
@@ -84,9 +84,9 @@ namespace { // functions for InitializeCardShop()
 	void computeXCardPositions(std::vector<Card>& arr, f32 start, f32 end, f32 y, f32 scale = 10, f32 maxGap = 100.f) {
 		// EDGECASE: if array empty, return
 		if (arr.empty()) return;
-
+		
 		// SET NUM OF DISPLAY CARDS
-		int displayCards = arr.size();
+		int displayCards = static_cast<int>(arr.size());
 		// set range for shop INCL PADDING ON EITHER SIDE
 		start += (arr[0].size.x / 2) * scale;
 		end   -= (arr[0].size.x / 2) * scale;
@@ -337,8 +337,8 @@ namespace { // functions for UpdateCardShop()
 	}
 
 	void checkContinue() {
-		// skip if player can still buy OR left click not clicked
-		if ((buyable_left > 0) || !AEInputCheckTriggered(AEVK_LBUTTON)) return;
+		// skip if left click not clicked
+		if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
 
 		// get cursor position
 		AEVec2 mousepos{};
@@ -364,8 +364,8 @@ void UpdateCardShop() {
 		checkCardCollision();
 	} // endif
 
-	// check if player selected to continue
-	checkContinue();
+	// if player cant buy any more cards, check if player selected to continue
+	if (buyable_left <= 0) checkContinue();
 }
 
 namespace { // functions for DrawCardShop()
@@ -459,21 +459,40 @@ namespace { // functions for DrawCardShop()
 	}
 
 	// displays description of card
-	void drawCardDescription() {
+	void drawCardDescription(bool printDefault = false) {
+
+		if (printDefault) {
+			// print default description text
+			GfxText text{ "", 1.f , 255, 255, 255, 255 };
+			text.pos = { -200, 325 };
+			text.text = "Select a card to continue!";
+			Gfx::printText(text, boldPixels);
+			return;
+		}
+
+
 		// Defines GfxText object
-		GfxText desc{ "", 0.5f, 255, 255, 255, 255}; // set font colour to white
-		desc.pos = { -200, 360 };
+		GfxText cardDesc{ "", 0.5f, 255, 255, 255, 255}; // set font colour to white
+		cardDesc.pos = { -200, 360 };
 		
 		Card& card = *pHoveredCard;
 		// if active card effect array isnt empty, concatenate desc
 		if (!card.info.active.empty()) {
 			for (CardEffect& effect : card.info.active) {
-				desc.text += effect.desc + '\n';
+				cardDesc.text += effect.desc + '\n';
+			}
+		}
+
+		// if passive card array isnt empty, concatenate desc
+		if (!card.info.passive.empty()) {
+			cardDesc.text += "[ PASSIVE ABILITY ]\n";
+			for (CardEffect& effect : card.info.passive) {
+				cardDesc.text += effect.desc + '\n';
 			}
 		}
 		
-		// print description
-		Gfx::printMultiline(desc, boldPixels);
+		// print cardDescription
+		Gfx::printMultiline(cardDesc, boldPixels);
 	}
 
 	void blockShop() {
@@ -504,29 +523,29 @@ namespace { // functions for DrawCardShop()
 // -600 -200 200
 void DrawCardShop() {
 	
-	// print cards to screen
+	// print card shop UI to screen
 	drawBoxes();
 	drawCards();
 	drawTexts();
-
-	// if theres a card selected, draw prompts
-	if (pSelectedCard) {
-		drawPrompts();
-		drawSelectedCard(); // ensure selected card always on top
-	}
+	
+	// print card description
 	// if a card is hovered over, display its description
 	if (pHoveredCard) {
-		drawCardDescription();
+		drawCardDescription(false);
 	}
 	else {
-		// default description text
-		GfxText text{ "", 1.f , 255, 255, 255, 255};
-		text.pos = { -200, 325 };
-		text.text = "Select a card to continue!";
-		Gfx::printText(text, boldPixels);
+		drawCardDescription(true);
 	}
+
 	// if user cant buy any more cards, block access to shop
 	if (buyable_left <= 0) blockShop();
+
+	// prints selected card [ ALWAYS ON TOP ]
+	// if theres a card selected, draw prompts
+	if (pSelectedCard) {
+		drawPrompts();		// prompts to user to let go within deck bounds
+		drawSelectedCard(); // ensure selected card always draws on top
+	}
 }
 
 void FreeCardShop() {
@@ -552,6 +571,7 @@ namespace Cards {
 			// parse json values into object
 			effect.type = e["type"].GetString();
 			effect.desc = e["desc"].GetString();
+			effect.valuetype = e["valuetype"].GetString();
 			effect.value = e["value"].GetFloat();
 			// append to resultant object
 			effects.push_back(effect);
@@ -610,7 +630,7 @@ namespace Cards {
 	}
 
 	// returns a rarity at random based on pre-set weights
-	Rarity randomiseRarity() {
+	int randomiseRarity() {
 		// rand num and normalsie from 0 - 100
 		float rng = AERandFloat() * 100.0f;
 		float total = 0.0f;
@@ -627,13 +647,17 @@ namespace Cards {
 
 	// Assigns a random card of a random rarity from cardPool to the card param
 	void generateCard(Card& card) {
-		Rarity cardRarity;
+		int cardRarity;
 		do {
 			cardRarity = randomiseRarity();
 		} while (::cardPool[cardRarity].empty());
 
+		// create reference to rarity cardPool to choose from
+		if (cardRarity >= 4) cardRarity = 3;
+		std::vector<CardStats>& rarityPool = ::cardPool[cardRarity];
+
 		// random float and normalise within size of card pool of corresponding rarity
-		int index = (int)(AERandFloat() * ::cardPool[cardRarity].size());
+		int index = (int)(AERandFloat() * (rarityPool.size() - 1));
 		card.info = ::cardPool[cardRarity][index];
 	}
 }
