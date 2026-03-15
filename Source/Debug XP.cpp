@@ -189,12 +189,14 @@ void reset_game() {
 
 
 float calculate_max_stats(int i) {
+	// FORMULA:
+	// (base + cardBaseMod + (upgradeLevel * multiplier)) * cardMultMod
 	switch (i) {
-	case 0: return player_init.baseHp + (player_init.upgradeLevels[0] * multiplier[0]);
-	case 1: return player_init.baseDmg + (player_init.upgradeLevels[1] * multiplier[1]);
-	case 2: return player_init.baseSpeed + (player_init.upgradeLevels[2] * multiplier[2]);
-	case 3: return player_init.baseFireRate - (player_init.upgradeLevels[3] * multiplier[3]);
-	case 4: return player_init.baseXpGain + (player_init.upgradeLevels[4] * multiplier[4]);
+	case 0: return (player_init.baseHp + cardBaseMod.hp + (player_init.upgradeLevels[0] * multiplier[0])) * cardMultMod.hp;
+	case 1: return (player_init.baseDmg + cardBaseMod.dmg + (player_init.upgradeLevels[1] * multiplier[1])) * cardMultMod.dmg;
+	case 2: return (player_init.baseSpeed + cardBaseMod.moveSpeed + (player_init.upgradeLevels[2] * multiplier[2])) * cardMultMod.moveSpeed;
+	case 3: return (player_init.baseFireRate + cardBaseMod.fireRate + (player_init.upgradeLevels[3] * multiplier[3])) * cardMultMod.fireRate;
+	case 4: return (player_init.baseXpGain + cardBaseMod.xp + (player_init.upgradeLevels[4] * multiplier[4])) * cardMultMod.xp;
 	default: return 0.0f;
 	}
 }
@@ -223,6 +225,22 @@ void level_up(float xp_needed) {
 void handle_menu_input(float camX, float camY) {
 	if (player_init.skill_point <= 0 && AEInputCheckTriggered(AEVK_ESCAPE)) {
 		player_init.menu_open = false;
+		// print player stats to console
+	// calculates player stats
+		f32 hp = calculate_max_stats(0);
+		f32 dmg = calculate_max_stats(1);
+		f32 speed = calculate_max_stats(2);
+		f32 fire_rate = calculate_max_stats(3);
+		f32 xp_mult = calculate_max_stats(4);
+
+		std::cout
+			<< "\n====================================\n"
+			<< "HP: " << hp
+			<< "\nDamage: " << dmg
+			<< "\nSpeed: " << speed
+			<< "\nFire Rate: " << fire_rate
+			<< "\nXP Mult: " << xp_mult
+			<< "\n====================================\n";
 		return;
 	}
 

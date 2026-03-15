@@ -3,6 +3,8 @@
 
 // Externs
 extern std::array<std::vector<CardStats>, NUM_OF_RARITIES> cardPool;
+extern PlayerStatsModifier cardBaseMod, cardMultMod;
+extern u32 upgradeFlag;
 
 void LoadCardShop();
 
@@ -25,4 +27,7 @@ namespace Cards {
 
 	// Resets card vectors
 	void resetCards();
+
+	// compute card effects
+	void computeCardEffects();
 }

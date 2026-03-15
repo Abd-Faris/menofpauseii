@@ -44,6 +44,15 @@ enum BossType {
 	BOSS4
 };
 
+// player upgrade flag (set to u32 so can have 32 possible flags)
+enum PlayerUpgradeFlags : u32 {
+	UPGRADE_NONE		= 0,
+	UPGRADE_DUAL_CANNON = 1 << 0,  // 0001
+	UPGRADE_BIG_CANNON  = 1 << 1,  // 0010
+	UPGRADE_CANNON_180  = 1 << 2,  // 0100
+	UPGRADE_ORBIT		= 1 << 3,  // 1000
+};
+
 struct AABB {
 	AEVec2 max, min;
 };
@@ -77,7 +86,7 @@ struct Card {
 	DECK from{}; // to be updated every time card is shifted
 };
 
-// struct for card effect addition
+// modifier based on cards
 struct PlayerStatsModifier {
 	f32 hp{};
 	f32 dmg{};
