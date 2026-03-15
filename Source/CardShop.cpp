@@ -5,8 +5,13 @@
 #include <fstream>
 #include <sstream>
 
+// externs
 // declare array for ALL loaded cards in the game
 std::array<std::vector<CardStats>, NUM_OF_RARITIES> cardPool;
+// structs to keep track of player modifiers
+PlayerStatsModifier cardBaseMod{0.f, 0.f, 0.f, 0.f, 0.f}, cardMultMod{1.f, 1.f, 1.f, 1.f, 1.f};
+u32 upgradeFlag{ UPGRADE_NONE }; // flag for upgrades
+
 // externs from other files
 extern int currentWave;
 
@@ -35,7 +40,7 @@ namespace { // functions for InitializeCardShop()
 	const int base_buyable	   { 1 };
 
 	// num of cards available to be displayed to player
-	int num_shopCards      { 5 };
+	int num_shopCards      { 3 };
 	int num_activeCards    { 5 };	
 	int num_inventoryCards { 15 };
 	// num of cards from shop buy-able
@@ -292,6 +297,8 @@ namespace { // functions for UpdateCardShop()
 			card.pos = card.homepos;
 			// set selected card ptr to null
 			pSelectedCard = nullptr;
+			// updates card effects
+			Cards::computeCardEffects();
 		}
 	}
 
@@ -551,6 +558,23 @@ void DrawCardShop() {
 void FreeCardShop() {
 	AEGfxMeshFree(rectMesh); // free mesh
 	shopCards.clear(); // clear shop array
+
+	// print player stats to console
+	// calculates player stats
+	f32 hp = calculate_max_stats(0);
+	f32 dmg = calculate_max_stats(1);
+	f32 speed = calculate_max_stats(2);
+	f32 fire_rate = calculate_max_stats(3);
+	f32 xp_mult = calculate_max_stats(4);
+
+	std::cout 
+		<< "\n====================================\n" 
+		<< "HP: " << hp
+		<< "\nDamage: " << dmg
+		<< "\nSpeed: " << speed
+		<< "\nFire Rate: " << fire_rate
+		<< "\nXP Mult: " << xp_mult
+		<< "\n====================================\n";
 }
 
 void UnloadCardShop() {
@@ -671,9 +695,84 @@ namespace Cards {
 		card.info = ::cardPool[cardRarity][index];
 	}
 
+	// resets player stats modifiers
+	void resetModifiers() {
+		// reset player base modifiers
+		cardBaseMod.hp = 0.f;
+		cardBaseMod.dmg = 0.f;
+		cardBaseMod.fireRate = 0.f;
+		cardBaseMod.moveSpeed = 0.f;
+		cardBaseMod.xp = 0.f;
+
+		// reset player mult modifiers
+		cardMultMod.hp = 1.f;
+		cardMultMod.dmg = 1.f;
+		cardMultMod.fireRate = 1.f;
+		cardMultMod.moveSpeed = 1.f;
+		cardMultMod.xp = 1.f;
+
+		// reset passive upgrades
+		upgradeFlag = UPGRADE_NONE;
+		num_activeCards = base_activeCards;
+		num_shopCards = base_shopCards;
+		num_buyable = base_buyable;
+	}
+
+	// clears all cards, ready for next game
 	void resetCards() {
 		// clears inventory and active cards
 		if (!inventoryCards.empty()) inventoryCards.clear();
 		if (!activeCards.empty()) activeCards.clear();
+		resetModifiers();
 	}
+
+	// computes card effects
+	void computeCardEffects() {
+		// reset modifiers
+		resetModifiers();
+
+		// ACTIVE:	only counted if card in active deck
+		// PASSIVE: only counted if card is in inventory deck
+
+		// for each card in active deck
+		for (Card& card : activeCards) {
+			// for each active effect in each active card
+			for (CardEffect& effect : card.info.active) {
+				// pick which modifier to add to
+				PlayerStatsModifier& mod = (effect.valuetype == "mult") ? cardMultMod : cardBaseMod;
+
+				// figure out what data member to add to
+				if	    (effect.type == "HP")         mod.hp += effect.value;
+				else if (effect.type == "DMG")        mod.dmg += effect.value;
+				else if (effect.type == "FIRE_RATE")  mod.fireRate += effect.value;
+				else if (effect.type == "MOVE_SPEED") mod.moveSpeed += effect.value;
+				else if (effect.type == "XP")         mod.xp += effect.value;
+			} // endfor active effects
+		} // endfor active cards
+
+		// enforce maximums / minimums
+		// fire rate mult must not go below 90% reduction
+		if (cardMultMod.fireRate <= 0.1f) cardMultMod.fireRate = 0.1f;
+
+		// for each card in inventory deck
+		for (Card& card : inventoryCards) {
+			for (CardEffect& effect : card.info.passive) {
+				// increment corresponding passive upgrade
+				if		(effect.id == "active_cards_up") num_activeCards++;
+				else if (effect.id == "shop_cards_up")   num_shopCards++;
+				else if (effect.id == "shop_buys_up")    num_buyable++;
+				// flip corresponding upgrade flag
+				else if (effect.id == "dual_cannon") upgradeFlag |= UPGRADE_DUAL_CANNON;
+				else if (effect.id == "big_cannon")  upgradeFlag |= UPGRADE_BIG_CANNON;
+				else if (effect.id == "cannon_180")  upgradeFlag |= UPGRADE_CANNON_180;
+				else if (effect.id == "orbit")       upgradeFlag |= UPGRADE_ORBIT;
+			} // endfor passive effects
+		} // endfor inventory cards
+	} // endfunction
+
+	// computes player stats
+	void computePlayerStats() {
+		//
+	}
+
 }
