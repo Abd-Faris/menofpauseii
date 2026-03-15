@@ -23,7 +23,7 @@ namespace { // functions for InitializeCardShop()
 	u32 cbag{ 0xFFC77014 }, cshop{ 0xFFcccc00 }, cdesc{ 0xFF000000 }, ccardSlots{ 0xFFcccc00 }, ctrash{ 0xFFe62e00 };
 
 	// card scales for diff vector arrays
-	f32 CARD_SHOP_SCALE{ 8 };
+	f32 CARD_SHOP_SCALE{ 7 };
 	f32 ACTIVE_CARD_SCALE{ 3 };
 	f32 INVENTORY_CARD_SCALE{ 3 };
 
@@ -35,8 +35,8 @@ namespace { // functions for InitializeCardShop()
 	const int base_buyable	   { 1 };
 
 	// num of cards available to be displayed to player
-	int num_shopCards      { 3 };
-	int num_activeCards    { 5 };
+	int num_shopCards      { 5 };
+	int num_activeCards    { 5 };	
 	int num_inventoryCards { 15 };
 	// num of cards from shop buy-able
 	int num_buyable		   { 1 };
@@ -190,7 +190,7 @@ void InitializeCardShop() {
 	trash = Gfx::createRectMesh("center", ctrash);
 
 	// [ DO NOT TOUCH ] Reserve space in memory for different card categories
-	shopCards.reserve(4);       // max cards allowed
+	shopCards.reserve(5);       // max cards allowed
 	activeCards.reserve(10);    // max cards allowed
 	inventoryCards.reserve(15); // max cards allowed
 
@@ -344,9 +344,9 @@ namespace { // functions for UpdateCardShop()
 		AEVec2 mousepos{};
 		Comp::getCursorPos(mousepos);
 
-		// check collision with shop
+		// if user clicked within shop bounds
 		if (Comp::collisionPointRect(mousepos, { -200, 40 }, { 1100, 380 })) {
-			// if user clicked, set next gs back to GS_GAME
+			// set next gs back to GS_GAME
 			GS_next = GS_GAME;
 		}
 	}
@@ -568,11 +568,21 @@ namespace Cards {
 		for (const auto& e : effectArray.GetArray()) {
 			// declare placeholder object
 			CardEffect effect;
-			// parse json values into object
-			effect.type = e["type"].GetString();
-			effect.desc = e["desc"].GetString();
-			effect.valuetype = e["valuetype"].GetString();
-			effect.value = e["value"].GetFloat();
+			// if data member exists, parse json value into object
+			if (e.HasMember("id")) effect.id = e["id"].GetString();
+			else effect.id = "";
+			
+			if (e.HasMember("type")) effect.type = e["type"].GetString();
+			else effect.type = "";
+			
+			if (e.HasMember("desc")) effect.desc = e["desc"].GetString();
+			else effect.desc = "";
+			
+			if (e.HasMember("valuetype")) effect.valuetype = e["valuetype"].GetString();
+			else effect.valuetype = "";
+			
+			if (e.HasMember("value")) effect.value = e["value"].GetFloat();
+			else effect.value = 0.f;
 			// append to resultant object
 			effects.push_back(effect);
 		}
@@ -659,5 +669,11 @@ namespace Cards {
 		// random float and normalise within size of card pool of corresponding rarity
 		int index = (int)(AERandFloat() * (rarityPool.size() - 1));
 		card.info = ::cardPool[cardRarity][index];
+	}
+
+	void resetCards() {
+		// clears inventory and active cards
+		if (!inventoryCards.empty()) inventoryCards.clear();
+		if (!activeCards.empty()) activeCards.clear();
 	}
 }

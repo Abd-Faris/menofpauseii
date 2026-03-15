@@ -22,4 +22,7 @@ namespace Cards {
 
 	// Randomly selects a card from the cardPool
 	void generateCard(Card& card);
+
+	// Resets card vectors
+	void resetCards();
 }

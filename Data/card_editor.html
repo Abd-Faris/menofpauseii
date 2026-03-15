@@ -16,6 +16,7 @@ input,select{width:100%;font-size:14px;padding:6px 10px;border:1px solid #ccc;bo
 input:focus,select:focus{outline:2px solid #378ADD;outline-offset:1px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end}
 .effect-row{display:grid;grid-template-columns:1fr 2fr 0.7fr 0.7fr auto;gap:8px;align-items:end;margin-bottom:8px}
+.passive-row{display:grid;grid-template-columns:1fr 2fr auto;gap:8px;align-items:end;margin-bottom:8px}
 button{font-size:13px;padding:6px 14px;border:1px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a;cursor:pointer}
 button:hover{background:#f0f0f0}
 .btn-add{color:#185FA5;border-color:#185FA5;margin-top:4px}
@@ -103,7 +104,7 @@ code{font-family:monospace;font-size:12px;background:#eee;padding:1px 5px;border
     <div id="active-effects"><p class="empty">No active effects yet.</p></div>
   </div>
   <div class="card">
-    <div class="section-head"><h3>Passive effects</h3><button class="btn-add" onclick="addEffect('passive')">+ add effect</button></div>
+    <div class="section-head"><h3>Passive effects</h3><button class="btn-add" onclick="addPassive('passive')">+ add passive</button></div>
     <div id="passive-effects"><p class="empty">No passive effects yet.</p></div>
   </div>
   <div class="actions">
@@ -185,7 +186,7 @@ code{font-family:monospace;font-size:12px;background:#eee;padding:1px 5px;border
       <div id="edit-active-effects"><p class="empty">No active effects.</p></div>
     </div>
     <div style="background:#f9f9f7;border:1px solid #ddd;border-radius:10px;padding:1rem;margin-bottom:1rem">
-      <div class="section-head"><h3>Passive effects</h3><button class="btn-add" onclick="addEditEffect('passive')">+ add effect</button></div>
+      <div class="section-head"><h3>Passive effects</h3><button class="btn-add" onclick="addPassive('edit-passive')">+ add passive</button></div>
       <div id="edit-passive-effects"><p class="empty">No passive effects.</p></div>
     </div>
     <div class="actions">
@@ -199,6 +200,15 @@ code{font-family:monospace;font-size:12px;background:#eee;padding:1px 5px;border
 
 <script>
 const TYPES = ["HP","DMG","FIRE_RATE","MOVE_SPEED","XP","PLAYER_UPGRADE",""];
+const PASSIVE_IDS = [
+  { id: "dual_cannon",      label: "Dual Cannon" },
+  { id: "big_cannon",       label: "Big Cannon" },
+  { id: "cannon_180",       label: "180° Cannon" },
+  { id: "orbit",            label: "Orbit" },
+  { id: "active_cards_up",  label: "Active Cards UP" },
+  { id: "shop_cards_up",   label: "Shop Cards UP" },
+  { id: "shop_buys_up",    label: "Shop Buys UP" },
+];
 let cards = [];
 let activeEffects = [];
 let passiveEffects = [];
@@ -255,9 +265,75 @@ function effectRowHTML(id, sect, preset) {
 
 function setEffectPreset(id, sect, p) {
   if (!p) return;
-  // Real newlines from JSON become the visible two-char \n in the textbox
   const descEl = document.getElementById(`edesc-${sect}-${id}`);
-  if (descEl) descEl.value = (p.desc || "").replace(/\n/g, "\\n");
+  if (descEl) descEl.value = p.desc || "";
+}
+
+/* ── passive effects (id + desc only) ── */
+function passiveRowHTML(id, sectPrefix, preset) {
+  const p = preset || {};
+  const opts = PASSIVE_IDS.map(o =>
+    `<option value="${o.id}" ${p.id===o.id?"selected":""}>${o.label}</option>`
+  ).join("");
+  return `<div class="passive-row" id="erow-${sectPrefix}-${id}">
+    <div>
+      <label style="margin-top:0">Passive</label>
+      <select id="epid-${sectPrefix}-${id}" onchange="syncPassiveDesc(this,'${sectPrefix}',${id})">
+        ${opts}
+      </select>
+    </div>
+    <div>
+      <label style="margin-top:0">Description</label>
+      <input id="epdesc-${sectPrefix}-${id}" placeholder="e.g. Dual Cannon"/>
+    </div>
+    <div style="padding-top:18px">
+      <button class="btn-remove" onclick="removePassive('${sectPrefix}',${id})">✕</button>
+    </div>
+  </div>`;
+}
+
+function syncPassiveDesc(sel, sectPrefix, id) {
+  const descEl = document.getElementById(`epdesc-${sectPrefix}-${id}`);
+  if (!descEl.value) {
+    const match = PASSIVE_IDS.find(o => o.id === sel.value);
+    if (match) descEl.value = match.label;
+  }
+}
+
+function addPassive(sectPrefix, preset) {
+  const id = eidCounter++;
+  const cont = document.getElementById(sectPrefix+"-effects");
+  const ph = cont.querySelector(".empty");
+  if (ph) ph.remove();
+  if (sectPrefix==="passive") passiveEffects.push(id);
+  else if (sectPrefix==="edit-passive") editPassiveEffects.push(id);
+  const d = document.createElement("div");
+  d.innerHTML = passiveRowHTML(id, sectPrefix, preset);
+  cont.appendChild(d.firstChild);
+  // set desc via JS to avoid HTML encoding issues
+  const descEl = document.getElementById(`epdesc-${sectPrefix}-${id}`);
+  if (descEl && preset && preset.desc) descEl.value = preset.desc;
+  else if (descEl && !preset) {
+    // auto-fill desc from first option
+    const match = PASSIVE_IDS[0];
+    if (match) descEl.value = match.label;
+  }
+}
+
+function removePassive(sectPrefix, id) {
+  if (sectPrefix==="passive")      passiveEffects     = passiveEffects.filter(x=>x!==id);
+  else if (sectPrefix==="edit-passive") editPassiveEffects = editPassiveEffects.filter(x=>x!==id);
+  document.getElementById(`erow-${sectPrefix}-${id}`)?.remove();
+  const cont = document.getElementById(sectPrefix+"-effects");
+  if (cont && !cont.children.length) cont.innerHTML = `<p class="empty">No passive effects.</p>`;
+}
+
+function getPassives(sectPrefix, ids) {
+  return ids.map(id => {
+    const pid  = document.getElementById(`epid-${sectPrefix}-${id}`)?.value || "";
+    const desc = document.getElementById(`epdesc-${sectPrefix}-${id}`)?.value || "";
+    return { id: pid, desc, type: "", valuetype: "", value: 0 };
+  });
 }
 
 function addEffect(sect, preset) {
@@ -274,15 +350,11 @@ function addEffect(sect, preset) {
 }
 
 function removeEffect(sect, id) {
-  // sect is either "active"/"passive" (add form) or "edit-active"/"edit-passive" (edit modal)
-  if (sect==="active")        activeEffects      = activeEffects.filter(x=>x!==id);
-  else if (sect==="passive")  passiveEffects     = passiveEffects.filter(x=>x!==id);
-  else if (sect==="edit-active")  editActiveEffects  = editActiveEffects.filter(x=>x!==id);
-  else if (sect==="edit-passive") editPassiveEffects = editPassiveEffects.filter(x=>x!==id);
+  if (sect==="active")            activeEffects     = activeEffects.filter(x=>x!==id);
+  else if (sect==="edit-active")  editActiveEffects = editActiveEffects.filter(x=>x!==id);
   document.getElementById(`erow-${sect}-${id}`)?.remove();
   const cont = document.getElementById(sect+"-effects");
-  const base = sect.replace("edit-","");
-  if (cont && !cont.children.length) cont.innerHTML = `<p class="empty">No ${base} effects.</p>`;
+  if (cont && !cont.children.length) cont.innerHTML = `<p class="empty">No active effects.</p>`;
 }
 
 function syncDesc(sel, sect, id) {
@@ -306,8 +378,8 @@ function addCard() {
   const id = document.getElementById("cid").value.trim();
   if (!id) { msg("form-msg","Please enter a card ID.","#A32D2D"); return; }
   const rarity  = parseInt(document.getElementById("crarity").value);
-  const active  = getEffects("active",  activeEffects);
-  const passive = getEffects("passive", passiveEffects);
+  const active  = getEffects("active", activeEffects);
+  const passive = getPassives("passive", passiveEffects);
   cards.push({ id, rarity, active, passive });
   document.getElementById("count").textContent = cards.length;
   msg("form-msg", `Card "${id}" added!`, "#3B6D11");
@@ -330,9 +402,14 @@ function rarityLabel(r) {
 }
 
 /* ── card list ── */
-function effectChipsHTML(effects) {
+function effectChipsHTML(effects, isPassive) {
   if (!(effects||[]).length) return '<span style="font-size:11px;color:#bbb">none</span>';
   return effects.map(e => {
+    if (isPassive) {
+      const label = PASSIVE_IDS.find(o=>o.id===e.id)?.label || e.id || "—";
+      const desc = e.desc && e.desc !== label ? `<span style="color:#666"> ${e.desc}</span>` : "";
+      return `<span class="effect-chip"><span class="chip-type" style="color:#633806">${label}</span>${desc}</span>`;
+    }
     const val = e.value != null ? e.value : "";
     const valClass = (val !== "" && parseFloat(val) < 0) ? "neg" : "";
     const vtypeHTML = e.valuetype ? `<span class="chip-vtype">[${e.valuetype}]</span>` : "";
@@ -360,11 +437,11 @@ function renderList() {
       <div class="effects-grid">
         <div class="effects-section">
           <div class="effects-section-title">Active</div>
-          <div class="effect-chip-row">${effectChipsHTML(c.active)}</div>
+          <div class="effect-chip-row">${effectChipsHTML(c.active, false)}</div>
         </div>
         <div class="effects-section">
           <div class="effects-section-title">Passive</div>
-          <div class="effect-chip-row">${effectChipsHTML(c.passive)}</div>
+          <div class="effect-chip-row">${effectChipsHTML(c.passive, true)}</div>
         </div>
       </div>
     </div>`).join("");
@@ -377,7 +454,17 @@ function removeCard(i) {
 }
 
 /* ── card detail modal ── */
-function effectsTableHTML(effects, label) {
+function effectsTableHTML(effects, label, isPassive) {
+  if (isPassive) {
+    const rows = (effects||[]).map(e => `
+      <tr>
+        <td><span class="type-pill" style="background:#FAEEDA;color:#633806">${e.id||"—"}</span></td>
+        <td style="padding-left:4px">${e.desc||"—"}</td>
+      </tr>`).join("");
+    return `<p class="section-label">${label}</p>` + (rows
+      ? `<table class="effect-table"><thead><tr><th>Passive ID</th><th>Description</th></tr></thead><tbody>${rows}</tbody></table>`
+      : `<p class="empty">None</p>`);
+  }
   const rows = (effects||[]).map(e => `
     <tr>
       <td><span class="type-pill">${e.type||"—"}</span></td>
@@ -397,8 +484,8 @@ function viewCard(i) {
       <span class="modal-title">${c.id}</span>
       ${rarityLabel(c.rarity)}
     </div>
-    ${effectsTableHTML(c.active,  "Active effects")}
-    ${effectsTableHTML(c.passive, "Passive effects")}
+    ${effectsTableHTML(c.active,  "Active effects",  false)}
+    ${effectsTableHTML(c.passive, "Passive effects", true)}
     <div class="actions" style="margin-top:1.25rem">
       <button class="btn-remove" onclick="removeCard(${i});closeModal()">Delete card</button>
     </div>`;
@@ -424,7 +511,7 @@ function editCard(i) {
   pContainer.innerHTML = "";
 
   (c.active||[]).forEach(e => addEditEffect("active", e));
-  (c.passive||[]).forEach(e => addEditEffect("passive", e));
+  (c.passive||[]).forEach(e => addPassive("edit-passive", e));
 
   if (!editActiveEffects.length)  aContainer.innerHTML = '<p class="empty">No active effects.</p>';
   if (!editPassiveEffects.length) pContainer.innerHTML = '<p class="empty">No passive effects.</p>';
@@ -457,8 +544,8 @@ function saveEdit() {
   const id = document.getElementById("edit-cid").value.trim();
   if (!id) { msg("edit-msg","Please enter a card ID.","#A32D2D"); return; }
   const rarity  = parseInt(document.getElementById("edit-crarity").value);
-  const active  = getEffects("edit-active",  editActiveEffects);
-  const passive = getEffects("edit-passive", editPassiveEffects);
+  const active  = getEffects("edit-active", editActiveEffects);
+  const passive = getPassives("edit-passive", editPassiveEffects);
   cards[editCardIndex] = { id, rarity, active, passive };
   document.getElementById("count").textContent = cards.length;
   closeEditModal();
@@ -487,6 +574,13 @@ function readFile(file) {
       // handle: {cards:[...]}, bare [...], or old [{cards:{...}}, ...]
       let list = Array.isArray(parsed) ? parsed : (parsed.cards || []);
       list = list.map(item => item.cards ? item.cards : item);
+      // normalize real newlines in desc fields to the two-char \n sequence
+      // so the entire pipeline treats \n consistently
+      list = list.map(c => ({
+        ...c,
+        active:  (c.active ||[]).map(e => ({...e, desc: (e.desc||"").replace(/\n/g, "\\n")})),
+        passive: (c.passive||[]).map(e => ({...e, desc: (e.desc||"").replace(/\n/g, "\\n")})),
+      }));
       if (!list.length) { msg("import-msg","No cards found in file.","#A32D2D"); return; }
       importBuffer = list;
       showImportPreview(list);

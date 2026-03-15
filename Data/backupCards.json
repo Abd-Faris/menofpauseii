@@ -307,6 +307,104 @@
             }
          ],
          "passive": []
+      },
+      {
+         "id": "dual_cannon",
+         "rarity": 3,
+         "active": [],
+         "passive": [
+            {
+               "id": "dual_cannon",
+               "desc": "Dual Cannon Upgrade\nDouble the cannons for Double the damage!\nWILL REPLACE BIG CANNON UPGRADE EFFECT",
+               "type": "",
+               "valuetype": "",
+               "value": 0
+            }
+         ]
+      },
+      {
+         "id": "big_cannon",
+         "rarity": 2,
+         "active": [],
+         "passive": [
+            {
+               "id": "big_cannon",
+               "desc": "Big Cannon Upgrade\nBig Boy cannon for double damage\nWILL REPLACE 180* CANNON UPGRADE EFFECT",
+               "type": "",
+               "valuetype": "",
+               "value": 0
+            }
+         ]
+      },
+      {
+         "id": "180*_cannon",
+         "rarity": 1,
+         "active": [],
+         "passive": [
+            {
+               "id": "cannon_180",
+               "desc": "180* Cannon Upgrade\nA cannon mounted on the back for all-round attack!",
+               "type": "",
+               "valuetype": "",
+               "value": 0
+            }
+         ]
+      },
+      {
+         "id": "orbit",
+         "rarity": 3,
+         "active": [],
+         "passive": [
+            {
+               "id": "orbit",
+               "desc": "Defense Orbit Upgrade\nSummons an orbiting orb that deals damage to anything that comes close!",
+               "type": "",
+               "valuetype": "",
+               "value": 0
+            }
+         ]
+      },
+      {
+         "id": "active_up",
+         "rarity": 2,
+         "active": [],
+         "passive": [
+            {
+               "id": "active_cards_up",
+               "desc": "Active Cards +1\nAdds an extra card slot to your active deck!\n(Max 10)",
+               "type": "",
+               "valuetype": "",
+               "value": 0
+            }
+         ]
+      },
+      {
+         "id": "shop_up",
+         "rarity": 1,
+         "active": [],
+         "passive": [
+            {
+               "id": "shop_cards_up",
+               "desc": "Shop Cards +1\nAdds another card in the shop you can choose from!\n(Max 5)",
+               "type": "",
+               "valuetype": "",
+               "value": 0
+            }
+         ]
+      },
+      {
+         "id": "shop_buys_up",
+         "rarity": 1,
+         "active": [],
+         "passive": [
+            {
+               "id": "shop_buys_up",
+               "desc": "Shop Buys +1\nIncreases the number of cards buyable per shop by 1\n(Max 3)",
+               "type": "",
+               "valuetype": "",
+               "value": 0
+            }
+         ]
       }
    ]
 }

@@ -49,6 +49,7 @@ struct AABB {
 
 // individual card effects in a cardstat
 struct CardEffect {
+	std::string id;
 	std::string type;
 	std::string desc;
 	std::string valuetype;
