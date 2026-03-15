@@ -54,7 +54,22 @@ void SpawnBoss(BossType type, shape& player) {
         boss.cooldownDuration = 0.5f;
         boss.bulletCount = 3;      // spiral arms
         break;
+
+    case BOSS4:
+        boss.scale = GameConfig::Enemy::SIZE_BIG * 2.5f;
+        boss.hp = 900;
+        boss.xp = 500;
+        boss.chaseSpeed = 100.f;
+        boss.idleDuration = 2.f;
+        boss.telegraphDuration = 1.2f;
+        boss.lungeDuration = 4.f;   // attack window
+        boss.cooldownDuration = 0.8f;
+        boss.gunFireRate = 0.3f;
+        boss.laserSweepSpeed = 0.8f;
+        break;
     }
+
+
 
     boss.maxhp = boss.hp;
 }
@@ -137,6 +152,90 @@ void Boss3AimedShot(Boss& boss, shape& player) {
             boolet.damagemul = 1.0f;  // full damage
             break;
         }
+    }
+}
+
+AEVec2 GetGunPosition(Boss& boss, bool leftGun) {
+    float rotRad = boss.gunAngle * (PI / 180.f); // <-- use gunAngle
+    float cosR = cosf(rotRad);
+    float sinR = sinf(rotRad);
+
+    float halfScale = boss.scale * 0.5f;
+
+    // Forward vector (where the boss is facing)
+    float forwardX = cosR;
+    float forwardY = sinR;
+
+    // Right vector (perpendicular to forward)
+    float rightX = -sinR;
+    float rightY = cosR;
+
+    // Guns sit at front edge, offset left or right
+    float sideSign = leftGun ? -1.f : 1.f;
+
+    return {
+        boss.pos.x + forwardX * halfScale + rightX * halfScale * sideSign,
+        boss.pos.y + forwardY * halfScale + rightY * halfScale * sideSign
+    };
+}
+
+void Boss4ShootGuns(Boss& boss, shape& player, float deltaTime) {
+    boss.gunFireTimer += deltaTime;
+    if (boss.gunFireTimer < boss.gunFireRate) return;
+    boss.gunFireTimer = 0.f;
+
+    AEVec2 toPlayer = { player.pos_x - boss.pos.x,
+                        player.pos_y - boss.pos.y };
+    float dist = sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y);
+    if (dist < 1.f) return;
+
+    float angle = atan2f(toPlayer.y, toPlayer.x);
+
+    // Fire from both gun positions
+    AEVec2 guns[2] = { GetGunPosition(boss, true),
+                       GetGunPosition(boss, false) };
+
+    for (int i = 0; i < 2; i++) {
+        for (auto& boolet : enemyBulletList) {
+            if (boolet.isActive) continue;
+
+            boolet.isActive = true;
+            boolet.posX = guns[i].x;
+            boolet.posY = guns[i].y;
+            boolet.directionX = cosf(angle);
+            boolet.directionY = sinf(angle);
+            boolet.speed = GameConfig::Bullet::BASE_SPEED * 0.8f;
+            boolet.size = 10.f;
+            boolet.damagemul = 1.0f;
+            break;
+        }
+    }
+}
+
+void DrawBossLaser(Boss& boss, AEGfxVertexList* MeshRect) {
+    if (boss.state == BossState::TELEGRAPHING && boss.currentAttack != Boss3Attack::LASER) return;
+    if (!boss.laserActive && boss.state != BossState::TELEGRAPHING) return;
+
+    AEVec2 guns[2] = { GetGunPosition(boss, true),
+                       GetGunPosition(boss, false) };
+
+    float laserLength = 800.f;
+    float laserWidth = boss.laserActive ? 25.f : 6.f; // thinner during telegraph
+
+    for (int i = 0; i < 2; i++) {
+        // Laser origin offset to center the rectangle along the beam
+        float midX = guns[i].x + cosf(boss.laserAngle) * laserLength * 0.5f;
+        float midY = guns[i].y + sinf(boss.laserAngle) * laserLength * 0.5f;
+
+        if (boss.laserActive)
+            AEGfxSetColorToMultiply(1.0f, 0.2f, 0.0f, 1.f); // orange when firing
+        else
+            AEGfxSetColorToMultiply(0.60f, 0.0f, 0.0f, 0.2f); // faint red during telegraph
+
+        Gfx::printMesh(MeshRect,
+            { midX, midY },
+            { laserLength, laserWidth },
+            boss.laserAngle);
     }
 }
 
@@ -358,6 +457,163 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
         return;
     }
 
+    if (boss.bosstype == BOSS4) {
+        AEVec2 toPlayer = { player.pos_x - boss.pos.x,
+                        player.pos_y - boss.pos.y };
+        float dist = sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y);
+
+        // Body slowly faces player
+        if (dist > 1.f) {
+            float targetRotation = atan2f(toPlayer.y, toPlayer.x) * (180.f / PI);
+            float angleDiff = targetRotation - boss.rotation;
+            while (angleDiff > 180.f) angleDiff -= 360.f;
+            while (angleDiff < -180.f) angleDiff += 360.f;
+            boss.rotation += angleDiff * 3.f * deltaTime; // slow body turn
+        }
+
+        // Guns track player faster and independently
+        if (dist > 1.f) {
+            float targetGunAngle = atan2f(toPlayer.y, toPlayer.x) * (180.f / PI);
+            float gunAngleDiff = targetGunAngle - boss.gunAngle;
+            while (gunAngleDiff > 180.f) gunAngleDiff -= 360.f;
+            while (gunAngleDiff < -180.f) gunAngleDiff += 360.f;
+
+            float trackSpeed = 60.f; // default slow tracking
+
+            if (boss.state == BossState::LUNGING && boss.currentAttack == Boss3Attack::GUNS)
+                trackSpeed = 120.f; // faster when shooting
+            else if (boss.state == BossState::LUNGING && boss.currentAttack == Boss3Attack::LASER)
+                trackSpeed = 0.f;   // laser drives gunAngle directly, skip lerp
+            else if (boss.state == BossState::COOLDOWN)
+                trackSpeed = 30.f;  // slowest during recovery — this is the return
+
+            if (trackSpeed > 0.f)
+                boss.gunAngle += gunAngleDiff * trackSpeed * deltaTime;
+        }
+
+        boss.velocity.x += (dist > 1.f ? (toPlayer.x / dist) : 0.f) * boss.chaseSpeed * deltaTime;
+        boss.velocity.y += (dist > 1.f ? (toPlayer.y / dist) : 0.f) * boss.chaseSpeed * deltaTime;
+        boss.velocity.x *= GameConfig::Enemy::FRICTION;
+        boss.velocity.y *= GameConfig::Enemy::FRICTION;
+        boss.pos.x += boss.velocity.x * deltaTime;
+        boss.pos.y += boss.velocity.y * deltaTime;
+
+        boss.stateTimer += deltaTime;
+
+        switch (boss.state) {
+        case BossState::IDLE:
+            boss.laserActive = false;
+            if (boss.stateTimer >= boss.idleDuration) {
+                // Pick attack
+                boss.currentAttack = (AERandFloat() > 0.5f)
+                    ? Boss3Attack::GUNS
+                    : Boss3Attack::LASER;
+                boss.state = BossState::TELEGRAPHING;
+                boss.stateTimer = 0.f;
+
+                // If laser, lock the starting angle toward player now
+                if (boss.currentAttack == Boss3Attack::LASER && dist > 1.f) {
+                    boss.laserAngle = atan2f(toPlayer.y, toPlayer.x);
+                    boss.laserTargetAngle = boss.laserAngle;
+                }
+            }
+            break;
+
+        case BossState::TELEGRAPHING:
+            if (boss.currentAttack == Boss3Attack::LASER) {
+                // During telegraph, laser angle matches gun angle so it looks connected
+                boss.laserAngle = boss.gunAngle * (PI / 180.f);
+            }
+            if (boss.stateTimer >= boss.telegraphDuration) {
+                boss.state = BossState::LUNGING;
+                boss.stateTimer = 0.f;
+                boss.attackTimer = 0.f;
+                boss.gunFireTimer = 0.f;
+                if (boss.currentAttack == Boss3Attack::LASER)
+                    boss.laserActive = true;
+            }
+            break;
+
+        case BossState::LUNGING:
+            boss.attackTimer += deltaTime;
+
+            if (boss.currentAttack == Boss3Attack::GUNS) {
+                Boss4ShootGuns(boss, player, deltaTime);
+            }
+            else if (boss.currentAttack == Boss3Attack::LASER) {
+                // Slowly sweep laser toward player
+                if (dist > 1.f) {
+                    float targetAngle = atan2f(toPlayer.y, toPlayer.x);
+                    float angleDiff = targetAngle - boss.laserAngle;
+                    while (angleDiff > PI) angleDiff -= 2.f * PI;
+                    while (angleDiff < -PI) angleDiff += 2.f * PI;
+                    boss.laserAngle += angleDiff * boss.laserSweepSpeed * deltaTime;
+
+                    // Keep laserAngle normalized
+                    while (boss.laserAngle > PI) boss.laserAngle -= 2.f * PI;
+                    while (boss.laserAngle < -PI) boss.laserAngle += 2.f * PI;
+                }
+
+                // Also update gunAngle to match laser so guns visually follow the beam
+                boss.gunAngle = boss.laserAngle * (180.f / PI);
+
+                // Laser collision
+                AEVec2 guns[2] = { GetGunPosition(boss, true),
+                                   GetGunPosition(boss, false) };
+                float laserLength = 800.f;
+                float laserWidth = 8.f;
+
+                for (int i = 0; i < 2; i++) {
+                    float dx = player.pos_x - guns[i].x;
+                    float dy = player.pos_y - guns[i].y;
+                    float laserDirX = cosf(boss.laserAngle);
+                    float laserDirY = sinf(boss.laserAngle);
+                    float along = dx * laserDirX + dy * laserDirY;
+                    float perp = dx * laserDirY - dy * laserDirX;
+
+                    if (along > 0.f && along < laserLength && fabsf(perp) < laserWidth + player.scale) {
+                        player_init.current_hp -= 20 * deltaTime;
+                    }
+                }
+            }
+
+            if (boss.attackTimer >= boss.lungeDuration) {
+                boss.laserActive = false;
+
+                // Sync gunAngle cleanly before handing back to the lerp
+                if (boss.currentAttack == Boss3Attack::LASER) {
+                    boss.gunAngle = boss.laserAngle * (180.f / PI);
+
+                    // Normalize to -180 to 180 range
+                    while (boss.gunAngle > 180.f) boss.gunAngle -= 360.f;
+                    while (boss.gunAngle < -180.f) boss.gunAngle += 360.f;
+                }
+
+                boss.state = BossState::COOLDOWN;
+                boss.stateTimer = 0.f;
+                boss.currentAttack = Boss3Attack::NONE;
+                boss.shootTimer = 0.f;
+            }
+            break;
+
+        case BossState::COOLDOWN:
+            boss.laserActive = false;
+            if (boss.stateTimer >= boss.cooldownDuration) {
+                boss.state = BossState::IDLE;
+                boss.stateTimer = 0.f;
+            }
+            break;
+        }
+
+        if (boss.hp <= 0) {
+            player_init.current_xp += boss.xp;
+            TriggerXpPopup((float)boss.xp);
+            TriggerExplosion(boss.pos.x, boss.pos.y, boss.scale);
+            boss.alive = false;
+        }
+        return;
+    }
+
     // Death check
     if (boss.hp <= 0) {
         player_init.current_xp += boss.xp;
@@ -454,7 +710,25 @@ void DrawBoss(Boss& boss, AEGfxVertexList* MeshRect, AEGfxVertexList* MeshCircle
 
     float rotRad = boss.rotation * (PI / 180.f);
     Gfx::printMesh(MeshRect, boss.pos, { boss.scale, boss.scale }, rotRad);
+    // BOSS4 extras
+    if (boss.bosstype == BOSS4) {
+        float gunRotRad = boss.gunAngle * (PI / 180.f);
+        AEVec2 guns[2] = { GetGunPosition(boss, true),
+                           GetGunPosition(boss, false) };
 
+        float rotRad = boss.rotation * (PI / 180.f); 
+
+        DrawBossLaser(boss, MeshRect);
+
+        AEGfxSetColorToMultiply(0.3f, 0.3f, 0.3f, 1.f);
+        for (int i = 0; i < 2; i++) {
+            Gfx::printMesh(MeshRect, guns[i],
+                { boss.scale * 0.4f, boss.scale * 0.15f },
+                gunRotRad);
+        }
+
+       
+    }
 }
 
 void DrawBossHP(Boss& boss, AEGfxVertexList* MeshRect, AEGfxVertexList* MeshCircle, shape& player) {

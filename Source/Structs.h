@@ -40,7 +40,8 @@ enum EnemyType {
 enum BossType {
 	BOSS1,
 	BOSS2,
-	BOSS3
+	BOSS3,
+	BOSS4
 };
 
 struct AABB {
@@ -116,7 +117,7 @@ struct Enemies {
 };
 
 enum class BossState { IDLE, TELEGRAPHING, LUNGING, COOLDOWN };
-enum class Boss3Attack { NONE, SPIRAL, AIMED };
+enum class Boss3Attack { NONE, SPIRAL, AIMED, GUNS, LASER };
 struct Boss {
 	AEVec2 pos;
 	AEVec2 velocity;
@@ -156,6 +157,16 @@ struct Boss {
 	Boss3Attack currentAttack = Boss3Attack::NONE;
 	float attackTimer = 0.f;
 	float spiralAngle = 0.f;
+
+	// BOSS4
+	float laserAngle = 0.f;  // current laser direction
+	float laserTargetAngle = 0.f;  // angle locked onto player at telegraph
+	float laserSweepSpeed = 0.8f; // radians per second sweep
+	float laserTimer = 0.f;
+	bool  laserActive = false;
+	float gunFireTimer = 0.f;
+	float gunFireRate = 0.3f; // seconds between gun shots
+	float gunAngle = 0.f; // independent of boss body rotation
 };
 
 struct PlayerStats {

@@ -148,7 +148,7 @@ void LoadDebug5() {
 
 
     // Spawn boss
-    SpawnBoss(BOSS1, player);
+    SpawnBoss(BOSS4, player);
 }
 
 // ===========================================================================

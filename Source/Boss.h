@@ -13,3 +13,7 @@ constexpr int MAX_MINIONS_COUNT = 30;
 extern std::array<Enemies, MAX_MINIONS_COUNT> minionPool;
 void Boss3Spiral(Boss& boss, float deltaTime);
 void Boss3AimedShot(Boss& boss, shape& player);
+
+AEVec2 GetGunPosition(Boss& boss, bool leftGun);
+void   Boss4ShootGuns(Boss& boss, shape& player, float deltaTime);
+void   DrawBossLaser(Boss& boss, AEGfxVertexList* MeshRect);
