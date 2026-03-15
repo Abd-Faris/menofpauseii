@@ -57,7 +57,7 @@ void SpawnBoss(BossType type, shape& player) {
 
     case BOSS4:
         boss.scale = GameConfig::Enemy::SIZE_BIG * 2.5f;
-        boss.hp = 900;
+        boss.hp = static_cast<int>(900.f * mult);
         boss.xp = 500;
         boss.chaseSpeed = 100.f;
         boss.idleDuration = 2.f;
@@ -65,7 +65,7 @@ void SpawnBoss(BossType type, shape& player) {
         boss.lungeDuration = 4.f;   // attack window
         boss.cooldownDuration = 0.8f;
         boss.gunFireRate = 0.3f;
-        boss.laserSweepSpeed = 0.8f;
+        boss.laserSweepSpeed = 0.9f;
         break;
     }
 
@@ -160,7 +160,7 @@ AEVec2 GetGunPosition(Boss& boss, bool leftGun) {
     float cosR = cosf(rotRad);
     float sinR = sinf(rotRad);
 
-    float halfScale = boss.scale * 0.5f;
+    float halfScale = boss.scale * 0.3f;
 
     // Forward vector (where the boss is facing)
     float forwardX = cosR;
@@ -219,7 +219,7 @@ void DrawBossLaser(Boss& boss, AEGfxVertexList* MeshRect) {
     AEVec2 guns[2] = { GetGunPosition(boss, true),
                        GetGunPosition(boss, false) };
 
-    float laserLength = 800.f;
+    float laserLength = 1200.f;
     float laserWidth = boss.laserActive ? 25.f : 6.f; // thinner during telegraph
 
     for (int i = 0; i < 2; i++) {
@@ -521,9 +521,22 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
 
         case BossState::TELEGRAPHING:
             if (boss.currentAttack == Boss3Attack::LASER) {
-                // During telegraph, laser angle matches gun angle so it looks connected
-                boss.laserAngle = boss.gunAngle * (PI / 180.f);
+                // Slowly track player during telegraph — slow enough to dodge
+                if (dist > 1.f) {
+                    float targetAngle = atan2f(toPlayer.y, toPlayer.x);
+                    float angleDiff = targetAngle - boss.laserAngle;
+                    while (angleDiff > PI) angleDiff -= 2.f * PI;
+                    while (angleDiff < -PI) angleDiff += 2.f * PI;
+                    boss.laserAngle += angleDiff * 0.3f * deltaTime; // 0.3f = slow warning sweep
+
+                    while (boss.laserAngle > PI) boss.laserAngle -= 2.f * PI;
+                    while (boss.laserAngle < -PI) boss.laserAngle += 2.f * PI;
+                }
+
+                // Sync guns to match
+                boss.gunAngle = boss.laserAngle * (180.f / PI);
             }
+
             if (boss.stateTimer >= boss.telegraphDuration) {
                 boss.state = BossState::LUNGING;
                 boss.stateTimer = 0.f;
@@ -560,7 +573,7 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
                 // Laser collision
                 AEVec2 guns[2] = { GetGunPosition(boss, true),
                                    GetGunPosition(boss, false) };
-                float laserLength = 800.f;
+                float laserLength = 1200.f;
                 float laserWidth = 8.f;
 
                 for (int i = 0; i < 2; i++) {

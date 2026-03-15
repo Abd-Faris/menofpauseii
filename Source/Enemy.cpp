@@ -2,7 +2,7 @@
 
 std::array<Enemies, GameConfig::MAX_ENEMIES_COUNT> enemyPool;
 f64 enemySpawnTimer = 0;
-
+extern int currentWave;
 BulletObj enemyBulletList[GameConfig::MAX_BULLETS_COUNT];
 
 AEGfxTexture* pEnemyTex[4] = { nullptr, nullptr, nullptr, nullptr };
@@ -40,6 +40,7 @@ void ResetEnemy(Enemies* enemyToReset) {
 }
 
 void SpawnOneEnemy(bool isBigEnemy, shape player) {
+    f32 mult = (1 + (currentWave / 5 * 0.5f));
     for (auto& newEnemy : enemyPool) {
         if (!newEnemy.alive) {
             // Spawn within world borders (one tile inset from each edge)
@@ -66,7 +67,7 @@ void SpawnOneEnemy(bool isBigEnemy, shape player) {
             newEnemy.rotation = AERandFloat() * 360.0f;
             newEnemy.scale = isBigEnemy ? GameConfig::Enemy::SIZE_BIG : GameConfig::Enemy::SIZE_SMALL;
 
-            int initialHP = (int)(isBigEnemy ? GameConfig::Enemy::HP_BIG : GameConfig::Enemy::HP_SMALL);
+            int initialHP = (int)((isBigEnemy ? GameConfig::Enemy::HP_BIG : GameConfig::Enemy::HP_SMALL)*mult);
             newEnemy.hp = initialHP;
             newEnemy.maxhp = initialHP;
             newEnemy.enemtype = PASSIVE;
@@ -76,6 +77,7 @@ void SpawnOneEnemy(bool isBigEnemy, shape player) {
 }
 
 void SpawnAttackEnemy(shape player) {
+    f32 mult = (1 + (currentWave / 5 * 0.5f));
     for (auto& newEnemy : enemyPool) {
         if (!newEnemy.alive) {
             // Spawn within world borders (one tile inset from each edge)
@@ -103,7 +105,7 @@ void SpawnAttackEnemy(shape player) {
             newEnemy.scale = GameConfig::Enemy::SIZE_BIG;
             newEnemy.enemtype = ATTACK;
 
-            int initialHP = (int)(GameConfig::Enemy::HP_BIG);
+            int initialHP = (int)((GameConfig::Enemy::HP_BIG)*mult);
             newEnemy.hp = initialHP;
             newEnemy.maxhp = initialHP;
             break;
@@ -112,6 +114,7 @@ void SpawnAttackEnemy(shape player) {
 }
 
 void SpawnShooterEnemy(shape player) {
+    f32 mult = (1 + (currentWave / 5 * 0.5f));
     for (auto& newEnemy : enemyPool) {
         if (!newEnemy.alive) {
             // Spawn within world borders (one tile inset from each edge)
@@ -140,7 +143,7 @@ void SpawnShooterEnemy(shape player) {
             newEnemy.enemtype = SHOOTER;
 
             newEnemy.cooldown = 2.0f; // 2 seconds initial cooldown
-            int initialHP = (int)(GameConfig::Enemy::HP_BIG);
+            int initialHP = (int)((GameConfig::Enemy::HP_BIG)*mult);
             newEnemy.hp = initialHP;
             newEnemy.maxhp = initialHP;
             break;
@@ -163,6 +166,8 @@ void EnemySpawner(shape& player, float deltaTime) {
 }
 
 void updateEnemyPhysics(shape& player, float deltaTime) {
+    f32 mult = (1 + (currentWave / 5 * 0.5f));
+
     for (auto& currentEnemy : enemyPool) {
         if (!currentEnemy.alive) continue;
 
@@ -191,8 +196,10 @@ void updateEnemyPhysics(shape& player, float deltaTime) {
                 dir.x /= hyp;
                 dir.y /= hyp;
 
-                currentEnemy.velocity.x += dir.x * 500 * deltaTime;
-                currentEnemy.velocity.y += dir.y * 500 * deltaTime;
+                f32 speedmult = (mult <= 3 ? mult : 3);
+
+                currentEnemy.velocity.x += dir.x * 500 * speedmult * deltaTime;
+                currentEnemy.velocity.y += dir.y * 500 * speedmult * deltaTime;
                 currentEnemy.velocity.x *= GameConfig::Enemy::FRICTION;
                 currentEnemy.velocity.y *= GameConfig::Enemy::FRICTION;
                 currentEnemy.pos.x += currentEnemy.velocity.x * deltaTime;
@@ -245,7 +252,7 @@ void updateEnemyPhysics(shape& player, float deltaTime) {
                         eBullet.directionY = dir.y;
                         eBullet.speed = 400.0f;
                         eBullet.size = 15.0f;
-                        eBullet.damagemul = 1.0f;
+                        eBullet.damagemul = 1.0f * mult;
                         break;
                     }
                 }
@@ -275,7 +282,7 @@ void updateEnemyPhysics(shape& player, float deltaTime) {
 
         if (currentEnemy.hp <= 0) {
             float xp_multiplier = calculate_max_stats(4);
-            float baseReward = (currentEnemy.maxhp >= (int)GameConfig::Enemy::HP_BIG) ? 60.0f : 10.0f;
+            float baseReward = (currentEnemy.maxhp >= (int)(GameConfig::Enemy::HP_BIG * mult)) ? 60.0f : 10.0f;
             float finalReward = baseReward * xp_multiplier;
             player_init.current_xp += finalReward;
             TriggerXpPopup(finalReward);
