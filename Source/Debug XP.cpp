@@ -36,10 +36,10 @@ namespace {
 	AEGfxTexture* upgradeIcons[5] = { nullptr, nullptr, nullptr, nullptr, nullptr };
 	const char* iconPaths[5] = {
 		"Assets/hp.png",
-		"Assets/hp.png",
-		"Assets/hp.png",
-		"Assets/hp.png",
-		"Assets/hp.png"
+		"Assets/dmg.png",
+		"Assets/speed.png",
+		"Assets/firerate.png",
+		"Assets/xp.png"
 	};
 
 	//+ icon
@@ -151,7 +151,7 @@ void LoadDebug1() {
 	}
 
 	// load confirm icon (right squares)
-	upgradeConfirmIcon = AEGfxTextureLoad("Assets/hp.png");
+	upgradeConfirmIcon = AEGfxTextureLoad("Assets/plus.png");
 }
 
 
@@ -219,7 +219,7 @@ void level_up(float xp_needed) {
 	}
 }
 
-
+// --- CURSOR COORDS CHECKING AND CLICKING ---
 void handle_menu_input(float camX, float camY) {
 	if (player_init.skill_point <= 0 && AEInputCheckTriggered(AEVK_ESCAPE)) {
 		player_init.menu_open = false;
@@ -259,7 +259,7 @@ void handle_menu_input(float camX, float camY) {
 	}
 }
 
-
+// --- CHEATS ---
 void debug_inputs(float max_hp) {
 	if (AEInputCheckTriggered(AEVK_R)) {
 		player_init.current_hp += 100.0f;
@@ -279,7 +279,7 @@ void debug_inputs(float max_hp) {
 	}
 }
 
-
+// --- DRAW PLAYER HUD ---
 void draw_hud_bar(AEGfxVertexList* mesh, float current, float max, float anchorX, float anchorY, float relativeY, float bar_height, float max_width) {
 	float perc = current / max;
 	if (perc > 1.0f) perc = 1.0f;
@@ -293,7 +293,7 @@ void draw_hud_bar(AEGfxVertexList* mesh, float current, float max, float anchorX
 	drawmesh(mesh, finalX, finalY, actual_w, bar_height);
 }
 
-
+// --- DRAWS THE UPGRADE ROWS ---
 void draw_upgrade_rows(float camX, float camY) {
 	float start_y = 200.0f, spacing_y = 100.0f, offset_middle = 260.0f;
 	float segment_w = 70.0f, gap = 8.0f;
@@ -350,6 +350,7 @@ void UpdateDebug1() {
 
 void DrawDebug1() {
 
+	// --- GET CAM POS FOR UPGRADE MENU ---
 	float camX, camY;
 	AEGfxGetCamPosition(&camX, &camY);
 
@@ -398,6 +399,16 @@ void DrawDebug1() {
 	if (player_init.menu_open) {
 		drawmesh(pBlackRectMesh, 0.0f + camX, 0.0f + camY, 900.0f, 650.0f);
 		draw_upgrade_rows(camX, camY);
+
+		// prints current player stats on upgrade menu
+		const char* stats[] = { "HP", "DMG", "SPEED", "FIRE RATE", "XP GAIN" };
+		float rowStartY = 0.43f;
+		float rowSpacing = 0.22f;
+		for (int i = 0; i < 5; ++i) {
+			char statText[64];
+			sprintf_s(statText, "%s: %.1f", stats[i], calculate_max_stats(i));
+			AEGfxPrint(boldPixels, statText, -0.55f, rowStartY - (i * rowSpacing), 0.28f, 1.0f, 1.0f, 1.0f, 1.0f);
+		}
 
 		if (player_init.skill_point > 0) {
 			AEGfxPrint(boldPixels, "SPEND POINT TO CONTINUE!", -0.23f, -0.63f, 0.4f, 1.0f, 1.0f, 1.0f, 1.0f);
