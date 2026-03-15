@@ -77,6 +77,15 @@ struct Card {
 	DECK from{}; // to be updated every time card is shifted
 };
 
+// struct for card effect addition
+struct PlayerStatsModifier {
+	f32 hp{};
+	f32 dmg{};
+	f32 fireRate{};
+	f32 moveSpeed{};
+	f32 xp{};
+};
+
 struct shape {
 	f32 scale;			//scale
 	f32 pos_x, pos_y;	// x and y positions
