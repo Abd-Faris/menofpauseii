@@ -288,7 +288,7 @@ void UpdateGame() {
         BossCollision(boss, player, orbitActive, orbitPosX, orbitPosY);
         updateMinionPhysics(player, deltaTime);
 
-        if (player_init.current_hp <= 0) {
+        if (static_cast<int>(player_init.current_hp) <= 0) {
             gameWon = false;       
             reset_game();
             GS_next = GS_RESULTS; 
