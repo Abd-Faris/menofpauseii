@@ -98,6 +98,10 @@ code{font-family:monospace;font-size:12px;background:#eee;padding:1px 5px;border
         </select>
       </div>
     </div>
+    <div class="row" style="margin-top:8px">
+      <div><label>Sprite row</label><input id="csprite-row" type="number" min="0" step="1" placeholder="0"/></div>
+      <div><label>Sprite col</label><input id="csprite-col" type="number" min="0" step="1" placeholder="0"/></div>
+    </div>
   </div>
   <div class="card">
     <div class="section-head"><h3>Active effects</h3><button class="btn-add" onclick="addEffect('active')">+ add effect</button></div>
@@ -179,6 +183,10 @@ code{font-family:monospace;font-size:12px;background:#eee;padding:1px 5px;border
             <option value="3">3 — Unique</option>
           </select>
         </div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <div><label>Sprite row</label><input id="edit-sprite-row" type="number" min="0" step="1" placeholder="0"/></div>
+        <div><label>Sprite col</label><input id="edit-sprite-col" type="number" min="0" step="1" placeholder="0"/></div>
       </div>
     </div>
     <div style="background:#f9f9f7;border:1px solid #ddd;border-radius:10px;padding:1rem;margin-bottom:1rem">
@@ -375,12 +383,14 @@ function getEffects(sect, ids) {
 }
 
 function addCard() {
-  const id = document.getElementById("cid").value.trim();
+  const id         = document.getElementById("cid").value.trim();
   if (!id) { msg("form-msg","Please enter a card ID.","#A32D2D"); return; }
-  const rarity  = parseInt(document.getElementById("crarity").value);
-  const active  = getEffects("active", activeEffects);
-  const passive = getPassives("passive", passiveEffects);
-  cards.push({ id, rarity, active, passive });
+  const rarity     = parseInt(document.getElementById("crarity").value);
+  const sprite_row = parseInt(document.getElementById("csprite-row").value) || 0;
+  const sprite_col = parseInt(document.getElementById("csprite-col").value) || 0;
+  const active     = getEffects("active", activeEffects);
+  const passive    = getPassives("passive", passiveEffects);
+  cards.push({ id, rarity, sprite_row, sprite_col, active, passive });
   document.getElementById("count").textContent = cards.length;
   msg("form-msg", `Card "${id}" added!`, "#3B6D11");
   resetForm();
@@ -389,6 +399,8 @@ function addCard() {
 function resetForm() {
   document.getElementById("cid").value = "";
   document.getElementById("crarity").value = "0";
+  document.getElementById("csprite-row").value = "";
+  document.getElementById("csprite-col").value = "";
   document.getElementById("active-effects").innerHTML  = '<p class="empty">No active effects yet.</p>';
   document.getElementById("passive-effects").innerHTML = '<p class="empty">No passive effects yet.</p>';
   activeEffects = []; passiveEffects = [];
@@ -504,6 +516,8 @@ function editCard(i) {
 
   document.getElementById("edit-cid").value = c.id;
   document.getElementById("edit-crarity").value = c.rarity;
+  document.getElementById("edit-sprite-row").value = c.sprite_row ?? 0;
+  document.getElementById("edit-sprite-col").value = c.sprite_col ?? 0;
 
   const aContainer = document.getElementById("edit-active-effects");
   const pContainer = document.getElementById("edit-passive-effects");
@@ -541,12 +555,14 @@ function removeEditEffect(sect, id) {
 }
 
 function saveEdit() {
-  const id = document.getElementById("edit-cid").value.trim();
+  const id         = document.getElementById("edit-cid").value.trim();
   if (!id) { msg("edit-msg","Please enter a card ID.","#A32D2D"); return; }
-  const rarity  = parseInt(document.getElementById("edit-crarity").value);
-  const active  = getEffects("edit-active", editActiveEffects);
-  const passive = getPassives("edit-passive", editPassiveEffects);
-  cards[editCardIndex] = { id, rarity, active, passive };
+  const rarity     = parseInt(document.getElementById("edit-crarity").value);
+  const sprite_row = parseInt(document.getElementById("edit-sprite-row").value) || 0;
+  const sprite_col = parseInt(document.getElementById("edit-sprite-col").value) || 0;
+  const active     = getEffects("edit-active", editActiveEffects);
+  const passive    = getPassives("edit-passive", editPassiveEffects);
+  cards[editCardIndex] = { id, rarity, sprite_row, sprite_col, active, passive };
   document.getElementById("count").textContent = cards.length;
   closeEditModal();
   renderList();
