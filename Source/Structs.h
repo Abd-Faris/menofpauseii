@@ -41,7 +41,8 @@ enum BossType {
 	BOSS1,
 	BOSS2,
 	BOSS3,
-	BOSS4
+	BOSS4,
+	numofBosses
 };
 
 // player upgrade flag (set to u32 so can have 32 possible flags)

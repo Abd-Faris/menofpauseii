@@ -291,7 +291,14 @@ void UpdateGame() {
         if (static_cast<int>(player_init.current_hp) <= 0) {
             gameWon = false;       
             reset_game();
+            Cards::resetCards();
             GS_next = GS_RESULTS; 
+        }
+        if (currentWave==(numofBosses * 5+1)) {
+            gameWon = true;
+            reset_game();
+            Cards::resetCards();
+            GS_next = GS_RESULTS;
         }
 
 	}
