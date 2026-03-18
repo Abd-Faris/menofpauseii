@@ -6,70 +6,66 @@ extern int currentWave;
 Boss boss;
 
 void SpawnBoss(BossType type, shape& player) {
-    boss = {};  // zero everything out first
+    boss = {};
     f32 mult = (1 + (currentWave / 5 * 0.5f));
     boss.pos = { player.pos_x + 400.f, player.pos_y + 400.f };
     boss.velocity = { 0, 0 };
     boss.alive = true;
-    boss.rotation = 0.f;
     boss.bosstype = type;
     boss.state = BossState::IDLE;
-    boss.stateTimer = 0.f;
     boss.currentAttack = Boss3Attack::NONE;
 
     switch (type) {
     case BOSS1:
-        boss.scale = GameConfig::Enemy::SIZE_BIG * 2.f;
-        boss.hp = static_cast<int>(500.f * mult);
-        boss.xp = 200;
-        boss.chaseSpeed = 150.f;
-        boss.lungeSpeed = 1400.f;
-        boss.idleDuration = 1.5f;
-        boss.telegraphDuration = 0.6f;
-        boss.lungeDuration = 0.75f;
-        boss.cooldownDuration = 0.8f;
-        boss.bulletCount = 8;
+        boss.scale = GameConfig::Enemy::SIZE_BIG * GameConfig::Boss::B1_SCALE;
+        boss.hp = static_cast<int>(GameConfig::Boss::B1_BASE_HP * mult);
+        boss.xp = GameConfig::Boss::B1_XP;
+        boss.chaseSpeed = GameConfig::Boss::B1_CHASE_SPEED;
+        boss.lungeSpeed = GameConfig::Boss::B1_LUNGE_SPEED;
+        boss.idleDuration = GameConfig::Boss::B1_IDLE_DUR;
+        boss.telegraphDuration = GameConfig::Boss::B1_TELEGRAPH_DUR;
+        boss.lungeDuration = GameConfig::Boss::B1_LUNGE_DUR;
+        boss.cooldownDuration = GameConfig::Boss::B1_COOLDOWN_DUR;
+        boss.bulletCount = GameConfig::Boss::B1_BULLET_COUNT;
         break;
 
     case BOSS2:
-        boss.scale = GameConfig::Enemy::SIZE_BIG * 2.5f;
-        boss.hp = static_cast<int>(800.f * mult);
-        boss.xp = 400;
-        boss.chaseSpeed = 0.f;    // stationary
-        boss.idleDuration = 3.f;
-        boss.telegraphDuration = 1.0f;
-        boss.lungeDuration = 0.1f;   // instant spawn then move on
-        boss.cooldownDuration = 5.0f;
-        boss.minionCount = 6;
+        boss.scale = GameConfig::Enemy::SIZE_BIG * GameConfig::Boss::B2_SCALE;
+        boss.hp = static_cast<int>(GameConfig::Boss::B2_BASE_HP * mult);
+        boss.xp = GameConfig::Boss::B2_XP;
+        boss.chaseSpeed = 0.f;
+        boss.idleDuration = GameConfig::Boss::B2_IDLE_DUR;
+        boss.telegraphDuration = GameConfig::Boss::B2_TELEGRAPH_DUR;
+        boss.lungeDuration = GameConfig::Boss::B2_LUNGE_DUR;
+        boss.cooldownDuration = GameConfig::Boss::B2_COOLDOWN_DUR;
+        boss.minionCount = GameConfig::Boss::B2_MINION_COUNT;
         break;
 
     case BOSS3:
-        boss.scale = GameConfig::Enemy::SIZE_BIG * 2.f;
-        boss.hp = static_cast<int>(600.f * mult);
-        boss.xp = 300;
-        boss.chaseSpeed = 120.f;
-        boss.idleDuration = 2.f;
-        boss.telegraphDuration = 1.0f;
-        boss.lungeDuration = 3.f;    // how long attack runs
-        boss.cooldownDuration = 0.5f;
-        boss.bulletCount = 3;      // spiral arms
+        boss.scale = GameConfig::Enemy::SIZE_BIG * GameConfig::Boss::B3_SCALE;
+        boss.hp = static_cast<int>(GameConfig::Boss::B3_BASE_HP * mult);
+        boss.xp = GameConfig::Boss::B3_XP;
+        boss.chaseSpeed = GameConfig::Boss::B3_CHASE_SPEED;
+        boss.idleDuration = GameConfig::Boss::B3_IDLE_DUR;
+        boss.telegraphDuration = GameConfig::Boss::B3_TELEGRAPH_DUR;
+        boss.lungeDuration = GameConfig::Boss::B3_LUNGE_DUR;
+        boss.cooldownDuration = GameConfig::Boss::B3_COOLDOWN_DUR;
+        boss.bulletCount = GameConfig::Boss::B3_SPIRAL_ARMS;
         break;
 
     case BOSS4:
-        boss.scale = GameConfig::Enemy::SIZE_BIG * 2.5f;
-        boss.hp = static_cast<int>(900.f * mult);
-        boss.xp = 500;
-        boss.chaseSpeed = 100.f;
-        boss.idleDuration = 2.f;
-        boss.telegraphDuration = 1.2f;
-        boss.lungeDuration = 4.f;   // attack window
-        boss.cooldownDuration = 0.8f;
-        boss.gunFireRate = 0.3f;
-        boss.laserSweepSpeed = 0.9f;
+        boss.scale = GameConfig::Enemy::SIZE_BIG * GameConfig::Boss::B4_SCALE;
+        boss.hp = static_cast<int>(GameConfig::Boss::B4_BASE_HP * mult);
+        boss.xp = GameConfig::Boss::B4_XP;
+        boss.chaseSpeed = GameConfig::Boss::B4_CHASE_SPEED;
+        boss.idleDuration = GameConfig::Boss::B4_IDLE_DUR;
+        boss.telegraphDuration = GameConfig::Boss::B4_TELEGRAPH_DUR;
+        boss.lungeDuration = GameConfig::Boss::B4_LUNGE_DUR;
+        boss.cooldownDuration = GameConfig::Boss::B4_COOLDOWN_DUR;
+        boss.gunFireRate = GameConfig::Boss::B4_GUN_FIRE_RATE;
+        boss.laserSweepSpeed = GameConfig::Boss::B4_LASER_SWEEP;
         break;
     }
-
-
 
     boss.maxhp = boss.hp;
 }
@@ -95,87 +91,62 @@ void BossShootRing(Boss& boss) {
 }
 
 void Boss3Spiral(Boss& boss, float deltaTime) {
-    float spiralSpeed = 10.f;
-    float bulletSpeed = GameConfig::Bullet::BASE_SPEED * 0.5f;
-    int   arms = 3;  // number of arms
-
     boss.shootTimer += deltaTime;
-    if (boss.shootTimer < 0.15f) return;
+    if (boss.shootTimer < GameConfig::Boss::SPIRAL_FIRE_RATE) return;
     boss.shootTimer = 0.f;
 
-    float angleStep = (2.f * PI) / arms; // evenly space the arms
-
-    for (int i = 0; i < arms; i++) {
-        float angle = boss.spiralAngle + angleStep * i; // offset each arm
-
+    float angleStep = (2.f * PI) / boss.bulletCount;
+    for (int i = 0; i < boss.bulletCount; i++) {
+        float angle = boss.spiralAngle + angleStep * i;
         for (auto& boolet : enemyBulletList) {
             if (boolet.isActive) continue;
-
             boolet.isActive = true;
             boolet.posX = boss.pos.x;
             boolet.posY = boss.pos.y;
             boolet.directionX = cosf(angle);
             boolet.directionY = sinf(angle);
-            boolet.speed = bulletSpeed;
-            boolet.size = 13.f;
-            boolet.damagemul = 0.5f;
+            boolet.speed = GameConfig::Bullet::BASE_SPEED * 0.5f;
+            boolet.size = GameConfig::Boss::SPIRAL_BULLET_SIZE;
+            boolet.damagemul = GameConfig::Boss::SPIRAL_DAMAGE_MUL;
             break;
         }
     }
-
-    boss.spiralAngle += spiralSpeed * deltaTime;
+    boss.spiralAngle += GameConfig::Boss::SPIRAL_SPEED * deltaTime;
 }
 
 void Boss3AimedShot(Boss& boss, shape& player) {
-    AEVec2 toPlayer = { player.pos_x - boss.pos.x,
-                        player.pos_y - boss.pos.y };
+    AEVec2 toPlayer = { player.pos_x - boss.pos.x, player.pos_y - boss.pos.y };
     float dist = sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y);
     if (dist < 1.f) return;
 
-    // Fire a tight cluster of 3 bullets straight at the player
     float baseAngle = atan2f(toPlayer.y, toPlayer.x);
-    float spreadStep = 0.15f; // radians between each bullet in the cluster
-    int   count = 3;
-
-    for (int i = 0; i < count; i++) {
-        float angle = baseAngle + spreadStep * (i - count / 2);
+    for (int i = 0; i < GameConfig::Boss::AIMED_COUNT; i++) {
+        float angle = baseAngle + GameConfig::Boss::AIMED_SPREAD * (i - GameConfig::Boss::AIMED_COUNT / 2);
         for (auto& boolet : enemyBulletList) {
             if (boolet.isActive) continue;
-
             boolet.isActive = true;
             boolet.posX = boss.pos.x;
             boolet.posY = boss.pos.y;
             boolet.directionX = cosf(angle);
             boolet.directionY = sinf(angle);
-            boolet.speed = GameConfig::Bullet::BASE_SPEED * 0.8;
-            boolet.size = 15.f;  // slightly bigger than spiral bullets
-            boolet.damagemul = 1.0f;  // full damage
+            boolet.speed = GameConfig::Bullet::BASE_SPEED * 0.8f;
+            boolet.size = GameConfig::Boss::AIMED_BULLET_SIZE;
+            boolet.damagemul = 1.0f;
             break;
         }
     }
 }
 
 AEVec2 GetGunPosition(Boss& boss, bool leftGun) {
-    float rotRad = boss.gunAngle * (PI / 180.f); // <-- use gunAngle
+    float rotRad = boss.gunAngle * (PI / 180.f);
     float cosR = cosf(rotRad);
     float sinR = sinf(rotRad);
-
-    float halfScale = boss.scale * 0.3f;
-
-    // Forward vector (where the boss is facing)
-    float forwardX = cosR;
-    float forwardY = sinR;
-
-    // Right vector (perpendicular to forward)
-    float rightX = -sinR;
-    float rightY = cosR;
-
-    // Guns sit at front edge, offset left or right
+    float halfScale = boss.scale * GameConfig::Boss::GUN_POSITION_RATIO;
     float sideSign = leftGun ? -1.f : 1.f;
 
     return {
-        boss.pos.x + forwardX * halfScale + rightX * halfScale * sideSign,
-        boss.pos.y + forwardY * halfScale + rightY * halfScale * sideSign
+        boss.pos.x + cosR * halfScale + (-sinR) * halfScale * sideSign,
+        boss.pos.y + sinR * halfScale + cosR * halfScale * sideSign
     };
 }
 
@@ -184,14 +155,19 @@ void Boss4ShootGuns(Boss& boss, shape& player, float deltaTime) {
     if (boss.gunFireTimer < boss.gunFireRate) return;
     boss.gunFireTimer = 0.f;
 
-    AEVec2 toPlayer = { player.pos_x - boss.pos.x,
-                        player.pos_y - boss.pos.y };
+    // Update gunAngle toward player once per shot instead of every frame
+    AEVec2 toPlayer = { player.pos_x - boss.pos.x, player.pos_y - boss.pos.y };
     float dist = sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y);
     if (dist < 1.f) return;
 
-    float angle = atan2f(toPlayer.y, toPlayer.x);
+    float targetAngle = atan2f(toPlayer.y, toPlayer.x) * (180.f / PI);
+    float angleDiff = targetAngle - boss.gunAngle;
+    while (angleDiff > 180.f) angleDiff -= 360.f;
+    while (angleDiff < -180.f) angleDiff += 360.f;
+    boss.gunAngle += angleDiff * 0.5f; // was 0.3f — snaps more toward player each shot
 
-    // Fire from both gun positions
+    float angle = boss.gunAngle * (PI / 180.f);
+
     AEVec2 guns[2] = { GetGunPosition(boss, true),
                        GetGunPosition(boss, false) };
 
@@ -216,26 +192,22 @@ void DrawBossLaser(Boss& boss, AEGfxVertexList* MeshRect) {
     if (boss.state == BossState::TELEGRAPHING && boss.currentAttack != Boss3Attack::LASER) return;
     if (!boss.laserActive && boss.state != BossState::TELEGRAPHING) return;
 
-    AEVec2 guns[2] = { GetGunPosition(boss, true),
-                       GetGunPosition(boss, false) };
-
-    float laserLength = 1200.f;
-    float laserWidth = boss.laserActive ? 25.f : 6.f; // thinner during telegraph
+    AEVec2 guns[2] = { GetGunPosition(boss, true), GetGunPosition(boss, false) };
+    float laserLength = GameConfig::Boss::LASER_LENGTH;
+    float laserWidth = boss.laserActive
+        ? GameConfig::Boss::LASER_WIDTH_ACTIVE
+        : GameConfig::Boss::LASER_WIDTH_TELEGRAPH;
 
     for (int i = 0; i < 2; i++) {
-        // Laser origin offset to center the rectangle along the beam
         float midX = guns[i].x + cosf(boss.laserAngle) * laserLength * 0.5f;
         float midY = guns[i].y + sinf(boss.laserAngle) * laserLength * 0.5f;
 
         if (boss.laserActive)
-            AEGfxSetColorToMultiply(1.0f, 0.2f, 0.0f, 1.f); // orange when firing
+            AEGfxSetColorToMultiply(1.0f, 0.2f, 0.0f, 1.f);
         else
-            AEGfxSetColorToMultiply(0.60f, 0.0f, 0.0f, 0.2f); // faint red during telegraph
+            AEGfxSetColorToMultiply(0.60f, 0.0f, 0.0f, 0.2f);
 
-        Gfx::printMesh(MeshRect,
-            { midX, midY },
-            { laserLength, laserWidth },
-            boss.laserAngle);
+        Gfx::printMesh(MeshRect, { midX, midY }, { laserLength, laserWidth }, boss.laserAngle);
     }
 }
 
@@ -456,10 +428,9 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
         }
         return;
     }
-
     if (boss.bosstype == BOSS4) {
         AEVec2 toPlayer = { player.pos_x - boss.pos.x,
-                        player.pos_y - boss.pos.y };
+                            player.pos_y - boss.pos.y };
         float dist = sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y);
 
         // Body slowly faces player
@@ -468,29 +439,29 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
             float angleDiff = targetRotation - boss.rotation;
             while (angleDiff > 180.f) angleDiff -= 360.f;
             while (angleDiff < -180.f) angleDiff += 360.f;
-            boss.rotation += angleDiff * 3.f * deltaTime; // slow body turn
+            boss.rotation += angleDiff * 3.f * deltaTime;
         }
 
-        // Guns track player faster and independently
+        // Gun tracking — replace whatever was here before with this
         if (dist > 1.f) {
             float targetGunAngle = atan2f(toPlayer.y, toPlayer.x) * (180.f / PI);
             float gunAngleDiff = targetGunAngle - boss.gunAngle;
             while (gunAngleDiff > 180.f) gunAngleDiff -= 360.f;
             while (gunAngleDiff < -180.f) gunAngleDiff += 360.f;
 
-            float trackSpeed = 60.f; // default slow tracking
-
+            float trackSpeed = 60.f;
             if (boss.state == BossState::LUNGING && boss.currentAttack == Boss3Attack::GUNS)
-                trackSpeed = 120.f; // faster when shooting
+                trackSpeed = 40.f;  // slow but not frozen — tracks player gradually while shooting
             else if (boss.state == BossState::LUNGING && boss.currentAttack == Boss3Attack::LASER)
-                trackSpeed = 0.f;   // laser drives gunAngle directly, skip lerp
+                trackSpeed = 0.f;   // laser drives gunAngle directly
             else if (boss.state == BossState::COOLDOWN)
-                trackSpeed = 30.f;  // slowest during recovery — this is the return
+                trackSpeed = 30.f;
 
-            if (trackSpeed > 0.f)
+            if (fabsf(gunAngleDiff) > 0.5f && trackSpeed > 0.f)
                 boss.gunAngle += gunAngleDiff * trackSpeed * deltaTime;
         }
 
+        // Chase
         boss.velocity.x += (dist > 1.f ? (toPlayer.x / dist) : 0.f) * boss.chaseSpeed * deltaTime;
         boss.velocity.y += (dist > 1.f ? (toPlayer.y / dist) : 0.f) * boss.chaseSpeed * deltaTime;
         boss.velocity.x *= GameConfig::Enemy::FRICTION;
@@ -763,25 +734,22 @@ void DrawBossHP(Boss& boss, AEGfxVertexList* MeshRect, AEGfxVertexList* MeshCirc
 
 void BossSpawnMinion(Boss& boss, shape& player) {
     float angleStep = (2.f * PI) / boss.minionCount;
-    float radius = boss.scale + 40.f;
+    float radius = boss.scale + GameConfig::Boss::MINION_SPAWN_RADIUS;
 
     for (int i = 0; i < boss.minionCount; i++) {
         float angle = angleStep * i;
-
         for (auto& newEnemy : minionPool) {
             if (!newEnemy.alive) {
                 newEnemy.pos = { boss.pos.x + cosf(angle) * radius,
                                       boss.pos.y + sinf(angle) * radius };
                 newEnemy.velocity = { 0, 0 };
                 newEnemy.alive = true;
-                newEnemy.rotation = angle * (180.f / PI); // face outward on spawn
+                newEnemy.rotation = angle * (180.f / PI);
                 newEnemy.scale = GameConfig::Enemy::SIZE_BIG;
                 newEnemy.enemtype = ATTACK;
                 newEnemy.detect = true;
-
-                int initialHP = 10;
-                newEnemy.hp = initialHP;
-                newEnemy.maxhp = initialHP;
+                newEnemy.hp = GameConfig::Boss::MINION_BASE_HP;
+                newEnemy.maxhp = GameConfig::Boss::MINION_BASE_HP;
                 break;
             }
         }
