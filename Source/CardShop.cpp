@@ -18,7 +18,7 @@ extern int currentWave;
 namespace { // functions for InitializeCardShop()
 	
 	// declare font var
-	s8 boldPixels;
+	//s8 boldPixels;
 
 	// define meshes
 	AEGfxVertexList* rectMesh{};
@@ -26,6 +26,7 @@ namespace { // functions for InitializeCardShop()
 	// graphic boxes
 	AEGfxVertexList* bag, * shop, * desc, * cardSlots, * trash;
 	u32 cbag{ 0xFFC77014 }, cshop{ 0xFFcccc00 }, cdesc{ 0xFF000000 }, ccardSlots{ 0xFFcccc00 }, ctrash{ 0xFFe62e00 };
+	GfxText cardCount{ "", 0.5f };
 
 	// card scales for diff vector arrays
 	f32 CARD_SHOP_SCALE{ 7 };
@@ -182,7 +183,7 @@ namespace { // functions for InitializeCardShop()
 
 void LoadCardShop() {
 	// load font
-	boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
+	//boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 }
 
 void InitializeCardShop() {
@@ -414,7 +415,7 @@ namespace { // functions for DrawCardShop()
 		}
 		// DYNAMIC TEXTS
 		// ACTIVE
-		GfxText cardCount{ "", 0.5f };
+		//GfxText cardCount{ "", 0.5f };
 		cardCount.pos = { -125, -375 };
 		cardCount.text = std::to_string(activeCards.size()) + "/" + std::to_string(num_activeCards);
 		Gfx::printText(cardCount, boldPixels);
@@ -556,8 +557,15 @@ void DrawCardShop() {
 }
 
 void FreeCardShop() {
-	AEGfxMeshFree(rectMesh); // free mesh
-	shopCards.clear(); // clear shop array
+	// free meshes
+	AEGfxMeshFree(rectMesh);
+	AEGfxMeshFree(bag);
+	AEGfxMeshFree(shop);
+	AEGfxMeshFree(desc);
+	AEGfxMeshFree(cardSlots);
+	AEGfxMeshFree(trash);
+
+	//shopCards.clear(); // clear shop array
 
 	// print player stats to console
 	// calculates player stats
@@ -566,6 +574,10 @@ void FreeCardShop() {
 	f32 speed = calculate_max_stats(2);
 	f32 fire_rate = calculate_max_stats(3);
 	f32 xp_mult = calculate_max_stats(4);
+
+	// reset null pointers
+	pSelectedCard = nullptr;
+	pHoveredCard = nullptr;
 
 	std::cout 
 		<< "\n====================================\n" 
@@ -579,7 +591,7 @@ void FreeCardShop() {
 
 void UnloadCardShop() {
 	// unload assets
-	AEGfxDestroyFont(boldPixels); // font
+	//AEGfxDestroyFont(boldPixels); // font
 }
 
 namespace Cards {
@@ -618,6 +630,11 @@ namespace Cards {
 	// Documentation here: https://rapidjson.org/md_doc_stream.html#FileStreams
 	// code will run insya allah
 	void Load_Cards(std::string const& filename) {
+		// clear cards vector
+		for (int i{}; i < NUM_OF_RARITIES; i++) {
+			cardPool[i].clear();
+		}
+		
 		// open filestream
 		std::ifstream file{ filename };
 		// produce error if file cannot be opened
@@ -720,6 +737,8 @@ namespace Cards {
 
 	// clears all cards, ready for next game
 	void resetCards() {
+		// clears shop (in case)
+		if (!shopCards.empty()) shopCards.clear();
 		// clears inventory and active cards
 		if (!inventoryCards.empty()) inventoryCards.clear();
 		if (!activeCards.empty()) activeCards.clear();

@@ -145,7 +145,7 @@ namespace Graphics {
 	}
 
 	// prints text
-	void printText(GfxText &text, s8 font) {
+	void printText(GfxText &text, s8 const& font) {
 		// Normalise Coordinates
 		f32 x{ text.pos.x }, y{ text.pos.y };
 		Comp::normalizePoint(x, y);
@@ -166,7 +166,7 @@ namespace Graphics {
 		printMesh(button.mesh, button.pos, button.size);
 	}
 
-	void printMultiline(GfxText& text, s8 font) {
+	void printMultiline(GfxText& text, s8 const& font) {
 		std::istringstream stream(text.text);
 		std::string line;
 		float lineHeight = 50.0f * text.scale; // adjust to match your font size

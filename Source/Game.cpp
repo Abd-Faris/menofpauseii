@@ -13,7 +13,7 @@ float playerFlashTimer = 0.0f;
 
 namespace {
     // -- Assets --
-    s8 boldPixelsFont;
+    //s8 boldPixelsFont;
     AEGfxVertexList* MeshRect = nullptr;
     AEGfxVertexList* MeshCircle = nullptr;
     AEGfxVertexList* MeshTriangle = nullptr;
@@ -196,7 +196,7 @@ void LoadGame() {
     LoadDebug1();
     LoadEnemies();
     Animations_Load();
-    boldPixelsFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
+    //boldPixelsFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 	World::Load_World();
 	World::Init_World();
     !AEInputCheckCurr(AEVK_LBUTTON);
@@ -468,6 +468,6 @@ void FreeGame() {
 }
 
 void UnloadGame() {
-    AEGfxDestroyFont(boldPixelsFont);
+    //AEGfxDestroyFont(boldPixelsFont);
 
 }

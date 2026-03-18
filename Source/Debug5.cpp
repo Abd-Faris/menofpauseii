@@ -8,7 +8,7 @@ extern float orbitAngle, orbitPosX, orbitPosY;
 
 
 namespace {
-    s8 boldPixelsFont;
+    //s8 boldPixelsFont;
     AEGfxVertexList* MeshRect = nullptr;
     AEGfxVertexList* MeshCircle = nullptr;
     AEGfxVertexList* MeshTriangle = nullptr;
@@ -125,7 +125,7 @@ void circlerectcollision1() {
 void LoadDebug5() {
     LoadDebug1();
     Animations_Load();
-    boldPixelsFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
+    //boldPixelsFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
     World::Load_World();
     World::Init_World();
 
@@ -291,7 +291,7 @@ void DrawDebug5() {
 // FREE
 // ===========================================================================
 void FreeDebug5() {
-    AEGfxDestroyFont(boldPixelsFont);
+    //AEGfxDestroyFont(boldPixelsFont);
     if (MeshRect)   AEGfxMeshFree(MeshRect);
     if (MeshCircle) AEGfxMeshFree(MeshCircle);
     FreeDebug1();

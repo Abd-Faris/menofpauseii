@@ -113,7 +113,6 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="..\Source\MainMenu.cpp" />
     <ClCompile Include="..\Source\Player.cpp" />
     <ClCompile Include="..\Source\Results.cpp" />
-    <ClCompile Include="..\Source\SoloProj.cpp" />
     <ClCompile Include="..\Source\System.cpp" />
     <ClCompile Include="..\Source\Wave.cpp" />
     <ClCompile Include="..\Source\World.cpp" />

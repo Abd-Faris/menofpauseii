@@ -23,11 +23,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
     // System initialize
     Initialise_System(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
-    
-    // DEBUG: Prints current directory
-    char buffer[256];
-    _getcwd(buffer, sizeof(buffer));
-    std::cout << "\nProgram Directory: " << buffer << "\n\n";
 
     Load_Global_Assets();
 

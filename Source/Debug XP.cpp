@@ -20,7 +20,7 @@ PlayerStats	player_init = {
 
 namespace {
 	//for font
-	s8 boldPixels;
+	//s8 boldPixels;
 
 	//color meshes
 	AEGfxVertexList* pBlackRectMesh = nullptr;
@@ -126,7 +126,7 @@ namespace {
 
 void LoadDebug1() {
 	// load font
-	boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
+	//boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 
 	// create color meshes
 	pBlackRectMesh = createmesh(0xFF000000);
@@ -439,7 +439,7 @@ void DrawDebug1() {
 
 
 void FreeDebug1() {
-	AEGfxDestroyFont(boldPixels);
+	//AEGfxDestroyFont(boldPixels);
 
 	// free color meshes
 	AEGfxVertexList* meshes[] = { pBlackRectMesh, pWhiteRectMesh, pGreenRectMesh, pRedRectMesh, pYellowRectMesh };

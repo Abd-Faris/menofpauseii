@@ -9,7 +9,7 @@ std::array <Enemies, MAX_ENEMIES> maxenemy = {};
 f32 maxspeed = 50;
 f32 friction = 0.92;
 namespace {
-	s8 boldPixels;
+	//s8 boldPixels;
 	AEGfxVertexList* MeshRect{};
 	
 }
@@ -446,7 +446,7 @@ void EnemyDeath(std::array <Enemies, MAX_ENEMIES> maxenemy, int size, f64 dt){
 
 void LoadDebug3() {
 	// load font
-	boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
+	//boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 	DrawEnemyMesh();
 	for (int i = 0; i < MAX_ENEMIES; i++) {
 		InitEnemies(&maxenemy[i]);
@@ -562,6 +562,6 @@ void DrawDebug3() {
 
 void FreeDebug3() {
 	// free font
-	AEGfxDestroyFont(boldPixels);
+	//AEGfxDestroyFont(boldPixels);
 	AEGfxMeshFree(MeshRect);
 }

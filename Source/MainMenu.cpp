@@ -3,7 +3,7 @@
 
 namespace {
 	// declares font and mesh variables
-	s8 boldPixels;
+	//s8 boldPixels;
 	AEGfxVertexList* rectMesh;
 	
 	// exiting game app boolean (to display confirmation screen)
@@ -95,9 +95,12 @@ namespace {
 
 void LoadMainMenu() {
 	// load font
-	boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
+	//boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 	// creates rect mesh
 	rectMesh = Gfx::createRectMesh();
+	
+	// clears cards from game session (if any)
+	Cards::resetCards();
 }
 
 void InitializeMainMenu() {
@@ -135,6 +138,6 @@ void DrawMainMenu() {
 
 void UnloadMainMenu() {
 	// unload font
-	AEGfxDestroyFont(boldPixels);
+	//AEGfxDestroyFont(boldPixels);
 	if (rectMesh) { AEGfxMeshFree(rectMesh); rectMesh = nullptr; }
 }

@@ -4,12 +4,12 @@
 bool gameWon = false;
 
 namespace {
-    s8 resultsFont;
+    //s8 boldPixels;
 }
 
 void LoadResults() {
     // Load your font
-    resultsFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
+    //boldPixels = AEGfxCreateFont("Assets/boldPixelss.ttf", 72);
 }
 
 void UpdateResults() {
@@ -29,21 +29,21 @@ void DrawResults() {
         AEGfxSetBackgroundColor(0.0f, 0.4f, 0.0f); // Green background
 
         GfxText winText = { "VICTORY!", 2.0f, 255, 255, 255, 255, {0.0f, 100.0f} };
-        Gfx::printText(winText, resultsFont);
+        Gfx::printText(winText, boldPixels);
     }
     else {
         // --- DEFEAT SCREEN ---
         AEGfxSetBackgroundColor(0.4f, 0.0f, 0.0f); // Red background
 
         GfxText loseText = { "GAME OVER", 2.0f, 255, 255, 255, 255, {0.0f, 100.0f} };
-        Gfx::printText(loseText, resultsFont);
+        Gfx::printText(loseText, boldPixels);
     }
 
     // Shared text for both screens
     GfxText clickText = { "Click anywhere to return to Menu", 1.0f, 200, 200, 200, 255, {0.0f, -100.0f} };
-    Gfx::printText(clickText, resultsFont);
+    Gfx::printText(clickText, boldPixels);
 }
 
 void FreeResults() {
-    AEGfxDestroyFont(resultsFont);
+    //AEGfxDestroyFont(boldPixels);
 }

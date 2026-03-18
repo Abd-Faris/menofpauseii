@@ -1,6 +1,9 @@
 
 #include "MasterHeader.h"
 
+// Define Externs
+s8 boldPixels{};
+
 void Initialise_System(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
 	_In_ LPWSTR    lpCmdLine,
@@ -30,9 +33,17 @@ void Initialise_System(_In_ HINSTANCE hInstance,
 void Load_Global_Assets() {
 	// Load Cards from JSON
 	Cards::Load_Cards("../../Data/Cards.json");
+	// Load Font
+	boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 }
 
 void Unload_Global_Assets() {
-	//
+	// Unload Cards
+	for (int i{}; i < NUM_OF_RARITIES; i++) {
+		cardPool[i].clear();
+		cardPool[i].shrink_to_fit();
+	}
+	// Unload Font
+	AEGfxDestroyFont(boldPixels);
 }
 

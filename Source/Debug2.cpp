@@ -7,7 +7,7 @@
 #include <cmath>
 
 namespace {
-	s8 boldPixels;
+	//s8 boldPixels;
 	AEGfxVertexList* MeshCircle{};
 	AEGfxVertexList* MeshRect{};
 	shape circle = { 0 };
@@ -26,7 +26,7 @@ int gGameRunning = 1;
 
 void LoadDebug2() {
 	// load font
-	boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
+	//boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 	
 
 	AEGfxMeshStart();
@@ -280,5 +280,5 @@ void DrawDebug2() {
 
 void FreeDebug2() {
 	// free font
-	AEGfxDestroyFont(boldPixels);
+	//AEGfxDestroyFont(boldPixels);
 }
