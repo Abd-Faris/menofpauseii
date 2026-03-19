@@ -66,13 +66,21 @@ namespace PauseScreen {
         AEGfxSetCamPosition(0.0f, 0.0f);
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
-        // Dark dimming overlay
+        // ==========================================
+        // 1. FIXED DIMMING OVERLAY
+        // ==========================================
         AEGfxSetTransparency(0.7f);
         AEGfxSetColorToMultiply(0.0f, 0.0f, 0.0f, 1.0f);
-        Gfx::printMesh(pauseMesh, { 0.f, 0.f }, { 2000.f, 2000.f }, 0.f);
+        // Shift the starting position so the 2000x2000 square covers the whole screen!
+        Gfx::printMesh(pauseMesh, { -1000.f, -1000.f }, { 2000.f, 2000.f }, 0.f);
 
-        // Buttons
+        // ==========================================
+        // 2. FIXED INVISIBLE BUTTONS
+        // ==========================================
         AEGfxSetTransparency(1.0f);
+        // Reset the paint color to pure white so the buttons aren't black-on-black!
+        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+
         for (GfxButton& button : pauseButtons) {
             Gfx::printButton(button);
         }
@@ -82,7 +90,6 @@ namespace PauseScreen {
             Gfx::printText(text, pauseFont);
         }
     }
-
     void FreePause() {
         AEGfxDestroyFont(pauseFont);
         if (pauseMesh) {
