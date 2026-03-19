@@ -3,6 +3,8 @@
 extern std::array<Enemies, GameConfig::MAX_ENEMIES_COUNT> enemyPool;
 extern f64 enemySpawnTimer;
 extern BulletObj enemyBulletList[GameConfig::MAX_BULLETS_COUNT];
+extern AEGfxTexture* pEnemyBulletTex;
+extern AEGfxVertexList* pEnemyBulletMesh;
 
 void LoadEnemies();
 void ResetEnemy(Enemies* enemyToReset);

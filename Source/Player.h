@@ -4,7 +4,10 @@ extern BulletObj bulletList[GameConfig::MAX_BULLETS_COUNT];
 
 extern float bulletFireTimer;
 extern bool bigcannon;
+extern AEGfxTexture* pBulletTex;
+extern AEGfxVertexList* pBulletMesh;
 
+void LoadBullets();
 void DrawMultiBarrels(int count, float gap, float pivotOffset, float tankRot, float tankX, float tankY, float barrelWidth, float barrelLength, AEGfxVertexList* MeshRect);
 void drawBigTank(shape& player);
 void DualBack(shape& player);
@@ -15,5 +18,6 @@ void drawBigCannon(shape& player);
 void updateBullets(shape& player, float deltaTime);
 void updateOrbit(shape& player, float deltaTime);
 void SpawnSmoke(float x, float y, float baseSize);
+void FreeBullets();
 
 void updateSmoke(float deltaTime);

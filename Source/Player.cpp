@@ -14,10 +14,26 @@ float orbitAngle = 0.0f;      // Current rotation angle of the shield
 float orbitPosX = 0.0f;       // World X position of the shield
 float orbitPosY = 0.0f;       // World Y position of the shield
 SmokeParticle smokes[100];    // Object pool for damage smoke effect
+AEGfxTexture* pBulletTex = nullptr;
+AEGfxVertexList* pBulletMesh = nullptr;
 
 // ===========================================================================
 // WEAPON DRAWING LOGIC
 // ===========================================================================
+
+void LoadBullets() {
+    pBulletTex = AEGfxTextureLoad("Assets/bulletgreen.png");
+
+    AEGfxMeshStart();
+    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
+        0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+    AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+        0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
+        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+    pBulletMesh = AEGfxMeshEnd();
+}
+
 void DrawMultiBarrels(int count, float gap, float pivotOffset, float tankRot, float tankX, float tankY, float barrelWidth, float barrelLength, AEGfxVertexList* MeshRect) {
     if (count <= 0) return;
 
@@ -375,4 +391,9 @@ void updateSmoke(float deltaTime) {
             }
         }
     }
+}
+
+void FreeBullets() {
+    if (pBulletTex) { AEGfxTextureUnload(pBulletTex);  pBulletTex = nullptr; }
+    if (pBulletMesh) { AEGfxMeshFree(pBulletMesh);      pBulletMesh = nullptr; }
 }

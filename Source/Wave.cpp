@@ -30,7 +30,7 @@ std::vector<WeightedChoice> currentWaveChoices;
 void GenerateWave(int waveNumber, shape& player) {
 
 	//reset enemies spawned to 0 first
-	int totalEnemiesSpawned = 0;
+	totalEnemiesSpawned = 0;
 
 	// ---- BOSS WAVE ----
 	//check if wave is multiple of 5

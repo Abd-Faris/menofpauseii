@@ -10,6 +10,8 @@ extern float orbitAngle, orbitPosX, orbitPosY;
 bool mousereleased = false;
 int currentWave = 1;
 float playerFlashTimer = 0.0f;
+float waveActiveTimer = 0.0f;
+
 
 namespace {
     // -- Assets --
@@ -17,7 +19,6 @@ namespace {
     AEGfxVertexList* MeshRect = nullptr;
     AEGfxVertexList* MeshCircle = nullptr;
     AEGfxVertexList* MeshTriangle = nullptr;
-    float waveActiveTimer = 0.0f;
     
 
     // -- Player State --
@@ -196,6 +197,7 @@ void LoadGame() {
 
    
     LoadDebug1();
+    LoadBullets();
     LoadEnemies();
     Animations_Load();
     PauseScreen::LoadPause();
@@ -271,8 +273,6 @@ void UpdateGame() {
 
             updateSmoke(deltaTime);
 
-            // 5. Wave Management (calls wave clear, then generates new wave if cleared)
-          // =========================================================
         // 5. WAVE MANAGEMENT (Final Boss & Infinite Mode Logic)
         // =========================================================
             if (IsWaveCleared() && waveActiveTimer > 2.0f) {
@@ -363,20 +363,26 @@ void DrawGame() {
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     
     // -- Draw Bullets --
-    // Bullets use a simple scale and position with no rotation
-    AEGfxSetColorToMultiply(1.0f, 1.0f, 0.0f, 1.0f);
+    AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+    AEGfxTextureSet(pBulletTex, 0, 0);
+    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
     for (const auto& boolet : bulletList) {
         if (boolet.isActive) {
-            Gfx::printMesh(MeshCircle, { boolet.posX, boolet.posY }, { boolet.size, boolet.size }, 0.0f);
+            //calculate the bullet direction
+            float angle = atan2f(boolet.directionY, boolet.directionX) - HALF_PI;
+            Gfx::printMesh(pBulletMesh, { boolet.posX, boolet.posY }, { boolet.size * 1.5f, boolet.size * 2.0f }, angle, { 0.f, 0.f }, true);
         }
     }
+
     //enemy bullets
-    AEGfxSetColorToMultiply(1.0f, 0.2f, 0.2f, 1.0f); // Bright Red
+    AEGfxTextureSet(pEnemyBulletTex, 0, 0);
     for (const auto& enBullet : enemyBulletList) {
         if (enBullet.isActive) {
-            Gfx::printMesh(MeshCircle, { enBullet.posX, enBullet.posY }, { enBullet.size, enBullet.size }, 0.0f);
+            float angle = atan2f(enBullet.directionY, enBullet.directionX) - HALF_PI;
+            Gfx::printMesh(pEnemyBulletMesh, { enBullet.posX, enBullet.posY }, { enBullet.size * 1.5f, enBullet.size * 2.0f }, angle, { 0.f, 0.f }, true);
         }
     }
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
     if (orbitActive) {
         AEGfxSetColorToMultiply(0.0f, 1.0f, 1.0f, 1.0f); // Bright Cyan
@@ -507,6 +513,7 @@ void FreeGame() {
     if (MeshTriangle) { AEGfxMeshFree(MeshTriangle); MeshTriangle = nullptr; }
     FreeDebug1();
     FreeEnemies();
+    FreeBullets();
     Animations_Free();
     PauseScreen::FreePause();
 	World::Free_World();

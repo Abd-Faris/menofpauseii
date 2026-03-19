@@ -7,6 +7,8 @@ BulletObj enemyBulletList[GameConfig::MAX_BULLETS_COUNT];
 
 AEGfxTexture* pEnemyTex[4] = { nullptr, nullptr, nullptr, nullptr };
 AEGfxVertexList* pEnemyMesh = nullptr;
+AEGfxTexture* pEnemyBulletTex = nullptr;
+AEGfxVertexList* pEnemyBulletMesh = nullptr;
 
 //create an array of textures
 const char* enemyTextures[4] = {
@@ -29,6 +31,18 @@ void LoadEnemies() {
         0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
         -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
     pEnemyMesh = AEGfxMeshEnd();
+
+    //bullet mesh
+    pEnemyBulletTex = AEGfxTextureLoad("./Assets/bulletred.png");
+
+    AEGfxMeshStart();
+    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
+        0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+    AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+        0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
+        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+    pEnemyBulletMesh = AEGfxMeshEnd();
 }
 
 void ResetEnemy(Enemies* enemyToReset) {
@@ -309,12 +323,9 @@ void updateEnemyBullets(float deltaTime) {
 
 void FreeEnemies() {
     for (int i = 0; i < 4; ++i) {
-        if (pEnemyTex[i]) { 
-        AEGfxTextureUnload(pEnemyTex[i]); 
-        pEnemyTex[i] = nullptr; }
+        if (pEnemyTex[i]) { AEGfxTextureUnload(pEnemyTex[i]); pEnemyTex[i] = nullptr; }
     }
-    if (pEnemyMesh) { 
-        AEGfxMeshFree(pEnemyMesh); 
-        pEnemyMesh = nullptr; 
-    }
+    if (pEnemyMesh) { AEGfxMeshFree(pEnemyMesh); pEnemyMesh = nullptr; }
+    if (pEnemyBulletTex) { AEGfxTextureUnload(pEnemyBulletTex);  pEnemyBulletTex = nullptr; }
+    if (pEnemyBulletMesh) { AEGfxMeshFree(pEnemyBulletMesh);      pEnemyBulletMesh = nullptr; }
 }

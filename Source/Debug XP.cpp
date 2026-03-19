@@ -163,13 +163,30 @@ void TriggerXpPopup(float xpAmount) {
 
 // --- FUNCTION TO RESET GAME  ---
 void reset_game() {
+	// reset wave
 	currentWave = 1;
 
+	// clear boss
+	boss.alive = false;
+
+	// clear minions
+	for (auto& minion : minionPool) {
+		minion.alive = false;
+		minion.hp = 0;
+	}
+
+	// reset wave spawning
+	pendingBudget = 0.0f;
+	spawnTimer = 0.0f;
+	totalWaveBudget = 0.0f;
+
+	// reset enemy
 	for (auto& enemy : enemyPool) {
 		enemy.alive = false;
 		enemy.hp = 0;
 	}
-
+	 
+	// reset bullets
 	for (auto& bullet : bulletList) {
 		bullet.isActive = false;
 	}
@@ -223,7 +240,7 @@ void level_up(float xp_needed) {
 
 // --- CURSOR COORDS CHECKING AND CLICKING ---
 void handle_menu_input(float camX, float camY) {
-	if (player_init.skill_point <= 0 && AEInputCheckTriggered(AEVK_ESCAPE)) {
+	if (player_init.skill_point <= 0 && AEInputCheckTriggered(AEVK_LBUTTON)) {
 		player_init.menu_open = false;
 		// print player stats to console
 	// calculates player stats
@@ -432,7 +449,7 @@ void DrawDebug1() {
 			AEGfxPrint(boldPixels, "SPEND POINT TO CONTINUE!", -0.23f, -0.63f, 0.4f, 1.0f, 1.0f, 1.0f, 1.0f);
 		}
 		else {
-			AEGfxPrint(boldPixels, "PRESS ESC TO CLOSE!", -0.18f, -0.63f, 0.4f, 1.0f, 1.0f, 1.0f, 1.0f);
+			AEGfxPrint(boldPixels, "CLICK ANYWHERE TO CLOSE!", -0.23f, -0.63f, 0.4f, 1.0f, 1.0f, 1.0f, 1.0f);
 		}
 	}
 }
