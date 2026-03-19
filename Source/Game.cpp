@@ -196,6 +196,7 @@ void LoadGame() {
     LoadDebug1();
     LoadEnemies();
     Animations_Load();
+    PauseScreen::LoadPause();
     //boldPixelsFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 	World::Load_World();
 	World::Init_World();
@@ -230,11 +231,16 @@ void LoadGame() {
 void UpdateGame() {
 	float deltaTime = (float)AEFrameRateControllerGetFrameTime();
 	UpdateDebug1();
+<<<<<<< Updated upstream
 
 	if (!player_init.menu_open) {
         // Update Wave Logic
         UpdateWaveSpawning(deltaTime, player);
 
+=======
+    PauseScreen::UpdatePause();
+	if (!player_init.menu_open && !PauseScreen::isPaused) {
+>>>>>>> Stashed changes
 		// Update Animations
 		Animations_Update(deltaTime);
 
@@ -305,7 +311,9 @@ void UpdateGame() {
         }
 
 	}
-	circlerectcollision();
+    if (!PauseScreen::isPaused) {
+        circlerectcollision();
+    }
 	AEGfxSetCamPosition(player.pos_x, player.pos_y);
 }
 
@@ -315,6 +323,8 @@ void UpdateGame() {
 
 void DrawGame() {
     if (MeshRect == nullptr || MeshCircle == nullptr) return;
+
+    
 
     AEGfxSetBackgroundColor(0.2f, 0.2f, 0.2f);
     AEGfxSetCamPosition(player.pos_x, player.pos_y);
@@ -458,6 +468,7 @@ void DrawGame() {
     printEnemyCount();
     Animations_Draw();
     DrawDebug1();
+    PauseScreen::DrawPause();
 }
 
 void FreeGame() {
@@ -468,6 +479,7 @@ void FreeGame() {
     FreeDebug1();
     FreeEnemies();
     Animations_Free();
+    PauseScreen::FreePause();
 	World::Free_World();
 }
 
