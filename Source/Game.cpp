@@ -231,90 +231,89 @@ void LoadGame() {
 void UpdateGame() {
 	float deltaTime = (float)AEFrameRateControllerGetFrameTime();
 	UpdateDebug1();
-<<<<<<< Updated upstream
 
-	if (!player_init.menu_open) {
+    if (!player_init.menu_open) {
         // Update Wave Logic
         UpdateWaveSpawning(deltaTime, player);
 
-=======
-    PauseScreen::UpdatePause();
-	if (!player_init.menu_open && !PauseScreen::isPaused) {
->>>>>>> Stashed changes
-		// Update Animations
-		Animations_Update(deltaTime);
+            PauseScreen::UpdatePause();
+        if (!player_init.menu_open && !PauseScreen::isPaused) {
 
-		// --- KEY '7': TOGGLE UPGRADE --
-		drawBigTank(player);
+            // Update Animations
+            Animations_Update(deltaTime);
 
-		// --- KEY 'U': TOGGLE BIG CANNON ---
-		drawBigCannon(player);
+            // --- KEY '7': TOGGLE UPGRADE --
+            drawBigTank(player);
 
-        //key 8 back forth
-        DualBack(player);
+            // --- KEY 'U': TOGGLE BIG CANNON ---
+            drawBigCannon(player);
 
-		// 1. Move Player
-		movePlayer(player, deltaTime);
+            //key 8 back forth
+            DualBack(player);
 
-		// 2. Rotate Player
-		rotatePlayer(player);
+            // 1. Move Player
+            movePlayer(player, deltaTime);
 
-		// 3. Shooting (UPDATED FOR MULTI-BARREL)
-		ShootBullet(player, deltaTime);
+            // 2. Rotate Player
+            rotatePlayer(player);
 
-        updateOrbit(player, deltaTime);
+            // 3. Shooting (UPDATED FOR MULTI-BARREL)
+            ShootBullet(player, deltaTime);
 
-		// 4. Move Bullets
-		updateBullets(player, deltaTime);
+            updateOrbit(player, deltaTime);
 
-        updateSmoke(deltaTime);
+            // 4. Move Bullets
+            updateBullets(player, deltaTime);
 
-		// 5. Wave Management (calls wave clear, then generates new wave if cleared)
-		if(IsWaveCleared()) {
-			currentWave++;
-            GS_next = GS_CARD_SHOP;
-			//GenerateWave(currentWave, player);
-		}
+            updateSmoke(deltaTime);
 
-		// FOR DEBUGGING: Skip wave with Z
-        if (AEInputCheckTriggered(AEVK_Z)) {
-            skipWave(player);
-            GS_next = GS_CARD_SHOP;
-		}
+            // 5. Wave Management (calls wave clear, then generates new wave if cleared)
+            if (IsWaveCleared()) {
+                currentWave++;
+                GS_next = GS_CARD_SHOP;
+                //GenerateWave(currentWave, player);
+            }
 
-        if (playerFlashTimer > 0.0f) {
-            playerFlashTimer -= deltaTime;
+            // FOR DEBUGGING: Skip wave with Z
+            if (AEInputCheckTriggered(AEVK_Z)) {
+                skipWave(player);
+                GS_next = GS_CARD_SHOP;
+            }
+
+            if (playerFlashTimer > 0.0f) {
+                playerFlashTimer -= deltaTime;
+            }
+
+            // 6. Enemy Physics
+            updateEnemyPhysics(player, deltaTime);
+
+            // 7. Enemy Bullets
+            updateEnemyBullets(deltaTime);
+
+            // 8. Boss Updates
+            UpdateBossPhysics(boss, player, deltaTime);
+            BossCollision(boss, player, orbitActive, orbitPosX, orbitPosY);
+            updateMinionPhysics(player, deltaTime);
+
+            if (static_cast<int>(player_init.current_hp) <= 0) {
+                gameWon = false;
+                reset_game();
+                Cards::resetCards();
+                GS_next = GS_RESULTS;
+            }
+            if (currentWave == (numofBosses * 5 + 1)) {
+                gameWon = true;
+                reset_game();
+                Cards::resetCards();
+                GS_next = GS_RESULTS;
+            }
+
         }
-
-		// 6. Enemy Physics
-		updateEnemyPhysics(player, deltaTime);
-
-		// 7. Enemy Bullets
-		updateEnemyBullets(deltaTime);
-
-        // 8. Boss Updates
-        UpdateBossPhysics(boss, player, deltaTime);
-        BossCollision(boss, player, orbitActive, orbitPosX, orbitPosY);
-        updateMinionPhysics(player, deltaTime);
-
-        if (static_cast<int>(player_init.current_hp) <= 0) {
-            gameWon = false;       
-            reset_game();
-            Cards::resetCards();
-            GS_next = GS_RESULTS; 
+        if (!PauseScreen::isPaused) {
+            circlerectcollision();
         }
-        if (currentWave==(numofBosses * 5+1)) {
-            gameWon = true;
-            reset_game();
-            Cards::resetCards();
-            GS_next = GS_RESULTS;
-        }
-
-	}
-    if (!PauseScreen::isPaused) {
-        circlerectcollision();
+        AEGfxSetCamPosition(player.pos_x, player.pos_y);
     }
-	AEGfxSetCamPosition(player.pos_x, player.pos_y);
 }
 
 // ===========================================================================

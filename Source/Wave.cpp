@@ -185,8 +185,8 @@ void printEnemyCount() {
 	}
 	if (boss.alive) activeEnemyCount++;
 
-	GfxText text{ "Enemies Alive : " + std::to_string(activeEnemyCount)};
-	text.scale = 0.5;
-	text.pos = { 600, 400 };
+	GfxText text{ "Enemies Remaining : " + std::to_string(activeEnemyCount)};
+	text.scale = 0.35;
+	text.pos = { 630, 400 };
 	Gfx::printText(text, boldPixels);
 }
