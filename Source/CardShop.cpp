@@ -565,7 +565,7 @@ void FreeCardShop() {
 	AEGfxMeshFree(cardSlots);
 	AEGfxMeshFree(trash);
 
-	//shopCards.clear(); // clear shop array
+	shopCards.clear(); // clear shop array
 
 	// print player stats to console
 	// calculates player stats
