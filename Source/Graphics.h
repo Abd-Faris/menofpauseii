@@ -25,5 +25,7 @@ namespace Graphics {
 	void printText(GfxText& text, s8 const& font);
 	void printButton(GfxButton& button);
 	void printMultiline(GfxText& text, s8 const& font);
+	void printUIMesh(AEGfxVertexList* mesh, AEVec2 pos, AEVec2 size);
+	void printUIButton(GfxButton& button);
 }
 namespace Gfx = Graphics;

@@ -144,6 +144,43 @@ namespace Graphics {
 		printMesh(mesh, card.pos, finalSize);
 	}
 
+	// ==========================================
+// DEDICATED UI DRAWING FUNCTIONS
+// ==========================================
+	// Prints mesh glued to the screen by chasing the camera!
+	void printUIMesh(AEGfxVertexList* mesh, AEVec2 pos, AEVec2 size) {
+		if (!mesh) return;
+
+		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+
+		// ==========================================
+		// 1. THE FIX: Find out where the camera is!
+		// ==========================================
+		f32 camX, camY;
+		AEGfxGetCamPosition(&camX, &camY);
+
+		// 2. Setup Matrices
+		AEMtx33 scale, trans, finalTransform;
+		AEMtx33Scale(&scale, size.x, size.y);
+
+		// ==========================================
+		// 3. THE FIX: Add the camera position to the UI position!
+		// This guarantees the UI moves perfectly with the screen glass.
+		// ==========================================
+		AEMtx33Trans(&trans, pos.x + camX, pos.y + camY);
+
+		// Multiply and Draw
+		AEMtx33Concat(&finalTransform, &trans, &scale);
+		AEGfxSetTransform(finalTransform.m);
+		AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
+	}
+
+	// A clean wrapper so your buttons can use the new UI mesh function!
+	void printUIButton(GfxButton& button) {
+		printUIMesh(button.mesh, button.pos, button.size);
+	}
+
 	// prints text
 	void printText(GfxText &text, s8 const& font) {
 		// Normalise Coordinates

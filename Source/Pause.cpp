@@ -83,7 +83,7 @@ namespace PauseScreen {
                     // 2. Wipe stats so you don't instantly Game Over!
                     reset_game();
                     Cards::resetCards();
-
+                    upgradeFlag = 0;
                     // 3. Force the engine safely back to the Game State
                     GS_next = GS_GAME;
                 
@@ -100,13 +100,24 @@ namespace PauseScreen {
     }
 
     void DrawPauseButton() {
-        if (isPaused) return; // Don't draw this if the big menu is open!
+        if (isPaused) return;
 
-        AEGfxSetCamPosition(0.0f, 0.0f);
+        // ---> REMOVED AEGfxSetCamPosition(0.0f, 0.0f) FROM HERE! <---
 
-        // Draw the Grey Square
-        AEGfxSetColorToMultiply(0.8f, 0.8f, 0.8f, 1.0f);
-        Gfx::printButton(PauseBtn);
+        // 1. Get Mouse Position
+        AEVec2 mousepos{};
+        Comp::getCursorPos(mousepos);
+
+        // 2. The Hover Logic
+        if (Comp::collisionPointRect(mousepos, PauseBtn.pos, PauseBtn.size)) {
+            AEGfxSetColorToMultiply(0.9f, 0.9f, 0.9f, 1.0f); // Hover
+        }
+        else {
+            AEGfxSetColorToMultiply(0.8f, 0.8f, 0.8f, 1.0f); // Normal
+        }
+
+        // Draw the Button Mesh
+        Gfx::printUIButton(PauseBtn);
 
         // Draw the Black "||" Text
         AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
@@ -116,22 +127,28 @@ namespace PauseScreen {
     void DrawPause() {
         if (!isPaused) return;
 
-        AEGfxSetCamPosition(0.0f, 0.0f);
+        // ---> REMOVED AEGfxSetCamPosition(0.0f, 0.0f) FROM HERE! <---
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
-        // ---> NO BLEND MODE USED HERE <---
-        // This guarantees everything is 100% solid and opaque.
+        // 1. Get Mouse Position BEFORE the loop
+        AEVec2 mousepos{};
+        Comp::getCursorPos(mousepos);
 
         // --- DRAW BUTTONS ---
-        // Paint the button meshes Light Grey to match the reference
-        AEGfxSetColorToMultiply(0.8f, 0.8f, 0.8f, 1.0f);
         for (GfxButton& button : pauseButtons) {
-            Gfx::printButton(button);
+
+            // 2. The Hover Logic for each button
+            if (Comp::collisionPointRect(mousepos, button.pos, button.size)) {
+                AEGfxSetColorToMultiply(0.9f, 0.9f, 0.9f, 1.0f); // Hover
+            }
+            else {
+                AEGfxSetColorToMultiply(0.8f, 0.8f, 0.8f, 1.0f); // Normal
+            }
+
+            Gfx::printUIButton(button);
         }
 
         // --- DRAW TEXT ---
-        // Reset the paint back to pure white so the specific RGB colors 
-        // we set in the pauseTexts array (Black and Orange) render correctly!
         AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
         for (GfxText& text : pauseTexts) {
             Gfx::printText(text, pauseFont);
