@@ -496,6 +496,7 @@ void DrawGame() {
     printEnemyCount();
     Animations_Draw();
     DrawDebug1();
+    PauseScreen::DrawPauseButton();
     PauseScreen::DrawPause();
 }
 

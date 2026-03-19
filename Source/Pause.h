@@ -12,4 +12,5 @@ namespace PauseScreen {
     void UpdatePause();
     void DrawPause();
     void FreePause();
+    void DrawPauseButton();
 }

@@ -6,6 +6,9 @@ namespace PauseScreen {
     s8 pauseFont;
     AEGfxVertexList* pauseMesh = nullptr;
 
+   
+    GfxButton PauseBtn = { {-750, 400}, {50, 50}, nullptr, 0 };
+    GfxText PauseTxt = { "||", 0.8f, 0, 0, 0, 255, {-748, 402} };
     // ==========================================
     // 1. STACKED BUTTON LAYOUT (Grey Rectangles)
     // ==========================================
@@ -33,6 +36,7 @@ namespace PauseScreen {
         for (GfxButton& button : pauseButtons) {
             button.mesh = pauseMesh;
         }
+        PauseBtn.mesh = pauseMesh;
 
         isPaused = false;
     }
@@ -43,8 +47,21 @@ namespace PauseScreen {
             isPaused = !isPaused;
         }
 
-        if (!isPaused) return;
-        if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
+        if (!isPaused) {
+            if (AEInputCheckTriggered(AEVK_LBUTTON)) {
+                AEVec2 mousepos{};
+                Comp::getCursorPos(mousepos);
+
+                // If they click the little top-right button, pause the game!
+                if (Comp::collisionPointRect(mousepos, PauseBtn.pos, PauseBtn.size)) {
+                    isPaused = true;
+                }
+            }
+            return; // Exit here so we don't accidentally click the big menu!
+        }
+
+      
+      if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
 
         AEVec2 mousepos{};
         Comp::getCursorPos(mousepos);
@@ -80,6 +97,20 @@ namespace PauseScreen {
                 break;
             }
         }
+    }
+
+    void DrawPauseButton() {
+        if (isPaused) return; // Don't draw this if the big menu is open!
+
+        AEGfxSetCamPosition(0.0f, 0.0f);
+
+        // Draw the Grey Square
+        AEGfxSetColorToMultiply(0.8f, 0.8f, 0.8f, 1.0f);
+        Gfx::printButton(PauseBtn);
+
+        // Draw the Black "||" Text
+        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+        Gfx::printText(PauseTxt, pauseFont);
     }
 
     void DrawPause() {
