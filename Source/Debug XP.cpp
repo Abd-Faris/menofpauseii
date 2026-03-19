@@ -109,7 +109,7 @@ namespace {
 
 	//***** IMPORTANT: CHANGE MULTIPLIERS HERE *****
 	// HP , DMG , MV SPEED , FIRE RATE , XP GAIN //
-	float multiplier[] = { 25.0f, 4.0f, 30.0f, 0.067f, 0.5f };
+	float multiplier[] = { 25.0f, 4.0f, 30.0f, 0.033f, 0.5f };
 
 	//storing into arrays (mainly for printing)
 	const char* stats[] = { "HP", "DMG", "SPEED", "FIRE RATE", "XP GAIN" };
@@ -195,7 +195,7 @@ float calculate_max_stats(int i) {
 	case 0: return (player_init.baseHp + cardBaseMod.hp + (player_init.upgradeLevels[0] * multiplier[0])) * cardMultMod.hp;
 	case 1: return (player_init.baseDmg + cardBaseMod.dmg + (player_init.upgradeLevels[1] * multiplier[1])) * cardMultMod.dmg;
 	case 2: return (player_init.baseSpeed + cardBaseMod.moveSpeed + (player_init.upgradeLevels[2] * multiplier[2])) * cardMultMod.moveSpeed;
-	case 3: return (player_init.baseFireRate + cardBaseMod.fireRate + (player_init.upgradeLevels[3] * multiplier[3])) * cardMultMod.fireRate;
+	case 3: return (player_init.baseFireRate - cardBaseMod.fireRate - (player_init.upgradeLevels[3] * multiplier[3])) * cardMultMod.fireRate;
 	case 4: return (player_init.baseXpGain + cardBaseMod.xp + (player_init.upgradeLevels[4] * multiplier[4])) * cardMultMod.xp;
 	default: return 0.0f;
 	}

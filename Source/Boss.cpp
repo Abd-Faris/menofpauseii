@@ -665,7 +665,6 @@ void BossCollision(Boss& boss, shape &player, bool orbitActive, float orbitPosX,
             enBullet.isActive = false;     // Destroy the enemy bullet
 
 
-            TriggerExplosion(player.pos_x, player.pos_y, 20.0f);
         }
     }
 

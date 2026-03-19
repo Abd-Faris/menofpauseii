@@ -232,6 +232,9 @@ void UpdateGame() {
 	UpdateDebug1();
 
 	if (!player_init.menu_open) {
+        // Update Wave Logic
+        UpdateWaveSpawning(deltaTime, player);
+
 		// Update Animations
 		Animations_Update(deltaTime);
 
@@ -452,6 +455,7 @@ void DrawGame() {
         DrawBossHP(boss, MeshRect, MeshCircle, player);
     }
 
+    printEnemyCount();
     Animations_Draw();
     DrawDebug1();
 }
