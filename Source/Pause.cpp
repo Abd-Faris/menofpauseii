@@ -31,7 +31,7 @@ namespace PauseScreen {
 
     void LoadPause() {
         pauseFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
-        pauseMesh = Gfx::createRectMesh("center", 0xFFFFFFFF);
+        pauseMesh = Gfx::createRectMesh(0xFFFFFFFF);
 
         for (GfxButton& button : pauseButtons) {
             button.mesh = pauseMesh;

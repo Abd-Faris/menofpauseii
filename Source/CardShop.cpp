@@ -189,11 +189,11 @@ void LoadCardShop() {
 void InitializeCardShop() {
 	// create container meshes
 	rectMesh = Gfx::createRectMesh();
-	bag = Gfx::createRectMesh("center", cbag);
-	shop = Gfx::createRectMesh("center", cshop);
-	desc = Gfx::createRectMesh("center", cdesc);
-	cardSlots = Gfx::createRectMesh("center", ccardSlots);
-	trash = Gfx::createRectMesh("center", ctrash);
+	bag = Gfx::createRectMesh(cbag);
+	shop = Gfx::createRectMesh(cshop);
+	desc = Gfx::createRectMesh(cdesc);
+	cardSlots = Gfx::createRectMesh(ccardSlots);
+	trash = Gfx::createRectMesh(ctrash);
 
 	// [ DO NOT TOUCH ] Reserve space in memory for different card categories
 	shopCards.reserve(5);       // max cards allowed

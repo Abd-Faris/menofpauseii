@@ -1,54 +1,20 @@
 #include "MasterHeader.h"
 #include <sstream>
 
-namespace {
-	AEGfxVertexList* rectMeshCenter(u32 colour) {
-		AEGfxMeshStart();
-		AEGfxTriAdd(
-			-0.5f, -0.5f, colour, 0.0f, 0.0f,
-			0.5f, -0.5f, colour, 0.0f, 0.0f,
-			-0.5f, 0.5f, colour, 0.0f, 0.0f);
-		AEGfxTriAdd(
-			0.5f, -0.5f, colour, 0.0f, 0.0f,
-			0.5f, 0.5f, colour, 0.0f, 0.0f,
-			-0.5f, 0.5f, colour, 0.0f, 0.0f);
-		return AEGfxMeshEnd();
-	}
-	AEGfxVertexList* rectMeshLeft(u32 colour) {
-		// quadrilateral mesh, left align
-		AEGfxMeshStart();
-		AEGfxTriAdd(
-			0.f, -0.5f, colour, 0.0f, 1.0f,
-			1.f, -0.5f, colour, 1.0f, 1.0f,
-			0.f, 0.5f, colour, 0.0f, 0.0f);
-		AEGfxTriAdd(
-			1.f, -0.5f, colour, 1.0f, 1.0f,
-			0.f, 0.5f, colour, 0.0f, 0.0f,
-			1.f, 0.5f, colour, 1.0f, 0.0f);
-		return AEGfxMeshEnd();
-	}
-	AEGfxVertexList* rectMeshRight(u32 colour) {
-		// quadrilateral mesh, right align
-		AEGfxMeshStart();
-		AEGfxTriAdd(
-			0.f, -0.5f, colour, 0.0f, 1.0f,
-			-1.f, -0.5f, colour, 1.0f, 1.0f,
-			0.f, 0.5f, colour, 0.0f, 0.0f);
-		AEGfxTriAdd(
-			-1.f, -0.5f, colour, 1.0f, 1.0f,
-			0.f, 0.5f, colour, 0.0f, 0.0f,
-			-1.f, 0.5f, colour, 1.0f, 0.0f);
-		return AEGfxMeshEnd();
-	}
-}
 
 namespace Graphics {
 
-	AEGfxVertexList* createRectMesh(std::string alignment, u32 colour) {
-		if (alignment == "center") return ::rectMeshCenter(colour);
-		if (alignment == "left")   return ::rectMeshLeft(colour);
-		if (alignment == "right")  return ::rectMeshRight(colour);
-		return nullptr;
+	AEGfxVertexList* createRectMesh(u32 colour, f32 uMin, f32 vMin, f32 uMax, f32 vMax) {
+		AEGfxMeshStart();
+		AEGfxTriAdd(
+			-0.5f, -0.5f, colour, uMin, vMax,
+			0.5f, -0.5f, colour, uMax, vMax,
+			-0.5f, 0.5f, colour, uMin, vMin);
+		AEGfxTriAdd(
+			0.5f, -0.5f, colour, uMax, vMax,
+			0.5f, 0.5f, colour, uMax, vMin,
+			-0.5f, 0.5f, colour, uMin, vMin);
+		return AEGfxMeshEnd();
 	}
 
 	AEGfxVertexList* createCircleMesh(u32 colour) {
