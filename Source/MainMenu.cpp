@@ -2,9 +2,10 @@
 
 
 namespace {
-	// declares font and mesh variables
-	//s8 boldPixels;
+	// declares AE objects
 	AEGfxVertexList* rectMesh;
+	AEAudio mainbgm{ nullptr };
+	AEAudioGroup bgm{ nullptr };
 	
 	// exiting game app boolean (to display confirmation screen)
 	bool exiting{};
@@ -94,8 +95,11 @@ namespace {
 }
 
 void LoadMainMenu() {
-	// load font
-	//boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
+	// load audio assets
+	mainbgm = AEAudioLoadMusic("Assets/audio/bgm/mainmenu_bgm.mp3");
+	bgm = AEAudioCreateGroup();
+	AEAudioPlay(mainbgm, bgm, 2.f, 1.f, -1);
+
 	// creates rect mesh
 	rectMesh = Gfx::createRectMesh();
 	
@@ -137,7 +141,9 @@ void DrawMainMenu() {
 }
 
 void UnloadMainMenu() {
-	// unload font
-	//AEGfxDestroyFont(boldPixels);
+	// unload audio
+	AEAudioUnloadAudio(mainbgm);
+	AEAudioUnloadAudioGroup(bgm);
+
 	if (rectMesh) { AEGfxMeshFree(rectMesh); rectMesh = nullptr; }
 }

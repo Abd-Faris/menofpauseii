@@ -186,7 +186,9 @@ namespace { // functions for InitializeCardShop()
 void LoadCardShop() {
 	// loads graphics
 	cardSpriteSheet = AEGfxTextureLoad("Assets/cards.png");
+
 	if (!cardSpriteSheet) std::cout << "[ ERROR ] cards.png failed to load!\n";
+
 	PauseScreen::LoadPause();
 }
 
@@ -434,12 +436,6 @@ namespace { // functions for DrawCardShop()
 			// Draw using the single, pre-loaded mesh
 			Gfx::printMesh(rectMesh, indivCard, CARD_SHOP_SCALE);
 		}
-
-		//for (Card& indivCard : shopCards) {
-		//	AEGfxVertexList* cardMesh = createCardMesh(indivCard);
-		//	Gfx::printMesh(cardMesh, indivCard, CARD_SHOP_SCALE);
-		//	AEGfxMeshFree(cardMesh);
-		//}
 		for (Card& indivCard : activeCards) {
 			f32 uOffset = indivCard.info.col * (1.0f / NUM_COLS);
 			f32 vOffset = indivCard.info.row * (1.0f / NUM_ROWS);
