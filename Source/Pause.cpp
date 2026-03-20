@@ -1,4 +1,5 @@
 #include "MasterHeader.h"
+#include <string> // Added so we can use std::to_string for stats
 
 namespace PauseScreen {
     bool isPaused = false;
@@ -6,37 +7,48 @@ namespace PauseScreen {
     s8 pauseFont;
     AEGfxVertexList* pauseMesh = nullptr;
 
-   
     GfxButton PauseBtn = { {-750, 400}, {50, 50}, nullptr, 0 };
     GfxText PauseTxt = { "||", 0.8f, 0, 0, 0, 255, {-748, 402} };
+
     // ==========================================
-    // 1. STACKED BUTTON LAYOUT (Grey Rectangles)
+       // 1. STATS PANEL (Tightened up to match button width!)
+      
+       // ==========================================
+    GfxButton StatsPanel = { {0, 110}, {700, 200}, nullptr, -1 };
+
+    // Stats Text (Nudged slightly to sit perfectly centered in the new box)
+    // Scaled the title down to 1.0f so it doesn't bleed over the edges
+    GfxText StatsTitle = { "-- RUN STATS --", 1.0f, 0, 0, 0, 255, {0, 155} };
+    GfxText StatsLine1 = { "Current Wave: 0", 1.0f, 0, 0, 0, 255, {0, 110} };
+    GfxText StatsLine2 = { "Enemies Left: 0", 1.0f, 0, 0, 0, 255, {0, 65} };
+    // ==========================================
+    // 2. STACKED BUTTON LAYOUT
     // ==========================================
     std::vector<GfxButton> pauseButtons{
-        {{0, 70}, {300, 60}, nullptr, 0},   // ID 0 = Resume
-        {{0, -10}, {300, 60}, nullptr, 1},  // ID 1 = Options
-        {{0, -90}, {300, 60}, nullptr, 2}   // ID 2 = Quit
+        {{0, -60}, {300, 60}, nullptr, 0},   // ID 0 = Resume
+        {{0, -140}, {300, 60}, nullptr, 2}   // ID 2 = Quit
     };
 
     // ==========================================
-    // 2. TEXT STYLING
-    // Format: String, Scale, R, G, B, Alpha, Position
+    // 3. TEXT STYLING
     // ==========================================
     std::vector<GfxText> pauseTexts{
-        {"Resume", 1.f, 0, 0, 0, 255, {0, 70}},         // Black Text
-        {"Restart", 1.f, 0, 0, 0, 255, {0, -10}},       // Black Text
-        {"Quit", 1.f, 0, 0, 0, 255, {0, -90}},          // Black Text
-        {"Pause", 2.5f, 255, 140, 0, 255, {0, 200}} // Orange Title
+        {"Resume", 1.f, 0, 0, 0, 255, {0, -60}},         // Black Text
+        {"Quit", 1.f, 0, 0, 0, 255, {0, -140}},          // Black Text
+        {"Pause", 2.5f, 255, 140, 0, 255, {0, 280}}      // Orange Title (Pushed higher!)
     };
-
     void LoadPause() {
         pauseFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
         pauseMesh = Gfx::createRectMesh(0xFFFFFFFF);
 
+        // Apply mesh to UI buttons
         for (GfxButton& button : pauseButtons) {
             button.mesh = pauseMesh;
         }
+
+        // Apply mesh to HUD and Stats panel
         PauseBtn.mesh = pauseMesh;
+        StatsPanel.mesh = pauseMesh;
 
         isPaused = false;
     }
@@ -45,6 +57,16 @@ namespace PauseScreen {
         // Toggle pause menu with ESCAPE key
         if (AEInputCheckTriggered(AEVK_ESCAPE)) {
             isPaused = !isPaused;
+        }
+
+        // ==========================================
+        // DYNAMIC STATS UPDATE
+        // Change the text to reflect your actual game variables!
+        // ==========================================
+        if (isPaused) {
+            // Example of how to connect your game data:
+            // StatsLine1.text = "Current Wave: " + std::to_string(Cards::currentWave);
+            // StatsLine2.text = "Enemies Left: " + std::to_string(Cards::enemiesRemaining);
         }
 
         if (!isPaused) {
@@ -60,8 +82,7 @@ namespace PauseScreen {
             return; // Exit here so we don't accidentally click the big menu!
         }
 
-      
-      if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
+        if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
 
         AEVec2 mousepos{};
         Comp::getCursorPos(mousepos);
@@ -74,21 +95,7 @@ namespace PauseScreen {
                     // Resume
                     isPaused = false;
                 }
-                else if (btn.nextGS == 1) {
-                    /*isPaused = false;
-                    GS_next = GS_RESTART;*/
-                    // 1. Unpause the engine
-                    isPaused = false;
-
-                    // 2. Wipe stats so you don't instantly Game Over!
-                    reset_game();
-                    Cards::resetCards();
-                    upgradeFlag = 0;
-                    // 3. Force the engine safely back to the Game State
-                    GS_next = GS_GAME;
-                
-
-                }
+                // NOTE: Restart (btn.nextGS == 1) has been removed!
                 else if (btn.nextGS == 2) {
                     // Quit to Main Menu
                     isPaused = false;
@@ -101,8 +108,6 @@ namespace PauseScreen {
 
     void DrawPauseButton() {
         if (isPaused) return;
-
-        // ---> REMOVED AEGfxSetCamPosition(0.0f, 0.0f) FROM HERE! <---
 
         // 1. Get Mouse Position
         AEVec2 mousepos{};
@@ -127,32 +132,41 @@ namespace PauseScreen {
     void DrawPause() {
         if (!isPaused) return;
 
-        // ---> REMOVED AEGfxSetCamPosition(0.0f, 0.0f) FROM HERE! <---
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
         // 1. Get Mouse Position BEFORE the loop
         AEVec2 mousepos{};
         Comp::getCursorPos(mousepos);
 
+        // --- DRAW THE STATS PANEL ---
+        // Give it a slightly darker grey color than the buttons so it stands out
+        AEGfxSetColorToMultiply(0.7f, 0.7f, 0.7f, 1.0f);
+        Gfx::printUIButton(StatsPanel);
+
         // --- DRAW BUTTONS ---
         for (GfxButton& button : pauseButtons) {
-
-            // 2. The Hover Logic for each button
+            // Hover Logic for clickable buttons
             if (Comp::collisionPointRect(mousepos, button.pos, button.size)) {
                 AEGfxSetColorToMultiply(0.9f, 0.9f, 0.9f, 1.0f); // Hover
             }
             else {
                 AEGfxSetColorToMultiply(0.8f, 0.8f, 0.8f, 1.0f); // Normal
             }
-
             Gfx::printUIButton(button);
         }
 
         // --- DRAW TEXT ---
-        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); // Reset to pure white for text
+
+        // Draw Button Text & Title
         for (GfxText& text : pauseTexts) {
             Gfx::printText(text, pauseFont);
         }
+
+        // Draw Stats Text
+        Gfx::printText(StatsTitle, pauseFont);
+        Gfx::printText(StatsLine1, pauseFont);
+        Gfx::printText(StatsLine2, pauseFont);
     }
 
     void FreePause() {

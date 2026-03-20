@@ -839,6 +839,8 @@ namespace Cards {
 
 	// computes card effects
 	void computeCardEffects() {
+		// get the max hp before reseting
+		float oldMaxHp = get_max_hp();
 		// reset modifiers
 		resetModifiers();
 
@@ -879,6 +881,7 @@ namespace Cards {
 				else if (effect.id == "orbit")       upgradeFlag |= UPGRADE_ORBIT;
 			} // endfor passive effects
 		} // endfor inventory cards
+		UpdateCurrentHpAfterCards(oldMaxHp); //calls debugxp to update hp
 	} // endfunction
 
 	// computes player stats

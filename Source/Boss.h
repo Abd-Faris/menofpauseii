@@ -1,5 +1,11 @@
 #pragma once
 #include "MasterHeader.h"
+
+extern AEGfxTexture* pBossTex;
+extern AEGfxTexture* pMinionTex;
+extern AEGfxVertexList* pBossMesh;
+
+void LoadBoss();
 void SpawnBoss(BossType type, shape& player);
 void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime);
 void DrawBoss(Boss& boss, AEGfxVertexList* MeshRect, AEGfxVertexList* MeshCircle);
@@ -13,6 +19,7 @@ constexpr int MAX_MINIONS_COUNT = 30;
 extern std::array<Enemies, MAX_MINIONS_COUNT> minionPool;
 void Boss3Spiral(Boss& boss, float deltaTime);
 void Boss3AimedShot(Boss& boss, shape& player);
+void FreeBoss();
 
 AEVec2 GetGunPosition(Boss& boss, bool leftGun);
 void   Boss4ShootGuns(Boss& boss, shape& player, float deltaTime);

@@ -205,6 +205,7 @@ void reset_game() {
 }
 
 
+
 float calculate_max_stats(int i) {
 	// FORMULA:
 	// (base + cardBaseMod + (upgradeLevel * multiplier)) * cardMultMod
@@ -212,12 +213,38 @@ float calculate_max_stats(int i) {
 	case 0: return (player_init.baseHp + cardBaseMod.hp + (player_init.upgradeLevels[0] * multiplier[0])) * cardMultMod.hp;
 	case 1: return (player_init.baseDmg + cardBaseMod.dmg + (player_init.upgradeLevels[1] * multiplier[1])) * cardMultMod.dmg;
 	case 2: return (player_init.baseSpeed + cardBaseMod.moveSpeed + (player_init.upgradeLevels[2] * multiplier[2])) * cardMultMod.moveSpeed;
-	case 3: return (player_init.baseFireRate - cardBaseMod.fireRate - (player_init.upgradeLevels[3] * multiplier[3])) * cardMultMod.fireRate;
+	case 3: {
+		float result = (player_init.baseFireRate - cardBaseMod.fireRate - (player_init.upgradeLevels[3] * multiplier[3])) * cardMultMod.fireRate;
+		if (result < 0.1f) result = 0.1f;
+		return result;
+	}
 	case 4: return (player_init.baseXpGain + cardBaseMod.xp + (player_init.upgradeLevels[4] * multiplier[4])) * cardMultMod.xp;
 	default: return 0.0f;
 	}
 }
 
+float get_max_hp() {
+	return calculate_max_stats(0);
+}
+
+void UpdateCurrentHpAfterCards(float oldMaxHp) {
+	float newMaxHp = calculate_max_stats(0);
+
+	// if max hp increased, give the player the difference
+	if (newMaxHp > oldMaxHp) {
+		player_init.current_hp += (newMaxHp - oldMaxHp);
+	}
+
+	// always clamp current hp to new max
+	if (player_init.current_hp > newMaxHp) {
+		player_init.current_hp = newMaxHp;
+	}
+
+	// never go below 1
+	if (player_init.current_hp < 1.0f) {
+		player_init.current_hp = 1.0f;
+	}
+}
 
 //---- LEVEL UP LOGIC ----
 void level_up(float xp_needed) {
@@ -441,7 +468,13 @@ void DrawDebug1() {
 		float rowSpacing = 0.22f;
 		for (int i = 0; i < 5; ++i) {
 			char statText[64];
-			sprintf_s(statText, "%s: %.1f", stats[i], calculate_max_stats(i));
+			if (i == 3) {
+				float shotsPerSec = 1.0f / calculate_max_stats(3);
+				sprintf_s(statText, "F-RATE: %.1f/s", shotsPerSec);
+			}
+			else {
+				sprintf_s(statText, "%s: %.1f", stats[i], calculate_max_stats(i));
+			}
 			AEGfxPrint(boldPixels, statText, -0.55f, rowStartY - (i * rowSpacing), 0.28f, 1.0f, 1.0f, 1.0f, 1.0f);
 		}
 

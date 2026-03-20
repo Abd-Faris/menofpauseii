@@ -75,6 +75,14 @@ void SpawnOneEnemy(bool isBigEnemy, shape player) {
                 spawnX = AEClamp(spawnX, minX, maxX);
             }
 
+            // ensures it doesnt spawn in the trees
+            int attempts = 0;
+            while (World::isPointColliding(spawnX, spawnY) && attempts < 20) {
+                spawnX = minX + (AERandFloat() * (maxX - minX));
+                spawnY = minY + (AERandFloat() * (maxY - minY));
+                attempts++;
+            }
+
             newEnemy.pos = { spawnX, spawnY };
             newEnemy.velocity = { 0, 0 };
             newEnemy.alive = true;
@@ -112,6 +120,14 @@ void SpawnAttackEnemy(shape player) {
                 spawnX = AEClamp(spawnX, minX, maxX);
             }
 
+            // ensures it doesnt spawn in the trees
+            int attempts = 0;
+            while (World::isPointColliding(spawnX, spawnY) && attempts < 20) {
+                spawnX = minX + (AERandFloat() * (maxX - minX));
+                spawnY = minY + (AERandFloat() * (maxY - minY));
+                attempts++;
+            }
+
             newEnemy.pos = { spawnX, spawnY };
             newEnemy.velocity = { 0, 0 };
             newEnemy.alive = true;
@@ -147,6 +163,14 @@ void SpawnShooterEnemy(shape player) {
             if (distanceToPlayer < GameConfig::Enemy::SPAWN_SAFE_ZONE) {
                 spawnX += GameConfig::Enemy::SPAWN_PUSH_DIST;
                 spawnX = AEClamp(spawnX, minX, maxX);
+            }
+
+            // ensures it doesnt spawn in the trees
+            int attempts = 0;
+            while (World::isPointColliding(spawnX, spawnY) && attempts < 20) {
+                spawnX = minX + (AERandFloat() * (maxX - minX));
+                spawnY = minY + (AERandFloat() * (maxY - minY));
+                attempts++;
             }
 
             newEnemy.pos = { spawnX, spawnY };
@@ -219,6 +243,9 @@ void updateEnemyPhysics(shape& player, float deltaTime) {
                 currentEnemy.pos.x += currentEnemy.velocity.x * deltaTime;
                 currentEnemy.pos.y += currentEnemy.velocity.y * deltaTime;
             }
+
+            //push out of trees and walls
+            World::PushOutOfWalls(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale * 0.5f);
         }
 
         // --- SHOOTER LOGIC ---
@@ -293,6 +320,9 @@ void updateEnemyPhysics(shape& player, float deltaTime) {
         currentEnemy.velocity.y *= GameConfig::Enemy::FRICTION;
         currentEnemy.pos.x += currentEnemy.velocity.x * deltaTime;
         currentEnemy.pos.y += currentEnemy.velocity.y * deltaTime;
+
+        // push all enemy types out of walls
+        World::PushOutOfWalls(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale * 0.5f);
 
         if (currentEnemy.hp <= 0) {
             float xp_multiplier = calculate_max_stats(4);
