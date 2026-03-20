@@ -208,7 +208,7 @@ void LoadGame() {
     
     // Create Meshes
     MeshCircle = Gfx::createCircleMesh(0xFFFFFFFF);
-    MeshRect = Gfx::createRectMesh("center", 0xFFFFFFFFF);
+    MeshRect = Gfx::createRectMesh(0xFFFFFFFFF);
     MeshTriangle = Gfx::createTriangleMesh(0xFFFFFFFF);
 
     // Reset Player

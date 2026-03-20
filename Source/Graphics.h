@@ -15,7 +15,7 @@ struct GfxButton {
 };
 
 namespace Graphics {
-	AEGfxVertexList* createRectMesh(std::string alignment = "center", u32 colour = 0x00000000);
+	AEGfxVertexList* createRectMesh(u32 colour = 0x00000000, f32 uMin = 0.0f, f32 vMin = 0.0f, f32 uMax = 1.0f, f32 vMax = 1.0f);
 	AEGfxVertexList* createCircleMesh(u32 colour = 0x00000000);
 	AEGfxVertexList* createTriangleMesh(u32 colour = 0x00000000);
 	//void printMesh(AEGfxVertexList* mesh, AEVec2 pos, AEVec2 size, f32 scalar=1);
