@@ -26,7 +26,7 @@ namespace PauseScreen {
         {"Resume", 1.f, 0, 0, 0, 255, {0, 70}},         // Black Text
         {"Restart", 1.f, 0, 0, 0, 255, {0, -10}},       // Black Text
         {"Quit", 1.f, 0, 0, 0, 255, {0, -90}},          // Black Text
-        {"Pause Menu", 2.5f, 255, 140, 0, 255, {0, 200}} // Orange Title
+        {"Pause", 2.5f, 255, 140, 0, 255, {0, 200}} // Orange Title
     };
 
     void LoadPause() {
