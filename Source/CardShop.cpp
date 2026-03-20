@@ -187,6 +187,7 @@ void LoadCardShop() {
 	// loads graphics
 	cardSpriteSheet = AEGfxTextureLoad("Assets/cards.png");
 	if (!cardSpriteSheet) std::cout << "[ ERROR ] cards.png failed to load!\n";
+	PauseScreen::LoadPause();
 }
 
 void InitializeCardShop() {
@@ -308,6 +309,7 @@ namespace { // functions for UpdateCardShop()
 			// updates card effects
 			Cards::computeCardEffects();
 		}
+		
 	}
 
 	// checks card collision with boxes of other decks
@@ -368,6 +370,7 @@ namespace { // functions for UpdateCardShop()
 }
 
 void UpdateCardShop() {
+	PauseScreen::UpdatePause();
 	// if theres a card selected, update selected card position
 	if (pSelectedCard) {
 		updateCardPosition();
@@ -381,6 +384,7 @@ void UpdateCardShop() {
 
 	// if player cant buy any more cards, check if player selected to continue
 	if (buyable_left <= 0) checkContinue();
+	
 }
 
 namespace { // functions for DrawCardShop()
@@ -625,6 +629,7 @@ void DrawCardShop() {
 	drawBoxes();
 	drawCards();
 	drawTexts();
+	PauseScreen::DrawPauseButton();
 	
 	// print card description
 	// if a card is hovered over, display its description
@@ -644,6 +649,8 @@ void DrawCardShop() {
 		drawPrompts();		// prompts to user to let go within deck bounds
 		drawSelectedCard(); // ensure selected card always draws on top
 	}
+	PauseScreen::DrawPause();
+	
 }
 
 void FreeCardShop() {
@@ -654,6 +661,7 @@ void FreeCardShop() {
 	AEGfxMeshFree(desc);
 	AEGfxMeshFree(cardSlots);
 	AEGfxMeshFree(trash);
+	PauseScreen::FreePause();
 
 	shopCards.clear(); // clear shop array
 
