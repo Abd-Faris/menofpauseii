@@ -3,7 +3,26 @@
 std::array<Enemies, MAX_MINIONS_COUNT> minionPool;
 extern int currentWave;
 
+//globals
+AEGfxTexture* pBossTex = nullptr;
+AEGfxTexture* pMinionTex = nullptr;
+AEGfxVertexList* pBossMesh = nullptr;
+
 Boss boss;
+
+void LoadBoss() {
+    pBossTex = AEGfxTextureLoad("./Assets/boss.png");
+    pMinionTex = AEGfxTextureLoad("./Assets/minion.png");
+
+    AEGfxMeshStart();
+    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
+        0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+    AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+        0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
+        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+    pBossMesh = AEGfxMeshEnd();
+}
 
 void SpawnBoss(BossType type, shape& player) {
     boss = {};
@@ -295,6 +314,10 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
         }
         break;
     }
+
+    //push out of trees and walls
+    World::PushOutOfWalls(boss.pos.x, boss.pos.y, boss.scale * 0.5f);
+
     }
     if (boss.bosstype == BOSS2) {
         // Always face player
@@ -338,6 +361,9 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
             }
             break;
         }
+
+        // push boss out of trees/walls  <-- ADD THIS
+        World::PushOutOfWalls(boss.pos.x, boss.pos.y, boss.scale * 0.5f);
 
         if (boss.hp <= 0) {
             player_init.current_xp += boss.xp;
@@ -419,6 +445,9 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
             }
             break;
         }
+
+        // push boss out of trees/walls
+        World::PushOutOfWalls(boss.pos.x, boss.pos.y, boss.scale * 0.5f);
 
         if (boss.hp <= 0) {
             player_init.current_xp += boss.xp;
@@ -589,6 +618,9 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
             break;
         }
 
+        // push boss out of trees/walls
+        World::PushOutOfWalls(boss.pos.x, boss.pos.y, boss.scale * 0.5f);
+
         if (boss.hp <= 0) {
             player_init.current_xp += boss.xp;
             TriggerXpPopup((float)boss.xp);
@@ -620,6 +652,9 @@ void BossCollision(Boss& boss, shape &player, bool orbitActive, float orbitPosX,
     if (boss.pos.x > maxX) { boss.pos.x = maxX; boss.velocity.x = 0.f; }
     if (boss.pos.y < minY) { boss.pos.y = minY; boss.velocity.y = 0.f; }
     if (boss.pos.y > maxY) { boss.pos.y = maxY; boss.velocity.y = 0.f; }
+
+    // push boss out of trees/walls
+    World::PushOutOfWalls(boss.pos.x, boss.pos.y, boss.scale * 0.5f);
 
     // Bullets hit boss
     for (auto& boolet : bulletList) {
@@ -682,35 +717,42 @@ void BossCollision(Boss& boss, shape &player, bool orbitActive, float orbitPosX,
 void DrawBoss(Boss& boss, AEGfxVertexList* MeshRect, AEGfxVertexList* MeshCircle) {
     if (!boss.alive) return;
 
+    float rotRad = boss.rotation * (PI / 180.f);
+
+    // Draw boss texture
+    AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+    AEGfxTextureSet(pBossTex, 0, 0);
+    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    AEGfxSetTransparency(1.0f);
+
     // Flash white during telegraph
     bool telegraphing = (boss.state == BossState::TELEGRAPHING);
-    AEGfxSetColorToMultiply(
-        telegraphing ? 1.f : 0.8f,
-        telegraphing ? 1.f : 0.0f,
-        telegraphing ? 1.f : 0.0f,
-        1.f
+    if (telegraphing)
+        AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+    else
+        AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+
+    AEGfxSetColorToAdd(
+        telegraphing ? 0.5f : 0.f,
+        telegraphing ? 0.5f : 0.f,
+        telegraphing ? 0.5f : 0.f,
+        0.f
     );
 
-    float rotRad = boss.rotation * (PI / 180.f);
-    Gfx::printMesh(MeshRect, boss.pos, { boss.scale, boss.scale }, rotRad);
+    Gfx::printMesh(pBossMesh, boss.pos, { boss.scale, boss.scale }, rotRad, { 0.f, 0.f }, true);
+
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+
     // BOSS4 extras
     if (boss.bosstype == BOSS4) {
         float gunRotRad = boss.gunAngle * (PI / 180.f);
-        AEVec2 guns[2] = { GetGunPosition(boss, true),
-                           GetGunPosition(boss, false) };
-
-        float rotRad = boss.rotation * (PI / 180.f); 
-
+        AEVec2 guns[2] = { GetGunPosition(boss, true), GetGunPosition(boss, false) };
         DrawBossLaser(boss, MeshRect);
-
         AEGfxSetColorToMultiply(0.3f, 0.3f, 0.3f, 1.f);
         for (int i = 0; i < 2; i++) {
-            Gfx::printMesh(MeshRect, guns[i],
-                { boss.scale * 0.4f, boss.scale * 0.15f },
-                gunRotRad);
+            Gfx::printMesh(MeshRect, guns[i], { boss.scale * 0.4f, boss.scale * 0.15f }, gunRotRad);
         }
-
-       
     }
 }
 
@@ -798,7 +840,11 @@ void updateMinionPhysics(shape& player, float deltaTime) {
                 currentEnemy.pos.x += currentEnemy.velocity.x * deltaTime;
                 currentEnemy.pos.y += currentEnemy.velocity.y * deltaTime;
             }
+
+            //push out of trees and walls
+            World::PushOutOfWalls(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale * 0.5f);
         }
+
         // --- NEW: SHOOTER LOGIC ---
         if (currentEnemy.enemtype == SHOOTER) {
             AEVec2 PlayerPos = { player.pos_x, player.pos_y };
@@ -877,6 +923,9 @@ void updateMinionPhysics(shape& player, float deltaTime) {
         currentEnemy.pos.x += currentEnemy.velocity.x * deltaTime;
         currentEnemy.pos.y += currentEnemy.velocity.y * deltaTime;
 
+        //push out of trees and walls
+        World::PushOutOfWalls(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale * 0.5f);
+
         if (currentEnemy.hp <= 0) {
             //float xp_multiplier = calculate_max_stats(4);
             //float baseReward = (currentEnemy.maxhp >= (int)GameConfig::Enemy::HP_BIG) ? 80.0f : 20.0f;
@@ -888,4 +937,10 @@ void updateMinionPhysics(shape& player, float deltaTime) {
         }
     }
 
+}
+
+void FreeBoss() {
+    if (pBossTex) { AEGfxTextureUnload(pBossTex);   pBossTex = nullptr; }
+    if (pMinionTex) { AEGfxTextureUnload(pMinionTex); pMinionTex = nullptr; }
+    if (pBossMesh) { AEGfxMeshFree(pBossMesh);       pBossMesh = nullptr; }
 }

@@ -199,6 +199,7 @@ void LoadGame() {
     LoadDebug1();
     LoadBullets();
     LoadEnemies();
+    LoadBoss();
     Animations_Load();
     PauseScreen::LoadPause();
     //boldPixelsFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
@@ -486,13 +487,19 @@ void DrawGame() {
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
     // -- Draw Minions --
+    AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+    AEGfxTextureSet(pMinionTex, 0, 0);
+    AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+    AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
+    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    AEGfxSetTransparency(1.0f);
     for (const auto& minion : minionPool) {
         if (minion.alive || minion.scale > 0) {
-            AEGfxSetColorToMultiply(0.6f, 0.2f, 0.6f, 1);
             float rotationRad = minion.rotation * (PI / 180.0f);
-            Gfx::printMesh(MeshTriangle, minion.pos, { minion.scale, minion.scale }, rotationRad);
+            Gfx::printMesh(pBossMesh, minion.pos, { minion.scale, minion.scale }, rotationRad, { 0.f, 0.f }, true);
         }
     }
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
     if (boss.alive) {
         DrawBoss(boss, MeshRect, MeshCircle);
@@ -512,6 +519,7 @@ void FreeGame() {
     if (MeshCircle) { AEGfxMeshFree(MeshCircle);   MeshCircle = nullptr; }
     if (MeshTriangle) { AEGfxMeshFree(MeshTriangle); MeshTriangle = nullptr; }
     FreeDebug1();
+    FreeBoss();
     FreeEnemies();
     FreeBullets();
     Animations_Free();
