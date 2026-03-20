@@ -64,13 +64,14 @@ struct CardEffect {
 	std::string type;
 	std::string desc;
 	std::string valuetype;
-	f32 value;
+	f32 value{};
 };
 
 // card information
 struct CardStats {
 	std::string ID;
-	int rarity;
+	int rarity{};
+	int row{}, col{}; // for spritesheet coords
 	std::vector<CardEffect> active;
 	std::vector<CardEffect> passive;
 };

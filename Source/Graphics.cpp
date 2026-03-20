@@ -107,7 +107,7 @@ namespace Graphics {
 	void printMesh(AEGfxVertexList *mesh, Card& card,f32 scalar) {
 		AEVec2 finalSize{};
 		AEVec2Scale(&finalSize, &card.size, scalar);
-		printMesh(mesh, card.pos, finalSize);
+		printMesh(mesh, card.pos, finalSize, 0.f, { 0,0 }, true);
 	}
 
 	// ==========================================

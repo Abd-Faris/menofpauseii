@@ -17,9 +17,6 @@ extern int currentWave;
 
 namespace { // functions for InitializeCardShop()
 	
-	// declare font var
-	//s8 boldPixels;
-
 	// define meshes
 	AEGfxVertexList* rectMesh{};
 	
@@ -27,6 +24,11 @@ namespace { // functions for InitializeCardShop()
 	AEGfxVertexList* bag, * shop, * desc, * cardSlots, * trash;
 	u32 cbag{ 0xFFC77014 }, cshop{ 0xFFcccc00 }, cdesc{ 0xFF000000 }, ccardSlots{ 0xFFcccc00 }, ctrash{ 0xFFe62e00 };
 	GfxText cardCount{ "", 0.5f };
+
+	// spritesheet constants
+	AEGfxTexture* cardSpriteSheet{ nullptr };
+	const int NUM_COLS{ 4 };
+	const int NUM_ROWS{ 7 };
 
 	// card scales for diff vector arrays
 	f32 CARD_SHOP_SCALE{ 7 };
@@ -50,9 +52,9 @@ namespace { // functions for InitializeCardShop()
 
 	// rarity weights (out of 100)
 	const float RARITY_WEIGHTS[] = {
-		60.0f,  // COMMON
-		25.0f,  // RARE
-		10.0f,  // EPIC
+		50.0f,  // COMMON
+		30.0f,  // RARE
+		15.0f,  // EPIC
 		5.0f,   // UNIQUE
 	};
 
@@ -182,13 +184,18 @@ namespace { // functions for InitializeCardShop()
 }
 
 void LoadCardShop() {
-	// load font
-	//boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
+	// loads graphics
+	cardSpriteSheet = AEGfxTextureLoad("Assets/cards.png");
+	if (!cardSpriteSheet) std::cout << "[ ERROR ] cards.png failed to load!\n";
 }
 
 void InitializeCardShop() {
 	// create container meshes
-	rectMesh = Gfx::createRectMesh();
+	// card spritesheet unit size
+	f32 uSize = 1.0f / NUM_COLS;
+	f32 vSize = 1.0f / NUM_ROWS;
+	rectMesh = Gfx::createRectMesh(0xFFFFFFFF, 0.f, 0.f, uSize, vSize);
+
 	bag = Gfx::createRectMesh(cbag);
 	shop = Gfx::createRectMesh(cshop);
 	desc = Gfx::createRectMesh(cdesc);
@@ -394,19 +401,76 @@ namespace { // functions for DrawCardShop()
 		Gfx::printMesh(cardSlots, { -125, -300 }, { 950, 200 });
 		Gfx::printMesh(trash, { -700, -300 }, { 100, 100 });
 	}
+	
+	// calculates UV coords of cards spritesheet
+	AEGfxVertexList* createCardMesh(const Card& card) {
+		f32 uMin = card.info.col * (1.0f / NUM_COLS);
+		f32 vMin = card.info.row * (1.0f / NUM_ROWS);
+		f32 uMax = uMin + (1.0f / NUM_COLS);
+		f32 vMax = vMin + (1.0f / NUM_ROWS);	
 
-	// draws cards
+		std::cout << "Card: " << card.info.ID
+			<< " row:" << card.info.row
+			<< " col:" << card.info.col
+			<< " UV: (" << uMin << "," << vMin << ") -> (" << uMax << "," << vMax << ")\n";
+		return Gfx::createRectMesh(0xFFFFFFFF, uMin, vMin, uMax, vMax);
+	}
+
 	void drawCards() {
+		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+		AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+		AEGfxSetTransparency(1.0f);
+		AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+
 		for (Card& indivCard : shopCards) {
+			f32 uOffset = indivCard.info.col * (1.0f / NUM_COLS);
+			f32 vOffset = indivCard.info.row * (1.0f / NUM_ROWS);
+			// UV offset
+			AEGfxTextureSet(cardSpriteSheet, uOffset, vOffset);
+			// Draw using the single, pre-loaded mesh
 			Gfx::printMesh(rectMesh, indivCard, CARD_SHOP_SCALE);
 		}
+
+		//for (Card& indivCard : shopCards) {
+		//	AEGfxVertexList* cardMesh = createCardMesh(indivCard);
+		//	Gfx::printMesh(cardMesh, indivCard, CARD_SHOP_SCALE);
+		//	AEGfxMeshFree(cardMesh);
+		//}
 		for (Card& indivCard : activeCards) {
+			f32 uOffset = indivCard.info.col * (1.0f / NUM_COLS);
+			f32 vOffset = indivCard.info.row * (1.0f / NUM_ROWS);
+			// UV offset
+			AEGfxTextureSet(cardSpriteSheet, uOffset, vOffset);
+			// Draw using the single, pre-loaded mesh
 			Gfx::printMesh(rectMesh, indivCard, ACTIVE_CARD_SCALE);
 		}
 		for (Card& indivCard : inventoryCards) {
+			f32 uOffset = indivCard.info.col * (1.0f / NUM_COLS);
+			f32 vOffset = indivCard.info.row * (1.0f / NUM_ROWS);
+			// UV offset
+			AEGfxTextureSet(cardSpriteSheet, uOffset, vOffset);
+			// Draw using the single, pre-loaded mesh
 			Gfx::printMesh(rectMesh, indivCard, INVENTORY_CARD_SCALE);
 		}
+
+		// set graphics settings back
+		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+		AEGfxSetTransparency(1.f);
 	}
+
+	//// draws cards
+	//void drawCards() {
+	//	for (Card& indivCard : shopCards) {
+	//		Gfx::printMesh(rectMesh, indivCard, CARD_SHOP_SCALE);
+	//	}
+	//	for (Card& indivCard : activeCards) {
+	//		Gfx::printMesh(rectMesh, indivCard, ACTIVE_CARD_SCALE);
+	//	}
+	//	for (Card& indivCard : inventoryCards) {
+	//		Gfx::printMesh(rectMesh, indivCard, INVENTORY_CARD_SCALE);
+	//	}
+	//}
 
 	void drawTexts() {
 		// STATIC TEXTS
@@ -454,6 +518,16 @@ namespace { // functions for DrawCardShop()
 
 	// draws the updated selected card's location based on where the cursor is
 	void drawSelectedCard() {
+		
+		// set graphics settings
+		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+		AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+		AEGfxSetTransparency(1.0f);
+		AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+
+		
+
+		
 		// determine card size based on card type
 		Card& card = *pSelectedCard;
 		f32 scale{};
@@ -463,7 +537,23 @@ namespace { // functions for DrawCardShop()
 		case DECK::ACTIVE: scale = ACTIVE_CARD_SCALE; break;
 		case DECK::BAG:    scale = INVENTORY_CARD_SCALE; break;
 		}
-		Gfx::printMesh(rectMesh, *pSelectedCard, scale);
+		//// create mesh to draw
+		//AEGfxVertexList* cardMesh = createCardMesh(*pSelectedCard);
+		//Gfx::printMesh(cardMesh, *pSelectedCard, scale);
+		//AEGfxMeshFree(cardMesh);
+		////Gfx::printMesh(rectMesh, *pSelectedCard, scale);
+
+		f32 uOffset = card.info.col * (1.0f / NUM_COLS);
+		f32 vOffset = card.info.row * (1.0f / NUM_ROWS);
+		// UV offset
+		AEGfxTextureSet(cardSpriteSheet, uOffset, vOffset);
+		// Draw using the single, pre-loaded mesh
+		Gfx::printMesh(rectMesh, card, scale);
+
+		// set graphics settings back
+		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+		AEGfxSetTransparency(1.f);
 	}
 
 	// displays description of card
@@ -590,8 +680,8 @@ void FreeCardShop() {
 }
 
 void UnloadCardShop() {
-	// unload assets
-	//AEGfxDestroyFont(boldPixels); // font
+	// Unload Graphics
+	AEGfxTextureUnload(cardSpriteSheet);
 }
 
 namespace Cards {
@@ -670,6 +760,8 @@ namespace Cards {
 			// translate parsing to object data members
 			card.ID = cardJson["id"].GetString();
 			card.rarity = cardJson["rarity"].GetInt();
+			card.row = cardJson["sprite_row"].GetInt();
+			card.col = cardJson["sprite_col"].GetInt();
 
 			// oursource this stuff to a helper function
 			card.active = parseEffects(cardJson["active"]);

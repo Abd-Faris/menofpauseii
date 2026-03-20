@@ -44,9 +44,9 @@
             },
             {
                "type": "FIRE_RATE",
-               "desc": "Fire Rate DOWN (-15%)",
+               "desc": "Fire Rate DEBUFF (+15%)",
                "valuetype": "mult",
-               "value": -0.15
+               "value": 0.15
             }
          ],
          "passive": []
@@ -153,9 +153,9 @@
             },
             {
                "type": "FIRE_RATE",
-               "desc": "Fire Rate DOWN (-15%)",
+               "desc": "Fire Rate DEBUFF (+15%)",
                "valuetype": "mult",
-               "value": -0.15
+               "value": 0.15
             }
          ],
          "passive": []
@@ -198,9 +198,9 @@
          "active": [
             {
                "type": "FIRE_RATE",
-               "desc": "Fire Rate UP (+25%)",
+               "desc": "Fire Rate BUFF (-25%)",
                "valuetype": "mult",
-               "value": 0.25
+               "value": -0.25
             }
          ],
          "passive": []
