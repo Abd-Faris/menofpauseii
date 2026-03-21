@@ -7,7 +7,7 @@ extern int currentWave;
 // --- INITIAL PLAYER STATS ---
 PlayerStats	player_init = {
 	// -- HP DMG SPEED FIRERATE XP --
-	100.0f, 10.0f, 280.0f, 0.5f, 1.0f,
+	200.0f, 10.0f, 280.0f, 0.5f, 1.0f,
 
 	{ 0, 0, 0, 0, 0 },   //initial upgrade amount
 
@@ -15,12 +15,10 @@ PlayerStats	player_init = {
 
 	0, false,  //initial skill point, and menu state
 
-	100.0f // current hp
+	200.0f // current hp
 };
 
 namespace {
-	//for font
-	//s8 boldPixels;
 
 	//color meshes
 	AEGfxVertexList* pBlackRectMesh = nullptr;
@@ -210,7 +208,8 @@ float calculate_max_stats(int i) {
 	// FORMULA:
 	// (base + cardBaseMod + (upgradeLevel * multiplier)) * cardMultMod
 	switch (i) {
-	case 0: return (player_init.baseHp + cardBaseMod.hp + (player_init.upgradeLevels[0] * multiplier[0])) * cardMultMod.hp;
+		// for hp: (base + cardBaseMod) * cardMultMod + (upgrade level * mutiplier) (to make sure upgrading for skill points are flat)
+	case 0: return ((player_init.baseHp + cardBaseMod.hp) * cardMultMod.hp) + (player_init.upgradeLevels[0] * multiplier[0]);
 	case 1: return (player_init.baseDmg + cardBaseMod.dmg + (player_init.upgradeLevels[1] * multiplier[1])) * cardMultMod.dmg;
 	case 2: return (player_init.baseSpeed + cardBaseMod.moveSpeed + (player_init.upgradeLevels[2] * multiplier[2])) * cardMultMod.moveSpeed;
 	case 3: {
@@ -449,11 +448,17 @@ void DrawDebug1() {
 
 	// --- PRINT HP, LEVEL, WAVE TEXT ---
 	char hudHP[64], level[32], wave[32];
+
 	sprintf_s(hudHP, "%.0f / %.0f", player_init.current_hp, max_hp);
 	sprintf_s(level, "LEVEL %d", player_init.player_level);
 	sprintf_s(wave, "WAVE %d", currentWave);
 
-	AEGfxPrint(boldPixels, hudHP, -0.07f, -0.91f, 0.35f, 1.0f, 1.0f, 1.0f, 1.0f);
+	float textScale = 0.35f;
+	float textWidth, textHeight;
+	AEGfxGetPrintSize(boldPixels, hudHP, textScale, &textWidth, &textHeight);
+
+	// center on screen using fixed normalized coords
+	AEGfxPrint(boldPixels, hudHP, -(textWidth / 2.0f), -0.91f, textScale, 1.0f, 1.0f, 1.0f, 1.0f);
 	AEGfxPrint(boldPixels, level, -0.18f, -0.84f, 0.4f, 0.0f, 0.0f, 0.0f, 1.0f);
 	AEGfxPrint(boldPixels, wave, 0.06f, -0.84f, 0.4f, 0.0f, 0.0f, 0.0f, 1.0f);
 

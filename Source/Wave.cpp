@@ -90,13 +90,12 @@ void GenerateWave(int waveNumber, shape& player) {
 
 //  ---- GRADUAL SPAWN UPDATE ----
 void UpdateWaveSpawning(float dt, shape& player) {
-	//returns if no budget or no time
+	// always tick down the timer regardless of budget
+	if (spawnTimer > 0.0f) spawnTimer -= dt;
+
+	// only spawn if there's budget and time left
 	if (pendingBudget <= 0.0f || spawnTimer <= 0.0f) return;
 
-	spawnTimer -= dt;
-
-	//determine budget based on time left for each wave
-	//50% of wavebudget left at MAX_SPAWN_TIME / 2;
 	float targetBudget = totalWaveBudget * (spawnTimer / MAX_SPAWN_TIME);
 	if (targetBudget < 0) targetBudget = 0;
 
@@ -140,21 +139,20 @@ void UpdateWaveSpawning(float dt, shape& player) {
 //checks if all enemies are dead
 bool IsWaveCleared() {
 
-	//if spawn timer is still > 0
-	if (spawnTimer > 0.0f) return false;
-
-	//clear boss
-	if (currentWave % 5 == 0 && boss.alive) return false;
-
-	//clear minions from boss
-	for (int i = 0; i < MAX_MINIONS_COUNT; ++i) {
-		if (minionPool[i].alive) return false;
+	if (spawnTimer > 0.0f) {
+		return false;
 	}
-
-	//clear enemies in general
-	for (int i = 0; i < GameConfig::MAX_ENEMIES_COUNT; ++i) {
-		if (enemyPool[i].alive) return false;
+	if (currentWave % 5 == 0 && boss.alive) {
+		return false;
 	}
+	for (int i = 0; i < MAX_MINIONS_COUNT; ++i)
+		if (minionPool[i].alive) {
+			return false;
+		}
+	for (int i = 0; i < GameConfig::MAX_ENEMIES_COUNT; ++i)
+		if (enemyPool[i].alive) {
+			return false;
+		}
 	return true;
 }
 

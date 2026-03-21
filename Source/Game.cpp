@@ -236,14 +236,18 @@ void LoadGame() {
 // ===========================================================================
 void UpdateGame() {
 	float deltaTime = (float)AEFrameRateControllerGetFrameTime();
-	UpdateDebug1();
+	
+    // Update Xp and levels
+    UpdateDebug1();
 
     if (!player_init.menu_open) {
         // Update Wave Logic
-        UpdateWaveSpawning(deltaTime, player);
-
             PauseScreen::UpdatePause();
+           
         if (!player_init.menu_open && !PauseScreen::isPaused) {
+
+            // Update Waves
+            UpdateWaveSpawning(deltaTime, player);
 
             waveActiveTimer += deltaTime;
             // Update Animations
@@ -276,7 +280,7 @@ void UpdateGame() {
 
         // 5. WAVE MANAGEMENT (Final Boss & Infinite Mode Logic)
         // =========================================================
-            if (IsWaveCleared() && waveActiveTimer > 2.0f) {
+            if (GS_next == GS_GAME && IsWaveCleared() && waveActiveTimer > 2.0f) {
 
                 // Check if the wave we JUST cleared was the Final Boss
                 bool justBeatFinalBoss = (currentWave == (numofBosses * 5));
@@ -298,7 +302,7 @@ void UpdateGame() {
             // =========================================================
             // FOR DEBUGGING: Skip wave with Z
             // =========================================================
-            if (AEInputCheckTriggered(AEVK_Z)) {
+            if (GS_next == GS_GAME && AEInputCheckTriggered(AEVK_Z)) {
 
                 // Check if we are currently skipping the Final Boss
                 bool skippingFinalBoss = (currentWave == (numofBosses * 5));
@@ -333,10 +337,6 @@ void UpdateGame() {
                 gameWon = false;
                 GS_next = GS_RESULTS;
             }
-           /* if (currentWave == (numofBosses * 5 + 1)) {
-                gameWon = true;
-                GS_next = GS_RESULTS;
-            }*/
 
         }
         if (!PauseScreen::isPaused) {

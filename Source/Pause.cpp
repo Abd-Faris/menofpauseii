@@ -1,6 +1,8 @@
 #include "MasterHeader.h"
 #include <string> // Added so we can use std::to_string for stats
 
+extern int currentWave;
+
 namespace PauseScreen {
     bool isPaused = false;
 
@@ -10,17 +12,23 @@ namespace PauseScreen {
     GfxButton PauseBtn = { {-750, 400}, {50, 50}, nullptr, 0 };
     GfxText PauseTxt = { "||", 0.8f, 0, 0, 0, 255, {-748, 402} };
 
-    // ==========================================
-       // 1. STATS PANEL (Tightened up to match button width!)
+    // 1. STATS PANEL (Tightened up to match button width!)
       
-       // ==========================================
-    GfxButton StatsPanel = { {0, 110}, {700, 200}, nullptr, -1 };
+    GfxButton StatsPanel = { {0, 85}, {700, 180}, nullptr, -1 };
 
-    // Stats Text (Nudged slightly to sit perfectly centered in the new box)
-    // Scaled the title down to 1.0f so it doesn't bleed over the edges
-    GfxText StatsTitle = { "-- RUN STATS --", 1.0f, 0, 0, 0, 255, {0, 155} };
-    GfxText StatsLine1 = { "Current Wave: 0", 1.0f, 0, 0, 0, 255, {0, 110} };
-    GfxText StatsLine2 = { "Enemies Left: 0", 1.0f, 0, 0, 0, 255, {0, 65} };
+    GfxText StatsTitle = { "-- RUN STATS --", 0.6f, 0, 0, 0, 255, {0,   200} };
+
+    // Left column
+    GfxText StatsLine1 = { "Wave: 0",      0.5f, 0, 0, 0, 255, {-150, 150} };
+    GfxText StatsLine3 = { "HP: 0",        0.5f, 0, 0, 0, 255, {-150,  110} };
+    GfxText StatsLine5 = { "SPD: 0",       0.5f, 0, 0, 0, 255, {-150,  70} };
+    GfxText StatsLine7 = { "XP GAIN: 0",   0.5f, 0, 0, 0, 255, {-150,  30} };
+
+    // Right column
+    GfxText StatsLine2 = { "Enemies: 0",   0.5f, 0, 0, 0, 255, { 150, 150} };
+    GfxText StatsLine4 = { "DMG: 0",       0.5f, 0, 0, 0, 255, { 150,  110} };
+    GfxText StatsLine6 = { "F-RATE: 0/s",  0.5f, 0, 0, 0, 255, { 150,  70} };
+
     // ==========================================
     // 2. STACKED BUTTON LAYOUT
     // ==========================================
@@ -64,9 +72,23 @@ namespace PauseScreen {
         // Change the text to reflect your actual game variables!
         // ==========================================
         if (isPaused) {
-            // Example of how to connect your game data:
-            // StatsLine1.text = "Current Wave: " + std::to_string(Cards::currentWave);
-            // StatsLine2.text = "Enemies Left: " + std::to_string(Cards::enemiesRemaining);
+            int activeEnemyCount = 0;
+            for (int i = 0; i < GameConfig::MAX_ENEMIES_COUNT; ++i)
+                if (enemyPool[i].alive) activeEnemyCount++;
+            if (boss.alive) activeEnemyCount++;
+
+            StatsLine1.text = "Wave: " + std::to_string(currentWave);
+            StatsLine2.text = "Enemies left: " + std::to_string(activeEnemyCount);
+            StatsLine3.text = "HP: " + std::to_string((int)calculate_max_stats(0));
+            StatsLine4.text = "DMG: " + std::to_string((int)calculate_max_stats(1));
+            StatsLine5.text = "SPD: " + std::to_string((int)calculate_max_stats(2));
+
+            float shotsPerSec = 1.0f / calculate_max_stats(3);
+            char frBuf[32];
+            sprintf_s(frBuf, "F-RATE: %.1f/s", shotsPerSec);
+            StatsLine6.text = frBuf;
+
+            StatsLine7.text = "XP GAIN: " + std::to_string((int)calculate_max_stats(4));
         }
 
         if (!isPaused) {
@@ -99,6 +121,10 @@ namespace PauseScreen {
                 else if (btn.nextGS == 2) {
                     // Quit to Main Menu
                     isPaused = false;
+                    //reset game stats
+                    reset_game();
+                    //reset card stats
+                    Cards::resetCards();
                     GS_next = GS_MAIN_MENU;
                 }
                 break;
@@ -167,6 +193,11 @@ namespace PauseScreen {
         Gfx::printText(StatsTitle, pauseFont);
         Gfx::printText(StatsLine1, pauseFont);
         Gfx::printText(StatsLine2, pauseFont);
+        Gfx::printText(StatsLine3, pauseFont);
+        Gfx::printText(StatsLine4, pauseFont);
+        Gfx::printText(StatsLine5, pauseFont);
+        Gfx::printText(StatsLine6, pauseFont);
+        Gfx::printText(StatsLine7, pauseFont);
     }
 
     void FreePause() {
