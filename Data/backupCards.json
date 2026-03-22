@@ -437,7 +437,7 @@
          "passive": [
             {
                "id": "shop_cards_up",
-               "desc": "Shop Cards +1\nAdds another card in the shop you can choose from!\n(Max 5)",
+               "desc": "Shop Cards +1\nAdds another card in the shop you can choose from!\n(Max 7)",
                "type": "",
                "valuetype": "",
                "value": 0

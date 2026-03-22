@@ -51,10 +51,17 @@ namespace { // functions for InitializeCardShop()
 	// base num of cards from shop buy-able
 	const int base_buyable	   { 1 };
 
+	// MAX num of cards available to be displayed to player
+	const int max_shopCards		 { 7 };
+	const int max_activeCards	 { 10 };
+	const int max_inventoryCards { 15 };
+	const int buyable_max		 { 3 };
+
 	// num of cards available to be displayed to player
 	int num_shopCards      { 3 };
-	int num_activeCards    { 5 };	
+	int num_activeCards    { 5 };
 	int num_inventoryCards { 15 };
+	
 	// num of cards from shop buy-able
 	int num_buyable		   { 1 };
 	int buyable_left	   { 0 };
@@ -938,7 +945,7 @@ namespace Cards {
 		// enforce maximums / minimums
 		// fire rate mult must not go below 90% reduction
 		if (cardMultMod.fireRate <= 0.1f) cardMultMod.fireRate = 0.1f;
-
+		
 		// for each card in inventory deck
 		for (Card& card : inventoryCards) {
 			for (CardEffect& effect : card.info.passive) {
@@ -949,10 +956,21 @@ namespace Cards {
 				// flip corresponding upgrade flag
 				else if (effect.id == "big_cannon")  upgradeFlag |= UPGRADE_BIG_CANNON;
 				else if (effect.id == "cannon_180")  upgradeFlag |= UPGRADE_CANNON_180;
-				else if (effect.id == "dual_cannon") upgradeFlag = UPGRADE_DUAL_CANNON; // not compatible with prev upgrades
+				else if (effect.id == "dual_cannon") upgradeFlag |= UPGRADE_DUAL_CANNON; // not compatible with prev upgrades
 				else if (effect.id == "orbit")       upgradeFlag |= UPGRADE_ORBIT;
 			} // endfor passive effects
 		} // endfor inventory cards
+
+		// CLAMP VALUES
+		// if num_shopCards exceeds max
+		if (num_shopCards   > max_shopCards)	num_shopCards = max_shopCards;
+		if (num_activeCards > max_activeCards)	num_activeCards = max_activeCards;
+		if (num_buyable		> buyable_max)		num_buyable = buyable_max;
+		// if dual_cannon active, disable big_cannon and cannon_180
+		if (upgradeFlag & UPGRADE_DUAL_CANNON) {
+			if (upgradeFlag & UPGRADE_BIG_CANNON) upgradeFlag &= ~UPGRADE_BIG_CANNON;
+			if (upgradeFlag & UPGRADE_CANNON_180) upgradeFlag &= ~UPGRADE_CANNON_180;
+		}
 		UpdateCurrentHpAfterCards(oldMaxHp); //calls debugxp to update hp
 	} // endfunction
 

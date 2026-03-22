@@ -261,6 +261,7 @@ void DualBack(shape& player) {
         bigcannon = false;
         return;
     }
+    else { dualback = false; }
     
     // CHEATS: Toggle front-and-back shooting mode when '8' is pressed
     if (AEInputCheckTriggered(AEVK_8)) {
