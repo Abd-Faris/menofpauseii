@@ -2,6 +2,8 @@
 #include <string> // Added so we can use std::to_string for stats
 
 extern int currentWave;
+AEGfxTexture* pPauseBgTex = nullptr;
+AEGfxVertexList* pPauseBgMesh = nullptr;
 
 namespace PauseScreen {
     bool isPaused = false;
@@ -25,9 +27,9 @@ namespace PauseScreen {
     GfxText StatsLine7 = { "XP GAIN: 0",   0.5f, 0, 0, 0, 255, {-150,  30} };
 
     // Right column
-    GfxText StatsLine2 = { "Enemies: 0",   0.5f, 0, 0, 0, 255, { 150, 150} };
-    GfxText StatsLine4 = { "DMG: 0",       0.5f, 0, 0, 0, 255, { 150,  110} };
-    GfxText StatsLine6 = { "F-RATE: 0/s",  0.5f, 0, 0, 0, 255, { 150,  70} };
+    GfxText StatsLine2 = { "Enemies: 0",   0.5f, 0, 0, 0, 255, { 120, 150} };
+    GfxText StatsLine4 = { "DMG: 0",       0.5f, 0, 0, 0, 255, { 120,  110} };
+    GfxText StatsLine6 = { "F-RATE: 0/s",  0.5f, 0, 0, 0, 255, { 120,  70} };
 
     // ==========================================
     // 2. STACKED BUTTON LAYOUT
@@ -48,6 +50,18 @@ namespace PauseScreen {
     void LoadPause() {
         pauseFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
         pauseMesh = Gfx::createRectMesh(0xFFFFFFFF);
+        // load pause background texture
+        pPauseBgTex = AEGfxTextureLoad("./Assets/pausebg.png");
+
+        // UV mesh for pause background
+        AEGfxMeshStart();
+        AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
+            0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+            -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+        AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+            0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
+            -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+        pPauseBgMesh = AEGfxMeshEnd();
 
         // Apply mesh to UI buttons
         for (GfxButton& button : pauseButtons) {
@@ -158,16 +172,24 @@ namespace PauseScreen {
     void DrawPause() {
         if (!isPaused) return;
 
+        // -- draw pause background texture only over pause menu area --
+        float camX, camY;
+        AEGfxGetCamPosition(&camX, &camY);
+
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        AEGfxTextureSet(pPauseBgTex, 0, 0);
+        AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.0f);
+        AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+        AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+        AEGfxSetTransparency(1.f);
+        Gfx::printMesh(pPauseBgMesh, { camX, camY + 50.f },
+            { 700.f, 700.f },
+            0.f, { 0.f, 0.f }, true);
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
         // 1. Get Mouse Position BEFORE the loop
         AEVec2 mousepos{};
         Comp::getCursorPos(mousepos);
-
-        // --- DRAW THE STATS PANEL ---
-        // Give it a slightly darker grey color than the buttons so it stands out
-        AEGfxSetColorToMultiply(0.7f, 0.7f, 0.7f, 1.0f);
-        Gfx::printUIButton(StatsPanel);
 
         // --- DRAW BUTTONS ---
         for (GfxButton& button : pauseButtons) {
@@ -206,5 +228,9 @@ namespace PauseScreen {
             AEGfxMeshFree(pauseMesh);
             pauseMesh = nullptr;
         }
+
+        if (pPauseBgTex) { AEGfxTextureUnload(pPauseBgTex);  pPauseBgTex = nullptr; }
+        if (pPauseBgMesh) { AEGfxMeshFree(pPauseBgMesh);      pPauseBgMesh = nullptr; }
+
     }
 }
