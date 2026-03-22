@@ -404,7 +404,7 @@ void UpdateDebug1() {
 		handle_menu_input(camX, camY);
 	}
 	else {
-		debug_inputs(max_hp);
+		//debug_inputs(max_hp);
 	}
 }
 
