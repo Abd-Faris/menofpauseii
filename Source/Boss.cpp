@@ -90,6 +90,7 @@ void SpawnBoss(BossType type, shape& player) {
 }
 
 void BossShootRing(Boss& boss) {
+    f32 mult = (1 + (currentWave / 5 * 0.5f));
     float angleStep = (2.f * PI) / boss.bulletCount;
     for (int i = 0; i < boss.bulletCount; i++) {
         float angle = angleStep * i;
@@ -103,13 +104,14 @@ void BossShootRing(Boss& boss) {
             boolet.directionY = sinf(angle);
             boolet.speed = GameConfig::Bullet::BASE_SPEED;
             boolet.size = GameConfig::Bullet::DEFAULT_SIZE;
-            boolet.damagemul = 0.5f;
+            boolet.damagemul = 0.5f * mult;
             break;
         }
     }
 }
 
 void Boss3Spiral(Boss& boss, float deltaTime) {
+    f32 mult = (1 + (currentWave / 5 * 0.5f));
     boss.shootTimer += deltaTime;
     if (boss.shootTimer < GameConfig::Boss::SPIRAL_FIRE_RATE) return;
     boss.shootTimer = 0.f;
@@ -126,7 +128,7 @@ void Boss3Spiral(Boss& boss, float deltaTime) {
             boolet.directionY = sinf(angle);
             boolet.speed = GameConfig::Bullet::BASE_SPEED * 0.5f;
             boolet.size = GameConfig::Boss::SPIRAL_BULLET_SIZE;
-            boolet.damagemul = GameConfig::Boss::SPIRAL_DAMAGE_MUL;
+            boolet.damagemul = GameConfig::Boss::SPIRAL_DAMAGE_MUL * mult;
             break;
         }
     }
@@ -134,6 +136,7 @@ void Boss3Spiral(Boss& boss, float deltaTime) {
 }
 
 void Boss3AimedShot(Boss& boss, shape& player) {
+    f32 mult = (1 + (currentWave / 5 * 0.5f));
     AEVec2 toPlayer = { player.pos_x - boss.pos.x, player.pos_y - boss.pos.y };
     float dist = sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y);
     if (dist < 1.f) return;
@@ -150,7 +153,7 @@ void Boss3AimedShot(Boss& boss, shape& player) {
             boolet.directionY = sinf(angle);
             boolet.speed = GameConfig::Bullet::BASE_SPEED * 0.8f;
             boolet.size = GameConfig::Boss::AIMED_BULLET_SIZE;
-            boolet.damagemul = 1.0f;
+            boolet.damagemul = 1.0f * mult;
             break;
         }
     }
@@ -170,6 +173,7 @@ AEVec2 GetGunPosition(Boss& boss, bool leftGun) {
 }
 
 void Boss4ShootGuns(Boss& boss, shape& player, float deltaTime) {
+    f32 mult = (1 + (currentWave / 5 * 0.5f));
     boss.gunFireTimer += deltaTime;
     if (boss.gunFireTimer < boss.gunFireRate) return;
     boss.gunFireTimer = 0.f;
@@ -201,7 +205,7 @@ void Boss4ShootGuns(Boss& boss, shape& player, float deltaTime) {
             boolet.directionY = sinf(angle);
             boolet.speed = GameConfig::Bullet::BASE_SPEED * 0.8f;
             boolet.size = 10.f;
-            boolet.damagemul = 1.0f;
+            boolet.damagemul = 1.0f * mult;
             break;
         }
     }
@@ -232,6 +236,8 @@ void DrawBossLaser(Boss& boss, AEGfxVertexList* MeshRect) {
 
 void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
     if (!boss.alive) return;
+
+    f32 mult = (1 + (currentWave / 5 * 0.5f));
 
     AEVec2 toPlayer = { player.pos_x - boss.pos.x,
                         player.pos_y - boss.pos.y };
@@ -585,7 +591,7 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
                     float perp = dx * laserDirY - dy * laserDirX;
 
                     if (along > 0.f && along < laserLength && fabsf(perp) < laserWidth + player.scale) {
-                        player_init.current_hp -= 20 * deltaTime;
+                        player_init.current_hp -= GameConfig::Boss::LASER_DAMAGE_PER_SEC * mult * deltaTime;
                     }
                 }
             }
