@@ -309,21 +309,21 @@ void UpdateGame() {
             // =========================================================
             // FOR DEBUGGING: Skip wave with Z
             // =========================================================
-            //if (GS_next == GS_GAME && AEInputCheckTriggered(AEVK_Z)) {
+            if (GS_next == GS_GAME && AEInputCheckTriggered(AEVK_Z)) {
 
-            //    // Check if we are currently skipping the Final Boss
-            //    bool skippingFinalBoss = (currentWave == (numofBosses * 5));
+                // Check if we are currently skipping the Final Boss
+                bool skippingFinalBoss = (currentWave == (numofBosses * 5));
 
-            //    skipWave(player); // Note: skipWave does currentWave++ inside it!
+                skipWave(player); // Note: skipWave does currentWave++ inside it!
 
-            //    if (skippingFinalBoss && !gameWon) {
-            //        gameWon = true;
-            //        GS_next = GS_RESULTS;
-            //    }
-            //    else {
-            //        GS_next = GS_CARD_SHOP;
-            //    }
-            //}
+                if (skippingFinalBoss && !gameWon) {
+                    gameWon = true;
+                    GS_next = GS_RESULTS;
+                }
+                else {
+                    GS_next = GS_CARD_SHOP;
+                }
+            }
 
             if (playerFlashTimer > 0.0f) {
                 playerFlashTimer -= deltaTime;
