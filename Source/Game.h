@@ -67,7 +67,7 @@ namespace GameConfig {
         constexpr float CONTACT_DAMAGE_RATIO = 0.2f;  // boss.maxhp * this
 
         // BOSS1
-        constexpr float B1_BASE_HP = 500.f;
+        constexpr float B1_BASE_HP = 1500.f;
         constexpr float B1_SCALE = 2.0f;   // multiplier on SIZE_BIG
         constexpr float B1_CHASE_SPEED = 150.f;
         constexpr float B1_LUNGE_SPEED = 1400.f;
@@ -79,7 +79,7 @@ namespace GameConfig {
         constexpr int   B1_XP = 200;
 
         // BOSS2
-        constexpr float B2_BASE_HP = 800.f;
+        constexpr float B2_BASE_HP = 3000.f;
         constexpr float B2_SCALE = 2.5f;
         constexpr float B2_IDLE_DUR = 3.f;
         constexpr float B2_TELEGRAPH_DUR = 1.0f;
@@ -89,7 +89,7 @@ namespace GameConfig {
         constexpr int   B2_XP = 400;
 
         // BOSS3
-        constexpr float B3_BASE_HP = 600.f;
+        constexpr float B3_BASE_HP = 6000.f;
         constexpr float B3_SCALE = 2.0f;
         constexpr float B3_CHASE_SPEED = 120.f;
         constexpr float B3_IDLE_DUR = 2.f;
@@ -100,7 +100,7 @@ namespace GameConfig {
         constexpr int   B3_XP = 300;
 
         // BOSS4
-        constexpr float B4_BASE_HP = 900.f;
+        constexpr float B4_BASE_HP = 9000.f;
         constexpr float B4_SCALE = 2.5f;
         constexpr float B4_CHASE_SPEED = 100.f;
         constexpr float B4_IDLE_DUR = 2.f;
