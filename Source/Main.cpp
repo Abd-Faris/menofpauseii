@@ -52,8 +52,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             if(GS_Functions.Update) GS_Functions.Update();
             if(GS_Functions.Draw) GS_Functions.Draw();
 
-            // for access to debug screens
-            Debug_States();
             AESysFrameEnd(); // end of game frame
         }
 

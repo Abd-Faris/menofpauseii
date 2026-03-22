@@ -404,7 +404,7 @@ void UpdateDebug1() {
 		handle_menu_input(camX, camY);
 	}
 	else {
-		debug_inputs(max_hp);
+		//debug_inputs(max_hp);
 	}
 }
 
@@ -435,7 +435,7 @@ void DrawDebug1() {
 
 	// --- DRAW FLOATING XP TEXT ---
 	if (xpPopuptimer > 0.0f) {
-		float dt = AEFrameRateControllerGetFrameTime();
+		float dt = static_cast<f32>(AEFrameRateControllerGetFrameTime());
 		char xppopup[32];
 		sprintf_s(xppopup, "+%.0fxp", xpPopupvalue);
 

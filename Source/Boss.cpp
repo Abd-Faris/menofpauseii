@@ -761,7 +761,7 @@ void DrawBossHP(Boss& boss, AEGfxVertexList* MeshRect, AEGfxVertexList* MeshCirc
     // HP bar above boss
     float hpPct = (float)boss.hp / (float)boss.maxhp;
     float barWidth = 1000.f;
-    float barY = boss.pos.y + boss.scale + 20.f;
+    //float barY = boss.pos.y + boss.scale + 20.f;
 
     AEGfxSetColorToMultiply(0.3f, 0.f, 0.f, 1.f); // background
     Gfx::printMesh(MeshRect, { player.pos_x, player.pos_y + 400.f}, { barWidth, 50.f}, 0.f);
