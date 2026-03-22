@@ -19,29 +19,17 @@ namespace {
 
 	// init main menu buttons
 	std::vector<GfxButton> mainMenuButtons{
-		{{0, 100}, {300, 100}, nullptr, GS_GAME},
-		{{0, -50}, {300, 100}, nullptr, -1},
-		{{0, -200}, {300, 100}, nullptr, -2},
-		{{400, -200}, {300, 100}, nullptr, GS_MAIN_MENU}
+		{{0, 50}, {300, 100}, nullptr, GS_GAME},
+		{{-200, -100}, {300, 100}, nullptr, -1},
+		{{200, -100}, {300, 100}, nullptr, -2},
+		{{0, -250}, {300, 100}, nullptr, GS_MAIN_MENU}
 	};
 	// init main menu texts
 	std::vector<GfxText> mainMenuTexts{
-		{"START",			1.f, 0, 0, 0, 255, {0, 100}},
-		{"Tutorial: OFF",	.5f, 0, 0, 0, 255, {0, -50}},
-		{"Cheats: OFF",		.5f, 0, 0, 0, 255, {0,-200}},
-		{"Back",			1.f, 0, 0, 0, 255, {400,-200}}
-	};
-
-	// init exit confirmation button
-	std::vector<GfxButton> exitingButtons{
-		{{-350, -200}, {400, 100}, nullptr, GS_RESTART},
-		{{350, -200}, {400, 100}, nullptr, GS_QUIT}
-	};
-	// init exit confirmation text
-	std::vector<GfxText> exitingTexts{
-		{"Wait No!", 1.f, 0, 0, 0, 255, {-350, -200}},
-		{"Yes Pls",  1.f, 0, 0, 0, 255, {350,  -200}},
-		{"Exit Game?", 2.5f, 0, 0, 0, 255, {0, 280}}
+		{"START",			1.f, 0, 0, 0, 255, {0, 50}},
+		{"Tutorial: OFF",	.5f, 0, 0, 0, 255, {-200, -100}},
+		{"Cheats: OFF",		.5f, 0, 0, 0, 255, {200,-100}},
+		{"Back",			1.f, 0, 0, 0, 255, {0,-250}}
 	};
 
 	// draws a textured button, swapping to hover texture if mouse is over it
@@ -96,10 +84,8 @@ namespace {
 		AEVec2 mousepos{};
 		Comp::getCursorPos(mousepos);
 
-		std::vector <GfxButton>& buttons = exiting ? exitingButtons : mainMenuButtons;
-
 		// for each button, check collision
-		for (GfxButton& btn : buttons) {
+		for (GfxButton& btn : mainMenuButtons) {
 
 			// if not colliding, continue
 			if (!Comp::collisionPointRect(mousepos, btn.pos, btn.size)) continue;
@@ -156,9 +142,6 @@ void InitializeLevelSelect() {
 	exiting = false;
 	// Inits button meshes
 	for (GfxButton& button : mainMenuButtons) {
-		button.mesh = rectMesh;
-	}
-	for (GfxButton& button : exitingButtons) {
 		button.mesh = rectMesh;
 	}
 }
