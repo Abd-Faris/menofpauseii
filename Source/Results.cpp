@@ -58,6 +58,7 @@ void UpdateResults() {
         if (btn.nextGS == GS_MAIN_MENU) {
             reset_game();
             Cards::resetCards();
+            resetTutorial();
         }
 
         // Change the state

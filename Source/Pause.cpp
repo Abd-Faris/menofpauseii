@@ -139,6 +139,9 @@ namespace PauseScreen {
                     reset_game();
                     //reset card stats
                     Cards::resetCards();
+                    resetTutorial();
+                    tutorialOn = false;
+                    cheatsOn = false;
                     GS_next = GS_MAIN_MENU;
                 }
                 break;
