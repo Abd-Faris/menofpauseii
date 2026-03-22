@@ -83,7 +83,7 @@ void drawBigTank(shape& player) {
         player.barrelCount = 1; // reset if upgrade not active
     }
 
-    // Toggle double-barrel mode on/off when '7' is pressed
+    // CHEATS: Toggle double-barrel mode on/off when '7' is pressed
     if (AEInputCheckTriggered(AEVK_7)) {
         if (player.barrelCount == 1) {
             // Turn Dual ON

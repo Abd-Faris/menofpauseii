@@ -3,12 +3,14 @@
       {
          "id": "common_dmg",
          "rarity": 0,
+         "sprite_row": 3,
+         "sprite_col": 0,
          "active": [
             {
                "type": "DMG",
-               "desc": "Damage UP (+25%)",
+               "desc": "Damage UP (+15%)",
                "valuetype": "mult",
-               "value": 0.25
+               "value": 0.15
             }
          ],
          "passive": []
@@ -16,12 +18,14 @@
       {
          "id": "rare_dmg",
          "rarity": 1,
+         "sprite_row": 3,
+         "sprite_col": 1,
          "active": [
             {
                "type": "DMG",
-               "desc": "Damage UP (+50%)",
+               "desc": "Damage UP (+30%)",
                "valuetype": "mult",
-               "value": 0.5
+               "value": 0.3
             },
             {
                "type": "HP",
@@ -35,16 +39,18 @@
       {
          "id": "epic_dmg",
          "rarity": 2,
+         "sprite_row": 3,
+         "sprite_col": 2,
          "active": [
             {
                "type": "DMG",
-               "desc": "Damage UP (+75%)",
+               "desc": "Damage UP (+40%)",
                "valuetype": "mult",
-               "value": 0.5
+               "value": 0.4
             },
             {
                "type": "FIRE_RATE",
-               "desc": "Fire Rate DEBUFF (+15%)",
+               "desc": "Fire Rate DOWN (-15%)",
                "valuetype": "mult",
                "value": 0.15
             }
@@ -54,12 +60,14 @@
       {
          "id": "unique_dmg",
          "rarity": 3,
+         "sprite_row": 3,
+         "sprite_col": 3,
          "active": [
             {
                "type": "DMG",
-               "desc": "Damage UP (+100%)\nNo Debuffs!",
+               "desc": "Damage UP (+50%)\nNo Debuffs!",
                "valuetype": "mult",
-               "value": 1
+               "value": 0.5
             }
          ],
          "passive": []
@@ -67,12 +75,14 @@
       {
          "id": "common_hp",
          "rarity": 0,
+         "sprite_row": 2,
+         "sprite_col": 0,
          "active": [
             {
                "type": "HP",
-               "desc": "Health UP (+25%)",
+               "desc": "Health UP (+15%)",
                "valuetype": "mult",
-               "value": 0.25
+               "value": 0.15
             }
          ],
          "passive": []
@@ -80,12 +90,14 @@
       {
          "id": "rare_hp",
          "rarity": 1,
+         "sprite_row": 2,
+         "sprite_col": 1,
          "active": [
             {
                "type": "HP",
-               "desc": "Health UP (+50%)",
+               "desc": "Health UP (+30%)",
                "valuetype": "mult",
-               "value": 0.5
+               "value": 0.3
             },
             {
                "type": "MOVE_SPEED",
@@ -99,12 +111,14 @@
       {
          "id": "epic_hp",
          "rarity": 2,
+         "sprite_row": 2,
+         "sprite_col": 2,
          "active": [
             {
                "type": "HP",
-               "desc": "Health UP (+%)",
+               "desc": "Health UP (+40%)",
                "valuetype": "mult",
-               "value": 0.75
+               "value": 0.4
             },
             {
                "type": "DMG",
@@ -118,12 +132,14 @@
       {
          "id": "unique_hp",
          "rarity": 3,
+         "sprite_row": 2,
+         "sprite_col": 3,
          "active": [
             {
                "type": "HP",
-               "desc": "Health UP (+100%)\nNo Debuffs!",
+               "desc": "Health UP (+50%)\nNo Debuffs!",
                "valuetype": "mult",
-               "value": 1
+               "value": 0.5
             }
          ],
          "passive": []
@@ -131,12 +147,14 @@
       {
          "id": "common_move_speed",
          "rarity": 0,
+         "sprite_row": 5,
+         "sprite_col": 0,
          "active": [
             {
                "type": "MOVE_SPEED",
-               "desc": "Move Speed UP (+25%)",
+               "desc": "Move Speed UP (+5%)",
                "valuetype": "mult",
-               "value": 0.25
+               "value": 0.05
             }
          ],
          "passive": []
@@ -144,18 +162,20 @@
       {
          "id": "rare_move_speed",
          "rarity": 1,
+         "sprite_row": 5,
+         "sprite_col": 1,
          "active": [
             {
                "type": "MOVE_SPEED",
-               "desc": "Move Speed UP (+50%)",
+               "desc": "Move Speed UP (+10%)",
                "valuetype": "mult",
-               "value": 0.5
+               "value": 0.1
             },
             {
                "type": "FIRE_RATE",
-               "desc": "Fire Rate DEBUFF (+15%)",
+               "desc": "Fire Rate DOWN (-15%)",
                "valuetype": "mult",
-               "value": 0.15
+               "value": 0.1
             }
          ],
          "passive": []
@@ -163,18 +183,20 @@
       {
          "id": "epic_move_speed",
          "rarity": 2,
+         "sprite_row": 5,
+         "sprite_col": 2,
          "active": [
             {
                "type": "MOVE_SPEED",
-               "desc": "Move Speed UP (+75%)",
+               "desc": "Move Speed UP (+15%)",
                "valuetype": "mult",
-               "value": 0.75
+               "value": 0.15
             },
             {
                "type": "HP",
-               "desc": "Health DOWN (-35)",
+               "desc": "Health DOWN (-15)",
                "valuetype": "base",
-               "value": -35
+               "value": -15
             }
          ],
          "passive": []
@@ -182,12 +204,14 @@
       {
          "id": "unique_move_speed",
          "rarity": 3,
+         "sprite_row": 5,
+         "sprite_col": 3,
          "active": [
             {
                "type": "MOVE_SPEED",
-               "desc": "Move Speed UP (+100%)\nNo Debuffs!",
+               "desc": "Move Speed UP (+20%)\nNo Debuffs!",
                "valuetype": "mult",
-               "value": 1
+               "value": 0.2
             }
          ],
          "passive": []
@@ -195,12 +219,14 @@
       {
          "id": "common_fire_rate",
          "rarity": 0,
+         "sprite_row": 4,
+         "sprite_col": 0,
          "active": [
             {
                "type": "FIRE_RATE",
-               "desc": "Fire Rate BUFF (-25%)",
+               "desc": "Fire Rate BUFF (+5%)",
                "valuetype": "mult",
-               "value": -0.25
+               "value": -0.05
             }
          ],
          "passive": []
@@ -208,18 +234,20 @@
       {
          "id": "rare_fire_rate",
          "rarity": 1,
+         "sprite_row": 4,
+         "sprite_col": 1,
          "active": [
             {
                "type": "FIRE_RATE",
-               "desc": "Fire Rate UP (+50%)",
+               "desc": "Fire Rate UP (+10%)",
                "valuetype": "mult",
-               "value": 0.5
+               "value": -0.1
             },
             {
                "type": "DMG",
-               "desc": "Damage DOWN (-15%)",
+               "desc": "Damage DOWN (-10%)",
                "valuetype": "mult",
-               "value": -0.15
+               "value": -0.1
             }
          ],
          "passive": []
@@ -227,18 +255,20 @@
       {
          "id": "epic_fire_rate",
          "rarity": 2,
+         "sprite_row": 4,
+         "sprite_col": 2,
          "active": [
             {
                "type": "FIRE_RATE",
-               "desc": "Fire Rate UP (+75%)",
+               "desc": "Fire Rate UP (+15%)",
                "valuetype": "mult",
-               "value": 0.75
+               "value": -0.15
             },
             {
                "type": "MOVE_SPEED",
-               "desc": "Move Speed DOWN (-15%)",
+               "desc": "Move Speed DOWN (-5%)",
                "valuetype": "mult",
-               "value": -0.15
+               "value": -0.05
             }
          ],
          "passive": []
@@ -246,12 +276,14 @@
       {
          "id": "unique_fire_rate",
          "rarity": 3,
+         "sprite_row": 4,
+         "sprite_col": 3,
          "active": [
             {
                "type": "FIRE_RATE",
-               "desc": "Fire Rate UP (+100%)\nNo Debuffs!",
+               "desc": "Fire Rate UP (+20%)\nNo Debuffs!",
                "valuetype": "mult",
-               "value": 1
+               "value": -0.2
             }
          ],
          "passive": []
@@ -259,12 +291,14 @@
       {
          "id": "common_xp",
          "rarity": 0,
+         "sprite_row": 6,
+         "sprite_col": 0,
          "active": [
             {
                "type": "XP",
-               "desc": "XP UP (+25%)",
+               "desc": "XP UP (+5%)",
                "valuetype": "mult",
-               "value": 0.25
+               "value": 0.05
             }
          ],
          "passive": []
@@ -272,12 +306,14 @@
       {
          "id": "rare_xp",
          "rarity": 1,
+         "sprite_row": 6,
+         "sprite_col": 1,
          "active": [
             {
                "type": "XP",
-               "desc": "XP UP (+50%)",
+               "desc": "XP UP (+10%)",
                "valuetype": "mult",
-               "value": 0.5
+               "value": 0.1
             }
          ],
          "passive": []
@@ -285,12 +321,14 @@
       {
          "id": "epic_xp",
          "rarity": 2,
+         "sprite_row": 6,
+         "sprite_col": 2,
          "active": [
             {
                "type": "XP",
-               "desc": "XP UP (+75%)",
+               "desc": "XP UP (+20%)",
                "valuetype": "mult",
-               "value": 0.75
+               "value": 0.2
             }
          ],
          "passive": []
@@ -298,12 +336,14 @@
       {
          "id": "unique_xp",
          "rarity": 3,
+         "sprite_row": 6,
+         "sprite_col": 3,
          "active": [
             {
                "type": "XP",
-               "desc": "XP UP (+100%)",
+               "desc": "XP UP (+40%)",
                "valuetype": "mult",
-               "value": 1
+               "value": 0.4
             }
          ],
          "passive": []
@@ -311,6 +351,8 @@
       {
          "id": "dual_cannon",
          "rarity": 3,
+         "sprite_row": 1,
+         "sprite_col": 3,
          "active": [],
          "passive": [
             {
@@ -325,6 +367,8 @@
       {
          "id": "big_cannon",
          "rarity": 2,
+         "sprite_row": 1,
+         "sprite_col": 2,
          "active": [],
          "passive": [
             {
@@ -339,6 +383,8 @@
       {
          "id": "180*_cannon",
          "rarity": 1,
+         "sprite_row": 1,
+         "sprite_col": 1,
          "active": [],
          "passive": [
             {
@@ -353,6 +399,8 @@
       {
          "id": "orbit",
          "rarity": 3,
+         "sprite_row": 1,
+         "sprite_col": 3,
          "active": [],
          "passive": [
             {
@@ -367,6 +415,8 @@
       {
          "id": "active_up",
          "rarity": 2,
+         "sprite_row": 1,
+         "sprite_col": 2,
          "active": [],
          "passive": [
             {
@@ -381,6 +431,8 @@
       {
          "id": "shop_up",
          "rarity": 1,
+         "sprite_row": 1,
+         "sprite_col": 1,
          "active": [],
          "passive": [
             {
@@ -395,6 +447,8 @@
       {
          "id": "shop_buys_up",
          "rarity": 1,
+         "sprite_row": 1,
+         "sprite_col": 1,
          "active": [],
          "passive": [
             {
