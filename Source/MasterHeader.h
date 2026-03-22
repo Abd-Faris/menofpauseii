@@ -49,3 +49,5 @@
 #include"Results.h"
 
 #include "Pause.h"
+
+#include "Tutorial.h"

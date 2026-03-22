@@ -78,7 +78,7 @@
     <ClCompile Include="..\Source\Pause.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\LevelSelect.cpp">
+    <ClCompile Include="..\Source\Tutorial.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -140,7 +140,7 @@
     <ClInclude Include="..\Source\Pause.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\LevelSelect.h">
+    <ClInclude Include="..\Source\Tutorial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
