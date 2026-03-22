@@ -32,6 +32,7 @@
 #include "Game.h"
 #include "CardShop.h"
 #include "DebugMenus.h"
+#include "LevelSelect.h"
 
 // Graphics & Animations
 #include "Animations.h"

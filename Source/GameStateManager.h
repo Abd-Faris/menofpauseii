@@ -33,6 +33,7 @@ enum GS_STATES
 	GS_MAIN_MENU = 0,
 	GS_GAME,
 	GS_RESULTS,
+	GS_LEVEL_SELECT,
 
 	// Debugging Game States
 	DEBUG1,

@@ -1,5 +1,8 @@
 #include "MasterHeader.h"
 
+// Externs
+bool tutorialOn{ false };
+bool cheatsOn{ false };
 
 namespace {
 	// declares AE objects
@@ -11,23 +14,22 @@ namespace {
 	AEGfxTexture* pBtnHoverTex = nullptr;
 	AEGfxTexture* pBgExitTex = nullptr;
 
-	AEAudio mainbgm{ nullptr };
-	AEAudioGroup bgm{ nullptr };
-
 	// exiting game app boolean (to display confirmation screen)
 	bool exiting{};
 
 	// init main menu buttons
 	std::vector<GfxButton> mainMenuButtons{
-		{{-400, -200}, {300, 100}, nullptr, GS_LEVEL_SELECT},
-		{{0, -200}, {300, 100}, nullptr},
-		{{400, -200}, {300, 100}, nullptr, -1}
+		{{0, 100}, {300, 100}, nullptr, -1},
+		{{0, -50}, {300, 100}, nullptr, -2},
+		{{0, -200}, {300, 100}, nullptr, GS_GAME},
+		{{400, -200}, {300, 100}, nullptr, GS_MAIN_MENU}
 	};
 	// init main menu texts
 	std::vector<GfxText> mainMenuTexts{
-		{"Play",    1.f, 0, 0, 0, 255, {-400, -200}},
-		{"Credits", 1.f, 0, 0, 0, 255, {0,    -200}},
-		{"Exit",    1.f, 0, 0, 0, 255, {400,  -200}},
+		{"Tutorial: OFF",    .5f, 0, 0, 0, 255, {0, 100}},
+		{"Cheats: OFF", .5f, 0, 0, 0, 255, {0, -50}},
+		{"START",    1.f, 0, 0, 0, 255, {0,-200}},
+		{"Back",    1.f, 0, 0, 0, 255, {400,-200}}
 	};
 
 	// init exit confirmation button
@@ -83,12 +85,15 @@ namespace {
 	}
 
 	void exitConfirmation(int id) {
-		// if id == -1, flip boolean
-		if (id == -1) exiting = true;
-		// if id == -2, close app
+		if (id == -1) {
+			tutorialOn = !tutorialOn;
+			// update button text to reflect state
+			mainMenuTexts[0].text = tutorialOn ? "Tutorial: ON" : "Tutorial: OFF";
+		}
 		else if (id == -2) {
-			// change to exit game state
-			GS_next = GS_QUIT;
+			cheatsOn = !cheatsOn;
+			// update button text to reflect state
+			mainMenuTexts[1].text = cheatsOn ? "Cheats: ON" : "Cheats: OFF";
 		}
 	}
 
@@ -108,7 +113,7 @@ namespace {
 			// if not colliding, continue
 			if (!Comp::collisionPointRect(mousepos, btn.pos, btn.size)) continue;
 
-			// if less than 0, do exit screen logic
+			// if less than 0, do non-gamestate logic
 			if (btn.nextGS < 0) {
 				exitConfirmation(btn.nextGS);
 				break;
@@ -121,12 +126,7 @@ namespace {
 	}
 }
 
-void LoadMainMenu() {
-	// load audio assets
-	mainbgm = AEAudioLoadMusic("Assets/audio/bgm/mainmenu_bgm.mp3");
-	bgm = AEAudioCreateGroup();
-	AEAudioPlay(mainbgm, bgm, 1.f, 1.f, -1);
-
+void LoadLevelSelect() {
 	// load textures
 	pBgTex = AEGfxTextureLoad("./Assets/menu.png");
 	pBtnNormalTex = AEGfxTextureLoad("./Assets/mainmenubutton1.png");
@@ -160,7 +160,7 @@ void LoadMainMenu() {
 	Cards::resetCards();
 }
 
-void InitializeMainMenu() {
+void InitializeLevelSelect() {
 	// Inits exiting boolean
 	exiting = false;
 	// Inits button meshes
@@ -172,12 +172,12 @@ void InitializeMainMenu() {
 	}
 }
 
-void UpdateMainMenu() {
+void UpdateLevelSelect() {
 	// check for change in game state
 	clickToNextState();
 }
 
-void DrawMainMenu() {
+void DrawLevelSelect() {
 	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
 	AEGfxSetTransparency(1.f);
@@ -210,15 +210,16 @@ void DrawMainMenu() {
 	}
 }
 
-void UnloadMainMenu() {
-	// unload audio
-	AEAudioUnloadAudio(mainbgm);
-	AEAudioUnloadAudioGroup(bgm);
+void FreeLevelSelect() {
+	//
+}
 
-	if (rectMesh) { AEGfxMeshFree(rectMesh);           rectMesh = nullptr; }
-	if (pBgMesh) { AEGfxMeshFree(pBgMesh);            pBgMesh = nullptr; }
-	if (pBtnMesh) { AEGfxMeshFree(pBtnMesh);           pBtnMesh = nullptr; }
-	if (pBgTex) { AEGfxTextureUnload(pBgTex);        pBgTex = nullptr; }
+void UnloadLevelSelect() {
+
+	if (rectMesh) { AEGfxMeshFree(rectMesh); rectMesh = nullptr; }
+	if (pBgMesh) { AEGfxMeshFree(pBgMesh); pBgMesh = nullptr; }
+	if (pBtnMesh) { AEGfxMeshFree(pBtnMesh); pBtnMesh = nullptr; }
+	if (pBgTex) { AEGfxTextureUnload(pBgTex); pBgTex = nullptr; }
 	if (pBtnNormalTex) { AEGfxTextureUnload(pBtnNormalTex); pBtnNormalTex = nullptr; }
 	if (pBtnHoverTex) { AEGfxTextureUnload(pBtnHoverTex);  pBtnHoverTex = nullptr; }
 	if (pBgExitTex) { AEGfxTextureUnload(pBgExitTex); pBgExitTex = nullptr; }
