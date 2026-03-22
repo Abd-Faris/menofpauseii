@@ -98,7 +98,7 @@ void LoadMainMenu() {
 	// load audio assets
 	mainbgm = AEAudioLoadMusic("Assets/audio/bgm/mainmenu_bgm.mp3");
 	bgm = AEAudioCreateGroup();
-	AEAudioPlay(mainbgm, bgm, 2.f, 1.f, -1);
+	AEAudioPlay(mainbgm, bgm, 1.f, 1.f, -1);
 
 	// creates rect mesh
 	rectMesh = Gfx::createRectMesh();

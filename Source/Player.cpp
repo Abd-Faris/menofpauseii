@@ -72,6 +72,17 @@ void DrawMultiBarrels(int count, float gap, float pivotOffset, float tankRot, fl
 // PLAYER INPUT & UPGRADES
 // ===========================================================================
 void drawBigTank(shape& player) {
+    
+    // LEGIT: force dual cannon on if upgrade is active
+    if (upgradeFlag & UPGRADE_DUAL_CANNON) {
+        player.barrelCount = 2;
+        bigcannon = false; // force off big cannon to prevent clashing
+        return;
+    }
+    else {
+        player.barrelCount = 1; // reset if upgrade not active
+    }
+
     // Toggle double-barrel mode on/off when '7' is pressed
     if (AEInputCheckTriggered(AEVK_7)) {
         if (player.barrelCount == 1) {
@@ -241,7 +252,17 @@ void SpawnBullet(shape& player, float deltaTime) {
 }
 
 void DualBack(shape& player) {
-    // Toggle front-and-back shooting mode when '8' is pressed
+
+    // LEGIT: Enable if card is present in passive deck
+    if (upgradeFlag & UPGRADE_CANNON_180) {
+        dualback = true;
+        // Turn off other modes to prevent visual/math glitches
+        player.barrelCount = 1;
+        bigcannon = false;
+        return;
+    }
+    
+    // CHEATS: Toggle front-and-back shooting mode when '8' is pressed
     if (AEInputCheckTriggered(AEVK_8)) {
         dualback = !dualback;
 
@@ -278,12 +299,10 @@ void ShootBullet(shape& player, float deltaTime) {
 }
 
 void updateOrbit(shape& player, float deltaTime) {
-    // Toggle orbital shield weapon when 'C' is pressed
-    if (AEInputCheckTriggered(AEVK_C)) {
-        orbitActive = !orbitActive;
-    }
 
-    if (orbitActive) {
+    // LEGIT: Enable orbital shield weapon when card is in passive deck
+    if (upgradeFlag & UPGRADE_ORBIT) {
+        orbitActive = true;
         float orbitSpeed = 4.0f; // Spin speed in radians per second
         float orbitRadius = 150.0f * (player.scale / GameConfig::Tank::SCALE); // Distance from tank (scales with tank size)
 
@@ -295,11 +314,39 @@ void updateOrbit(shape& player, float deltaTime) {
         // Calculate exact world X and Y using standard circle trigonometry
         orbitPosX = player.pos_x + cosf(orbitAngle) * orbitRadius;
         orbitPosY = player.pos_y + sinf(orbitAngle) * orbitRadius;
+        return;
+    }
+    
+    // CHEATS: Toggle orbital shield weapon when 'C' is pressed
+    if (AEInputCheckTriggered(AEVK_C)) {
+        orbitActive = !orbitActive;
+
+        if (orbitActive) {
+            float orbitSpeed = 4.0f; // Spin speed in radians per second
+            float orbitRadius = 150.0f * (player.scale / GameConfig::Tank::SCALE); // Distance from tank (scales with tank size)
+
+            // Advance the rotation angle, looping back to 0 if it completes a full circle
+            orbitAngle += orbitSpeed * deltaTime;
+            if (orbitAngle > TWO_PI) orbitAngle -= TWO_PI;
+
+
+            // Calculate exact world X and Y using standard circle trigonometry
+            orbitPosX = player.pos_x + cosf(orbitAngle) * orbitRadius;
+            orbitPosY = player.pos_y + sinf(orbitAngle) * orbitRadius;
+        }
     }
 }
 
 void drawBigCannon(shape& player) {
-    // Toggle Big Cannon weapon mode when 'U' is pressed
+    // LEGIT: Enable Big Cannon weapon mode when card is present in passive desk
+    if (upgradeFlag & UPGRADE_BIG_CANNON) {
+        bigcannon = true;
+        // Turn Big Cannon ON and force off dual barrels to prevent stat clashing
+        player.barrelCount = 1;
+        return;
+    }
+    
+    // CHEATS: Toggle Big Cannon weapon mode when 'U' is pressed
     if (AEInputCheckTriggered(AEVK_U)) {
         bigcannon = !bigcannon;
 

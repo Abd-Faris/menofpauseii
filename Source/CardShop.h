@@ -16,6 +16,8 @@ void DrawCardShop();
 
 void FreeCardShop();
 
+void UnloadCardShop();
+
 // Functions
 
 namespace Cards {

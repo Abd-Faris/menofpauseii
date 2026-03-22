@@ -136,6 +136,8 @@ extern float playerFlashTimer;
 extern AEGfxTexture* pEnemyTex[4];
 extern AEGfxVertexList* pEnemyMesh;
 void LoadGame();
+void InitializeGame();
 void UpdateGame();
 void DrawGame();
 void FreeGame();
+void UnloadGame();

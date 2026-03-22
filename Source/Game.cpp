@@ -15,10 +15,11 @@ float waveActiveTimer = 0.0f;
 
 namespace {
     // -- Assets --
-    //s8 boldPixelsFont;
     AEGfxVertexList* MeshRect = nullptr;
     AEGfxVertexList* MeshCircle = nullptr;
     AEGfxVertexList* MeshTriangle = nullptr;
+    AEAudio mainbgm{ nullptr };
+    AEAudioGroup bgm{ nullptr };
     
 
     // -- Player State --
@@ -192,9 +193,10 @@ void circlerectcollision() {
 // LOAD GAME
 // ===========================================================================
 void LoadGame() {
-    //seed the rng
-	srand(static_cast<unsigned int>(time(NULL)));
-
+    // load audio assets
+    mainbgm = AEAudioLoadMusic("Assets/audio/bgm/game_bgm.mp3");
+    bgm = AEAudioCreateGroup();
+    AEAudioPlay(mainbgm, bgm, 1.f, 1.f, -1);
    
     LoadDebug1();
     LoadBullets();
@@ -202,15 +204,20 @@ void LoadGame() {
     LoadBoss();
     Animations_Load();
     PauseScreen::LoadPause();
-    //boldPixelsFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
 	World::Load_World();
-	World::Init_World();
     !AEInputCheckCurr(AEVK_LBUTTON);
     
     // Create Meshes
     MeshCircle = Gfx::createCircleMesh(0xFFFFFFFF);
     MeshRect = Gfx::createRectMesh(0xFFFFFFFFF);
     MeshTriangle = Gfx::createTriangleMesh(0xFFFFFFFF);
+}
+
+void InitializeGame() {
+    //seed the rng
+    srand(static_cast<unsigned int>(time(NULL))); 
+    
+    World::Init_World();
 
     // Reset Player
     player.pos_x = 0;
@@ -227,8 +234,8 @@ void LoadGame() {
     for (int i = 0; i < GameConfig::MAX_ENEMIES_COUNT; i++) ResetEnemy(&enemyPool[i]);
     for (auto& minion : minionPool) ResetEnemy(&minion);
 
-	// Initialize Wave
-	GenerateWave(currentWave, player);
+    // Initialize Wave
+    GenerateWave(currentWave, player);
 }
 
 // ===========================================================================
@@ -528,6 +535,7 @@ void FreeGame() {
 }
 
 void UnloadGame() {
-    //AEGfxDestroyFont(boldPixelsFont);
-
+    // unload audio
+    AEAudioUnloadAudio(mainbgm);
+    AEAudioUnloadAudioGroup(bgm);
 }

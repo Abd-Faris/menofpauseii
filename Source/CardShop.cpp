@@ -19,6 +19,8 @@ namespace { // functions for InitializeCardShop()
 	
 	// define meshes
 	AEGfxVertexList* rectMesh{};
+	AEAudio mainbgm{ nullptr };
+	AEAudioGroup bgm{ nullptr };
 	
 	// graphic boxes
 	AEGfxVertexList* bag, * shop, * desc, * cardSlots, * trash;
@@ -184,9 +186,13 @@ namespace { // functions for InitializeCardShop()
 }
 
 void LoadCardShop() {
+	// load audio assets
+	mainbgm = AEAudioLoadMusic("Assets/audio/bgm/credits_bgm.mp3");
+	bgm = AEAudioCreateGroup();
+	AEAudioPlay(mainbgm, bgm, 2.f, 1.f, -1);
+
 	// loads graphics
 	cardSpriteSheet = AEGfxTextureLoad("Assets/cards.png");
-
 	if (!cardSpriteSheet) std::cout << "[ ERROR ] cards.png failed to load!\n";
 
 	PauseScreen::LoadPause();
@@ -684,6 +690,9 @@ void FreeCardShop() {
 }
 
 void UnloadCardShop() {
+	// unload audio
+	AEAudioUnloadAudio(mainbgm);
+	AEAudioUnloadAudioGroup(bgm);
 	// Unload Graphics
 	AEGfxTextureUnload(cardSpriteSheet);
 }
