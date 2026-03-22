@@ -879,7 +879,8 @@ namespace Cards {
 		std::vector<CardStats>& rarityPool = ::cardPool[cardRarity];
 
 		// random float and normalise within size of card pool of corresponding rarity
-		int index = (int)(AERandFloat() * (rarityPool.size() - 1));
+		int index = (int)(AERandFloat() * (rarityPool.size()));
+		if (index == rarityPool.size()) --index;
 		card.info = ::cardPool[cardRarity][index];
 	}
 
