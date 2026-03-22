@@ -116,19 +116,25 @@ namespace World {
         return (World::mapGrid[row][col] == 1);
     }
 
-    bool CheckCollision(float x, float y, float playerScale, float playerRotation) {
-        float h = (playerScale * 0.9f);
-        AEVec2 tankPoints[12] = {
-            // corners
-            { h,  h }, { h, -h }, {-h,  h }, {-h, -h },
-            // midpoints of each side
-            { h,  0 }, {-h,  0 },  // left and right midpoints
-            { 0,  h }, { 0, -h },  // top and bottom midpoints
-            // extra points along sides for wider coverage
-            { h,  h * 0.5f }, { h, -h * 0.5f },
-            {-h,  h * 0.5f }, {-h, -h * 0.5f }
-        };
+    bool CheckBodyCollision(float x, float y, float playerScale) {
+        float radius = playerScale * 0.8f;
+        const int NUM_POINTS = 8;
 
+        for (int i = 0; i < NUM_POINTS; i++) {
+            float angle = (i / (float)NUM_POINTS) * TWO_PI;
+            float worldX = x + cosf(angle) * radius;
+            float worldY = y + sinf(angle) * radius;
+            if (isPointColliding(worldX, worldY)) return true;
+        }
+        return false;
+    }
+
+    // Full collision for movement — body circle + barrel points
+    bool CheckCollision(float x, float y, float playerScale, float playerRotation) {
+        // check body as circle first
+        if (CheckBodyCollision(x, y, playerScale)) return true;
+
+        // check barrel points
         float barrelLen = GameConfig::Tank::BARREL_LENGTH * (playerScale / GameConfig::Tank::SCALE);
         float halfBWidth = 11.0f;
         AEVec2 barrelPoints[4] = {
@@ -141,11 +147,6 @@ namespace World {
         float cosA = cosf(playerRotation);
         float sinA = sinf(playerRotation);
 
-        for (int i = 0; i < 12; i++) {
-            float worldX = x + (tankPoints[i].x * cosA - tankPoints[i].y * sinA);
-            float worldY = y + (tankPoints[i].x * sinA + tankPoints[i].y * cosA);
-            if (isPointColliding(worldX, worldY)) return true;
-        }
         for (int i = 0; i < 4; i++) {
             float worldX = x + (barrelPoints[i].x * cosA - barrelPoints[i].y * sinA);
             float worldY = y + (barrelPoints[i].x * sinA + barrelPoints[i].y * cosA);
