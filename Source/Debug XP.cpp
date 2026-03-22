@@ -435,7 +435,7 @@ void DrawDebug1() {
 
 	// --- DRAW FLOATING XP TEXT ---
 	if (xpPopuptimer > 0.0f) {
-		float dt = AEFrameRateControllerGetFrameTime();
+		float dt = static_cast<f32>(AEFrameRateControllerGetFrameTime());
 		char xppopup[32];
 		sprintf_s(xppopup, "+%.0fxp", xpPopupvalue);
 

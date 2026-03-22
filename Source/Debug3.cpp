@@ -7,7 +7,7 @@ std::array <Enemies, MAX_ENEMIES> maxenemy = {};
 
 
 f32 maxspeed = 50;
-f32 friction = 0.92;
+f32 friction = 0.92f;
 namespace {
 	//s8 boldPixels;
 	AEGfxVertexList* MeshRect{};
@@ -231,22 +231,22 @@ void separateEnemies() {
 		}
 	}
 }
-void applyPhysicsSeparation(float dt, std::array<Enemies, MAX_ENEMIES>& maxenemy, int size) {
+void applyPhysicsSeparation(float dtm, std::array<Enemies, MAX_ENEMIES>& mxenemy, int size) {
 	const float separationStrength = 500.0f;
 	const float separationRange = 1.5f; // Multiplier for when to start separating
 
 	for (size_t i = 0; i < size; i++) {
-		if (!maxenemy[i].alive) continue;
+		if (!mxenemy[i].alive) continue;
 
 		AEVec2 separationForce = { 0,0 };
 
 		for (size_t j = 0; j < size; j++) {
-			if (i == j || !maxenemy[j].alive) continue;
+			if (i == j || !mxenemy[j].alive) continue;
 
 			AEVec2 delta;
-			AEVec2Sub (&delta, &maxenemy[i].pos, &maxenemy[j].pos);
+			AEVec2Sub (&delta, &mxenemy[i].pos, &mxenemy[j].pos);
 			float dist = AEVec2Length(&delta);
-			float minDist = (maxenemy[i].scale/2 + maxenemy[j].scale/2) * separationRange;
+			float minDist = (mxenemy[i].scale/2 + mxenemy[j].scale/2) * separationRange;
 			
 
 
@@ -266,28 +266,28 @@ void applyPhysicsSeparation(float dt, std::array<Enemies, MAX_ENEMIES>& maxenemy
 
 		// Apply acceleration (F = ma, so a = F/m)
 		AEVec2 acceleration;
-		AEVec2Scale(&acceleration, &separationForce, dt);
+		AEVec2Scale(&acceleration, &separationForce, dtm);
 
-		AEVec2Add(&maxenemy[i].velocity, &maxenemy[i].velocity, &acceleration);
+		AEVec2Add(&mxenemy[i].velocity, &mxenemy[i].velocity, &acceleration);
 		//maxenemy[i].velocity = maxenemy[i].velocity + acceleration;
 	}
 }
 
-void PlayerPhysicsSeparation(float dtm, std::array <Enemies, MAX_ENEMIES> &maxenemy, int size, shape Player) {
+void PlayerPhysicsSeparation(float dtm, std::array <Enemies, MAX_ENEMIES> &mxenemy, int size, shape Player) {
 	const float separationStrength = 500.0f;
 	const float separationRange = 1.5f; // Multiplier for when to start separating
 
 	for (size_t i = 0; i < size; i++) {
-		if (!maxenemy[i].alive) continue;
+		if (!mxenemy[i].alive) continue;
 
 		AEVec2 separationForce = { 0,0 };
 
 		AEVec2 PlayerPos = { Player.pos_x, Player.pos_y };
 
 			AEVec2 delta;
-			AEVec2Sub(&delta, &maxenemy[i].pos, &PlayerPos);
+			AEVec2Sub(&delta, &mxenemy[i].pos, &PlayerPos);
 			float dist = AEVec2Length(&delta);
-			float minDist = (maxenemy[i].scale / 2 + Player.scale / 2) * separationRange;
+			float minDist = (mxenemy[i].scale / 2 + Player.scale / 2) * separationRange;
 
 
 
@@ -309,32 +309,32 @@ void PlayerPhysicsSeparation(float dtm, std::array <Enemies, MAX_ENEMIES> &maxen
 		AEVec2 acceleration;
 		AEVec2Scale(&acceleration, &separationForce, dtm);
 
-		AEVec2Add(&maxenemy[i].velocity, &maxenemy[i].velocity, &acceleration);
-		//maxenemy[i].velocity = maxenemy[i].velocity + acceleration;
+		AEVec2Add(&mxenemy[i].velocity, &mxenemy[i].velocity, &acceleration);
+		//mxenemy[i].velocity = mxenemy[i].velocity + acceleration;
 	}
 }
-void updateEnemyPhysics(float dtm, std::array <Enemies, MAX_ENEMIES> &maxenemy, int size) {
+void updateEnemyPhysics(float dtm, std::array <Enemies, MAX_ENEMIES> &mxenemy, int size) {
 	for (int i{}; i < size; i++) {
-		if (!maxenemy[i].alive) continue;
+		if (!mxenemy[i].alive) continue;
 
 		// Apply friction/damping for natural deceleration
 
-		AEVec2Scale(&maxenemy[i].velocity, &maxenemy[i].velocity, friction);
+		AEVec2Scale(&mxenemy[i].velocity, &mxenemy[i].velocity, friction);
 
 		// Clamp to max speed
-		float speed = AEVec2Length(&maxenemy[i].velocity);
+		float speed = AEVec2Length(&mxenemy[i].velocity);
 		if (speed > maxspeed) {
 			AEVec2 normal;
-			AEVec2Normalize(&normal, &maxenemy[i].velocity);
-			AEVec2Scale(&maxenemy[i].velocity, &normal, maxspeed);
+			AEVec2Normalize(&normal, &mxenemy[i].velocity);
+			AEVec2Scale(&mxenemy[i].velocity, &normal, maxspeed);
 			
 		}
 
 		// Update position
 
 		AEVec2 currentvelo;
-		AEVec2Scale(&currentvelo, &maxenemy[i].velocity, dtm);
-		AEVec2Add(&maxenemy[i].pos, &maxenemy[i].pos, &currentvelo);
+		AEVec2Scale(&currentvelo, &mxenemy[i].velocity, dtm);
+		AEVec2Add(&mxenemy[i].pos, &mxenemy[i].pos, &currentvelo);
 		
 
 		// Keep enemies on screen (with bounce)
@@ -433,13 +433,13 @@ void SpawnKEnemies(Enemies* enemy) {
 	enemy->velocity.y = 1;
 }
 
-void EnemyDeath(std::array <Enemies, MAX_ENEMIES> maxenemy, int size, f64 dtm){
+void EnemyDeath(std::array <Enemies, MAX_ENEMIES> mxenemy, int size, f64 dtm){
 	for (int i{}; i < MAX_ENEMIES; i++) {
-		if (maxenemy[i].hp <= 0) {
+		if (mxenemy[i].hp <= 0) {
 			
-			while (maxenemy[i].scale>0) maxenemy[i].scale -= 50 * static_cast<f32>(dtm);
-			maxenemy[i].scale < 0 ? 0 : maxenemy[i].scale;
-			maxenemy[i].alive = false;
+			while (mxenemy[i].scale>0) mxenemy[i].scale -= 50 * static_cast<f32>(dtm);
+			mxenemy[i].scale < 0 ? 0 : mxenemy[i].scale;
+			mxenemy[i].alive = false;
 		}
 	}
 }

@@ -169,7 +169,7 @@ void SpawnBullet(shape& player, float deltaTime) {
     bulletFireTimer = fire_rate;
 
     // 2. Determine how many bullets to shoot this frame
-    int bulletsNeeded = dualback ? 2 : player.barrelCount;
+    int bulletsNeeded = dualback ? 2 : static_cast<int>(player.barrelCount);
 
     // 3. Calculate starting offsets to align bullets with the barrels perfectly
     float visualScale = player.scale / GameConfig::Tank::SCALE;
