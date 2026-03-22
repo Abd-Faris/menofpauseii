@@ -62,12 +62,12 @@ void GenerateWave(int waveNumber, shape& player) {
 	pendingBudget = totalWaveBudget;
 	spawnTimer = MAX_SPAWN_TIME;
 
-	// ---- ID, COST, BASE WEIGHT, GROWTH RATE, MIN WAVE ----
+	// ---- ID, COST, BASE WEIGHT, GROWTH RATE, MIN WAVE, MAX WAVE - 1 ----
 	// CAN CHANGE ANYTIME
-	EnemyTypeInfo passive1 = { 1, 2, 70, -6.0f, 1 }; //passive small
-	EnemyTypeInfo passive2 = { 2, 6, 20, 2.0f, 1 }; //passive big
-	EnemyTypeInfo kamikaze = { 3, 10, 10, 7.5f, 2 }; //kamikaze
-	EnemyTypeInfo shooter = { 4, 10, 10, 7.5f, 6 }; //shooter
+	EnemyTypeInfo passive1 = { 1, 2, 70, -6.0f, 1, 3 }; //passive small
+	EnemyTypeInfo passive2 = { 2, 6, 20, 2.0f, 1, 3}; //passive big
+	EnemyTypeInfo kamikaze = { 3, 10, 10, 7.5f, 2, 0}; //kamikaze
+	EnemyTypeInfo shooter = { 4, 10, 10, 7.5f, 4, 0 }; //shooter
 
 	//this creates a pool of enemy types 
 	std::vector<EnemyTypeInfo> pool = {
@@ -80,9 +80,10 @@ void GenerateWave(int waveNumber, shape& player) {
 	currentWaveChoices.clear();
 	for (auto& enemy : pool) {
 		if (waveNumber >= enemy.minWave) {
+			if (enemy.maxWave > 0 && waveNumber > enemy.maxWave) continue;
+
 			float weight = (float)enemy.baseWeight + (enemy.growthRate * (float)(waveNumber - enemy.minWave));
 			if (weight < 0.0f) weight = 0.0f;
-
 			currentWaveChoices.push_back({ enemy, weight });
 		}
 	}

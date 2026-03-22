@@ -119,7 +119,7 @@ struct EnemyTypeInfo {
 	int baseWeight;
 	float growthRate;
 	int minWave;
-	//int maxWave;
+	int maxWave;
 };
 
 struct Enemies {
