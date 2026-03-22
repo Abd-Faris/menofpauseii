@@ -247,6 +247,7 @@ void UpdateGame() {
     // Update Xp and levels
     UpdateDebug1();
 
+
     if (!player_init.menu_open) {
         // Update Wave Logic
             PauseScreen::UpdatePause();
@@ -365,8 +366,12 @@ void DrawGame() {
     AEGfxSetBackgroundColor(0.2f, 0.2f, 0.2f);
     AEGfxSetCamPosition(player.pos_x, player.pos_y);
 
+    
+
     // -- Draw World --
     World::Draw_World();
+
+    if (tutorialOn) printtutorial();
 
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     
@@ -518,6 +523,8 @@ void DrawGame() {
     DrawDebug1();
     PauseScreen::DrawPauseButton();
     PauseScreen::DrawPause();
+
+    
 }
 
 void FreeGame() {
