@@ -19,17 +19,17 @@ namespace {
 
 	// init main menu buttons
 	std::vector<GfxButton> mainMenuButtons{
-		{{0, 100}, {300, 100}, nullptr, -1},
-		{{0, -50}, {300, 100}, nullptr, -2},
-		{{0, -200}, {300, 100}, nullptr, GS_GAME},
+		{{0, 100}, {300, 100}, nullptr, GS_GAME},
+		{{0, -50}, {300, 100}, nullptr, -1},
+		{{0, -200}, {300, 100}, nullptr, -2},
 		{{400, -200}, {300, 100}, nullptr, GS_MAIN_MENU}
 	};
 	// init main menu texts
 	std::vector<GfxText> mainMenuTexts{
-		{"Tutorial: OFF",    .5f, 0, 0, 0, 255, {0, 100}},
-		{"Cheats: OFF", .5f, 0, 0, 0, 255, {0, -50}},
-		{"START",    1.f, 0, 0, 0, 255, {0,-200}},
-		{"Back",    1.f, 0, 0, 0, 255, {400,-200}}
+		{"START",			1.f, 0, 0, 0, 255, {0, 100}},
+		{"Tutorial: OFF",	.5f, 0, 0, 0, 255, {0, -50}},
+		{"Cheats: OFF",		.5f, 0, 0, 0, 255, {0,-200}},
+		{"Back",			1.f, 0, 0, 0, 255, {400,-200}}
 	};
 
 	// init exit confirmation button
@@ -75,25 +75,16 @@ namespace {
 		}
 	}
 
-	void printExitConfirmation(AEVec2& mousepos) {
-		for (GfxButton& button : exitingButtons) {
-			drawTexturedButton(button, mousepos);
-		}
-		for (GfxText& text : exitingTexts) {
-			Gfx::printText(text, boldPixels);
-		}
-	}
-
 	void exitConfirmation(int id) {
 		if (id == -1) {
 			tutorialOn = !tutorialOn;
 			// update button text to reflect state
-			mainMenuTexts[0].text = tutorialOn ? "Tutorial: ON" : "Tutorial: OFF";
+			mainMenuTexts[1].text = tutorialOn ? "Tutorial: ON" : "Tutorial: OFF";
 		}
 		else if (id == -2) {
 			cheatsOn = !cheatsOn;
 			// update button text to reflect state
-			mainMenuTexts[1].text = cheatsOn ? "Cheats: ON" : "Cheats: OFF";
+			mainMenuTexts[2].text = cheatsOn ? "Cheats: ON" : "Cheats: OFF";
 		}
 	}
 
@@ -200,14 +191,7 @@ void DrawLevelSelect() {
 	// get mouse position for hover detection
 	AEVec2 mousepos{};
 	Comp::getCursorPos(mousepos);
-
-	// if not exiting
-	if (!exiting) {
-		printMainMenuUI(mousepos);
-	}
-	else {
-		printExitConfirmation(mousepos);
-	}
+	printMainMenuUI(mousepos);
 }
 
 void FreeLevelSelect() {
