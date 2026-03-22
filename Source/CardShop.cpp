@@ -947,9 +947,9 @@ namespace Cards {
 				else if (effect.id == "shop_cards_up")   num_shopCards++;
 				else if (effect.id == "shop_buys_up")    num_buyable++;
 				// flip corresponding upgrade flag
-				else if (effect.id == "dual_cannon") upgradeFlag |= UPGRADE_DUAL_CANNON;
 				else if (effect.id == "big_cannon")  upgradeFlag |= UPGRADE_BIG_CANNON;
 				else if (effect.id == "cannon_180")  upgradeFlag |= UPGRADE_CANNON_180;
+				else if (effect.id == "dual_cannon") upgradeFlag = UPGRADE_DUAL_CANNON; // not compatible with prev upgrades
 				else if (effect.id == "orbit")       upgradeFlag |= UPGRADE_ORBIT;
 			} // endfor passive effects
 		} // endfor inventory cards
