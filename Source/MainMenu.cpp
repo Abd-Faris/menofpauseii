@@ -3,13 +3,20 @@
 
 namespace {
 	// declares AE objects
-	AEGfxVertexList* rectMesh;
+	AEGfxVertexList* rectMesh = nullptr;
+	AEGfxVertexList* pBgMesh = nullptr;
+	AEGfxVertexList* pBtnMesh = nullptr;
+	AEGfxTexture* pBgTex = nullptr;
+	AEGfxTexture* pBtnNormalTex = nullptr;
+	AEGfxTexture* pBtnHoverTex = nullptr;
+	AEGfxTexture* pBgExitTex = nullptr;
+
 	AEAudio mainbgm{ nullptr };
 	AEAudioGroup bgm{ nullptr };
-	
+
 	// exiting game app boolean (to display confirmation screen)
 	bool exiting{};
-	
+
 	// init main menu buttons
 	std::vector<GfxButton> mainMenuButtons{
 		{{-400, -200}, {300, 100}, nullptr, GS_GAME},
@@ -18,10 +25,9 @@ namespace {
 	};
 	// init main menu texts
 	std::vector<GfxText> mainMenuTexts{
-		{"Play", 1.f, 255, 255, 255, 255, {-400, -200}},
-		{"Credits", 1.f, 255, 255, 255, 255, {0, -200}},
-		{"Exit", 1.f, 255, 255, 255, 255, {400, -200}},
-		{"Gloomy's Revenge", 2.5f, 255, 255, 255, 255, {0, 200}}
+		{"Play",    1.f, 0, 0, 0, 255, {-400, -200}},
+		{"Credits", 1.f, 0, 0, 0, 255, {0,    -200}},
+		{"Exit",    1.f, 0, 0, 0, 255, {400,  -200}},
 	};
 
 	// init exit confirmation button
@@ -31,26 +37,47 @@ namespace {
 	};
 	// init exit confirmation text
 	std::vector<GfxText> exitingTexts{
-		{"Wait No!", 1.f, 255, 255, 255, 255, {-350, -200}},
-		{"Yes Pls", 1.f, 255, 255, 255, 255, {350, -200}},
-		{"Exit Game?", 2.5f, 255, 255, 255, 255, {0, 200}}
+		{"Wait No!", 1.f, 0, 0, 0, 255, {-350, -200}},
+		{"Yes Pls",  1.f, 0, 0, 0, 255, {350,  -200}},
+		{"Exit Game?", 2.5f, 0, 0, 0, 255, {0, 280}}
 	};
 
+	// draws a textured button, swapping to hover texture if mouse is over it
+	void drawTexturedButton(GfxButton& btn, AEVec2& mousepos) {
+		bool hovered = Comp::collisionPointRect(mousepos, btn.pos, btn.size);
+
+		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+		AEGfxTextureSet(hovered ? pBtnHoverTex : pBtnNormalTex, 0, 0);
+		AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+		AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+		AEGfxSetTransparency(1.f);
+
+		AEMtx33 scale, trans, final;
+		AEMtx33Scale(&scale, btn.size.x, btn.size.y);
+		AEMtx33Trans(&trans, btn.pos.x, btn.pos.y);
+		AEMtx33Concat(&final, &trans, &scale);
+		AEGfxSetTransform(final.m);
+		AEGfxMeshDraw(pBtnMesh, AE_GFX_MDM_TRIANGLES);
+
+		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+	}
+
 	// prints main menu UI
-	void printMainMenuUI() {
-		for (GfxButton &button : mainMenuButtons) {
-			Gfx::printButton(button);
+	void printMainMenuUI(AEVec2& mousepos) {
+		for (GfxButton& button : mainMenuButtons) {
+			drawTexturedButton(button, mousepos);
 		}
-		for (GfxText &text : mainMenuTexts) {
+		for (GfxText& text : mainMenuTexts) {
 			Gfx::printText(text, boldPixels);
 		}
 	}
 
-	void printExitConfirmation() {
-		for (GfxButton &button : exitingButtons) {
-			Gfx::printButton(button);
+	void printExitConfirmation(AEVec2& mousepos) {
+		for (GfxButton& button : exitingButtons) {
+			drawTexturedButton(button, mousepos);
 		}
-		for (GfxText &text : exitingTexts) {
+		for (GfxText& text : exitingTexts) {
 			Gfx::printText(text, boldPixels);
 		}
 	}
@@ -76,8 +103,8 @@ namespace {
 		std::vector <GfxButton>& buttons = exiting ? exitingButtons : mainMenuButtons;
 
 		// for each button, check collision
-		for (GfxButton &btn : buttons) {
-			
+		for (GfxButton& btn : buttons) {
+
 			// if not colliding, continue
 			if (!Comp::collisionPointRect(mousepos, btn.pos, btn.size)) continue;
 
@@ -100,9 +127,35 @@ void LoadMainMenu() {
 	bgm = AEAudioCreateGroup();
 	AEAudioPlay(mainbgm, bgm, 1.f, 1.f, -1);
 
+	// load textures
+	pBgTex = AEGfxTextureLoad("./Assets/menu.png");
+	pBtnNormalTex = AEGfxTextureLoad("./Assets/mainmenubutton1.png");
+	pBtnHoverTex = AEGfxTextureLoad("./Assets/mainmenubutton2.png");
+	pBgExitTex = AEGfxTextureLoad("./Assets/gameexit.png");
+
+	// UV mapped mesh for background
+	AEGfxMeshStart();
+	AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
+		0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+	AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+		0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
+		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+	pBgMesh = AEGfxMeshEnd();
+
+	// UV mapped mesh for buttons
+	AEGfxMeshStart();
+	AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
+		0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+	AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+		0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
+		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+	pBtnMesh = AEGfxMeshEnd();
+
 	// creates rect mesh
 	rectMesh = Gfx::createRectMesh();
-	
+
 	// clears cards from game session (if any)
 	Cards::resetCards();
 }
@@ -111,7 +164,7 @@ void InitializeMainMenu() {
 	// Inits exiting boolean
 	exiting = false;
 	// Inits button meshes
-	for (GfxButton &button : mainMenuButtons) {
+	for (GfxButton& button : mainMenuButtons) {
 		button.mesh = rectMesh;
 	}
 	for (GfxButton& button : exitingButtons) {
@@ -128,15 +181,32 @@ void DrawMainMenu() {
 	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
 	AEGfxSetTransparency(1.f);
-	// bg
-	AEGfxSetBackgroundColor(0.52f, 0.f, 0.f);
+
+	// draw background texture
+	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+	AEGfxTextureSet(exiting ? pBgExitTex : pBgTex, 0, 0);
+	AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+	AEGfxSetTransparency(1.f);
+	AEMtx33 scale, trans, final;
+	AEMtx33Scale(&scale, (float)AEGfxGetWindowWidth(), (float)AEGfxGetWindowHeight());
+	AEMtx33Trans(&trans, 0.f, 0.f);
+	AEMtx33Concat(&final, &trans, &scale);
+	AEGfxSetTransform(final.m);
+	AEGfxMeshDraw(pBgMesh, AE_GFX_MDM_TRIANGLES);
+	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+
+	// get mouse position for hover detection
+	AEVec2 mousepos{};
+	Comp::getCursorPos(mousepos);
 
 	// if not exiting
 	if (!exiting) {
-		printMainMenuUI();
+		printMainMenuUI(mousepos);
 	}
 	else {
-		printExitConfirmation();
+		printExitConfirmation(mousepos);
 	}
 }
 
@@ -145,5 +215,11 @@ void UnloadMainMenu() {
 	AEAudioUnloadAudio(mainbgm);
 	AEAudioUnloadAudioGroup(bgm);
 
-	if (rectMesh) { AEGfxMeshFree(rectMesh); rectMesh = nullptr; }
+	if (rectMesh) { AEGfxMeshFree(rectMesh);           rectMesh = nullptr; }
+	if (pBgMesh) { AEGfxMeshFree(pBgMesh);            pBgMesh = nullptr; }
+	if (pBtnMesh) { AEGfxMeshFree(pBtnMesh);           pBtnMesh = nullptr; }
+	if (pBgTex) { AEGfxTextureUnload(pBgTex);        pBgTex = nullptr; }
+	if (pBtnNormalTex) { AEGfxTextureUnload(pBtnNormalTex); pBtnNormalTex = nullptr; }
+	if (pBtnHoverTex) { AEGfxTextureUnload(pBtnHoverTex);  pBtnHoverTex = nullptr; }
+	if (pBgExitTex) { AEGfxTextureUnload(pBgExitTex); pBgExitTex = nullptr; }
 }
