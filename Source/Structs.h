@@ -123,11 +123,11 @@ struct EnemyTypeInfo {
 };
 
 struct Enemies {
-	AEVec2 pos;
-	AEVec2 velocity;
-	int xp;
-	float scale;
-	float rotation;
+	AEVec2 pos = { 0, 0 };
+	AEVec2 velocity = { 0, 0 };
+	int xp{};
+	float scale{};
+	float rotation{};
 	bool alive = false;
 	int hp{};
 	int maxhp{};
@@ -139,8 +139,8 @@ struct Enemies {
 enum class BossState { IDLE, TELEGRAPHING, LUNGING, COOLDOWN };
 enum class Boss3Attack { NONE, SPIRAL, AIMED, GUNS, LASER };
 struct Boss {
-	AEVec2 pos;
-	AEVec2 velocity;
+	AEVec2 pos = {0, 0};
+	AEVec2 velocity = { 0, 0 };
 	int xp{};
 	float scale{};
 	float rotation{};

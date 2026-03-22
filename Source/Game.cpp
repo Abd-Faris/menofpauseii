@@ -205,11 +205,11 @@ void LoadGame() {
     Animations_Load();
     PauseScreen::LoadPause();
 	World::Load_World();
-    !AEInputCheckCurr(AEVK_LBUTTON);
+    //!AEInputCheckCurr(AEVK_LBUTTON);
     
     // Create Meshes
     MeshCircle = Gfx::createCircleMesh(0xFFFFFFFF);
-    MeshRect = Gfx::createRectMesh(0xFFFFFFFFF);
+    MeshRect = Gfx::createRectMesh(0xFFFFFFFF);
     MeshTriangle = Gfx::createTriangleMesh(0xFFFFFFFF);
 }
 
@@ -336,8 +336,8 @@ void UpdateGame() {
             updateEnemyBullets(deltaTime);
 
             // 8. Boss Updates
-            UpdateBossPhysics(boss, player, deltaTime);
-            BossCollision(boss, player, orbitActive, orbitPosX, orbitPosY);
+            UpdateBossPhysics(currentboss, player, deltaTime);
+            BossCollision(currentboss, player, orbitActive, orbitPosX, orbitPosY);
             updateMinionPhysics(player, deltaTime);
 
             if (static_cast<int>(player_init.current_hp) <= 0) {
@@ -446,7 +446,7 @@ void DrawGame() {
     }
     else {
         DrawMultiBarrels(
-            player.barrelCount,
+            static_cast<int>(player.barrelCount),
             GameConfig::Tank::BARREL_GAP * visualScale,
             GameConfig::Tank::BARREL_PIVOT_OFFSET * visualScale,
             player.currentAngle,
@@ -508,9 +508,9 @@ void DrawGame() {
     }
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
-    if (boss.alive) {
-        DrawBoss(boss, MeshRect, MeshCircle);
-        DrawBossHP(boss, MeshRect, MeshCircle, player);
+    if (currentboss.alive) {
+        DrawBoss(currentboss, MeshRect, MeshCircle);
+        DrawBossHP(currentboss, MeshRect, MeshCircle, player);
     }
 
     printEnemyCount();

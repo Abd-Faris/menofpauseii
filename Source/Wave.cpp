@@ -142,7 +142,7 @@ bool IsWaveCleared() {
 	if (spawnTimer > 0.0f) {
 		return false;
 	}
-	if (currentWave % 5 == 0 && boss.alive) {
+	if (currentWave % 5 == 0 && currentboss.alive) {
 		return false;
 	}
 	for (int i = 0; i < MAX_MINIONS_COUNT; ++i)
@@ -166,7 +166,7 @@ void skipWave(shape& player) {
 		minionPool[i].alive = false;
 	}
 
-	boss.alive = false;
+	currentboss.alive = false;
 	pendingBudget = 0.0f;
 	spawnTimer = 0.0f;
 	currentWave++;
@@ -181,10 +181,10 @@ void printEnemyCount() {
 	for (int i = 0; i < GameConfig::MAX_ENEMIES_COUNT; ++i) {
 		if (enemyPool[i].alive) activeEnemyCount++;
 	}
-	if (boss.alive) activeEnemyCount++;
+	if (currentboss.alive) activeEnemyCount++;
 
 	GfxText text{ "Enemies Remaining : " + std::to_string(activeEnemyCount)};
-	text.scale = 0.35;
+	text.scale = 0.35f;
 	text.pos = { 630, 400 };
 	Gfx::printText(text, boldPixels);
 }

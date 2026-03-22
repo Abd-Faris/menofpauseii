@@ -165,7 +165,7 @@ void reset_game() {
 	currentWave = 1;
 
 	// clear boss
-	boss.alive = false;
+	currentboss.alive = false;
 
 	// clear minions
 	for (auto& minion : minionPool) {

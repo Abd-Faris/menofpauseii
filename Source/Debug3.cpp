@@ -203,7 +203,7 @@ void InitEnemies(Enemies *enemy) {
 }
 
 void separateEnemies() {
-	const float separationForce = 0.5f;
+	//const float separationForce = 0.5f;
 
 	for (size_t i = 0; i < 20; i++) {
 		if (!maxenemy[i].alive) continue;
@@ -273,7 +273,7 @@ void applyPhysicsSeparation(float dt, std::array<Enemies, MAX_ENEMIES>& maxenemy
 	}
 }
 
-void PlayerPhysicsSeparation(float dt, std::array <Enemies, MAX_ENEMIES> &maxenemy, int size, shape Player) {
+void PlayerPhysicsSeparation(float dtm, std::array <Enemies, MAX_ENEMIES> &maxenemy, int size, shape Player) {
 	const float separationStrength = 500.0f;
 	const float separationRange = 1.5f; // Multiplier for when to start separating
 
@@ -307,13 +307,13 @@ void PlayerPhysicsSeparation(float dt, std::array <Enemies, MAX_ENEMIES> &maxene
 
 		// Apply acceleration (F = ma, so a = F/m)
 		AEVec2 acceleration;
-		AEVec2Scale(&acceleration, &separationForce, dt);
+		AEVec2Scale(&acceleration, &separationForce, dtm);
 
 		AEVec2Add(&maxenemy[i].velocity, &maxenemy[i].velocity, &acceleration);
 		//maxenemy[i].velocity = maxenemy[i].velocity + acceleration;
 	}
 }
-void updateEnemyPhysics(float dt, std::array <Enemies, MAX_ENEMIES> &maxenemy, int size) {
+void updateEnemyPhysics(float dtm, std::array <Enemies, MAX_ENEMIES> &maxenemy, int size) {
 	for (int i{}; i < size; i++) {
 		if (!maxenemy[i].alive) continue;
 
@@ -333,7 +333,7 @@ void updateEnemyPhysics(float dt, std::array <Enemies, MAX_ENEMIES> &maxenemy, i
 		// Update position
 
 		AEVec2 currentvelo;
-		AEVec2Scale(&currentvelo, &maxenemy[i].velocity, dt);
+		AEVec2Scale(&currentvelo, &maxenemy[i].velocity, dtm);
 		AEVec2Add(&maxenemy[i].pos, &maxenemy[i].pos, &currentvelo);
 		
 
@@ -433,11 +433,11 @@ void SpawnKEnemies(Enemies* enemy) {
 	enemy->velocity.y = 1;
 }
 
-void EnemyDeath(std::array <Enemies, MAX_ENEMIES> maxenemy, int size, f64 dt){
+void EnemyDeath(std::array <Enemies, MAX_ENEMIES> maxenemy, int size, f64 dtm){
 	for (int i{}; i < MAX_ENEMIES; i++) {
 		if (maxenemy[i].hp <= 0) {
 			
-			while (maxenemy[i].scale>0) maxenemy[i].scale -= 50 * dt;
+			while (maxenemy[i].scale>0) maxenemy[i].scale -= 50 * static_cast<f32>(dtm);
 			maxenemy[i].scale < 0 ? 0 : maxenemy[i].scale;
 			maxenemy[i].alive = false;
 		}
@@ -456,10 +456,10 @@ void LoadDebug3() {
 		SpawnEnemies(&maxenemy[i]);
 	}
 
-	applyPhysicsSeparation(dt, maxenemy, MAX_ENEMIES);
+	applyPhysicsSeparation(static_cast<f32>(dt), maxenemy, MAX_ENEMIES);
 
 	// Update enemy positions and velocities
-	updateEnemyPhysics(dt, maxenemy, MAX_ENEMIES);
+	updateEnemyPhysics(static_cast<f32>(dt), maxenemy, MAX_ENEMIES);
 
 }
 
@@ -550,10 +550,10 @@ void DrawDebug3() {
 		timer2 = 0;
 	}*/
 	//separateEnemies();
-	applyPhysicsSeparation(dt, maxenemy, MAX_ENEMIES);
+	applyPhysicsSeparation(static_cast<f32>(dt), maxenemy, MAX_ENEMIES);
 
 	// Update enemy positions and velocities
-	updateEnemyPhysics(dt, maxenemy, MAX_ENEMIES);
+	updateEnemyPhysics(static_cast<f32>(dt), maxenemy, MAX_ENEMIES);
 	
 	EnemyDeath(maxenemy, MAX_ENEMIES, dt);
 

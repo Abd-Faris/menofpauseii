@@ -75,7 +75,7 @@ namespace PauseScreen {
             int activeEnemyCount = 0;
             for (int i = 0; i < GameConfig::MAX_ENEMIES_COUNT; ++i)
                 if (enemyPool[i].alive) activeEnemyCount++;
-            if (boss.alive) activeEnemyCount++;
+            if (currentboss.alive) activeEnemyCount++;
 
             StatsLine1.text = "Wave: " + std::to_string(currentWave);
             StatsLine2.text = "Enemies left: " + std::to_string(activeEnemyCount);

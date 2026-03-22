@@ -8,7 +8,7 @@ AEGfxTexture* pBossTex = nullptr;
 AEGfxTexture* pMinionTex = nullptr;
 AEGfxVertexList* pBossMesh = nullptr;
 
-Boss boss;
+Boss currentboss;
 
 void LoadBoss() {
     pBossTex = AEGfxTextureLoad("./Assets/boss.png");
@@ -25,68 +25,68 @@ void LoadBoss() {
 }
 
 void SpawnBoss(BossType type, shape& player) {
-    boss = {};
+    currentboss = {};
     f32 mult = (1 + (currentWave / 5 * 0.5f));
-    boss.pos = { player.pos_x + 400.f, player.pos_y + 400.f };
-    boss.velocity = { 0, 0 };
-    boss.alive = true;
-    boss.bosstype = type;
-    boss.state = BossState::IDLE;
-    boss.currentAttack = Boss3Attack::NONE;
+    currentboss.pos = { player.pos_x + 400.f, player.pos_y + 400.f };
+    currentboss.velocity = { 0, 0 };
+    currentboss.alive = true;
+    currentboss.bosstype = type;
+    currentboss.state = BossState::IDLE;
+    currentboss.currentAttack = Boss3Attack::NONE;
 
     switch (type) {
     case BOSS1:
-        boss.scale = GameConfig::Enemy::SIZE_BIG * GameConfig::Boss::B1_SCALE;
-        boss.hp = static_cast<int>(GameConfig::Boss::B1_BASE_HP * mult);
-        boss.xp = GameConfig::Boss::B1_XP;
-        boss.chaseSpeed = GameConfig::Boss::B1_CHASE_SPEED;
-        boss.lungeSpeed = GameConfig::Boss::B1_LUNGE_SPEED;
-        boss.idleDuration = GameConfig::Boss::B1_IDLE_DUR;
-        boss.telegraphDuration = GameConfig::Boss::B1_TELEGRAPH_DUR;
-        boss.lungeDuration = GameConfig::Boss::B1_LUNGE_DUR;
-        boss.cooldownDuration = GameConfig::Boss::B1_COOLDOWN_DUR;
-        boss.bulletCount = GameConfig::Boss::B1_BULLET_COUNT;
+        currentboss.scale = GameConfig::Enemy::SIZE_BIG * GameConfig::Boss::B1_SCALE;
+        currentboss.hp = static_cast<int>(GameConfig::Boss::B1_BASE_HP * mult);
+        currentboss.xp = GameConfig::Boss::B1_XP;
+        currentboss.chaseSpeed = GameConfig::Boss::B1_CHASE_SPEED;
+        currentboss.lungeSpeed = GameConfig::Boss::B1_LUNGE_SPEED;
+        currentboss.idleDuration = GameConfig::Boss::B1_IDLE_DUR;
+        currentboss.telegraphDuration = GameConfig::Boss::B1_TELEGRAPH_DUR;
+        currentboss.lungeDuration = GameConfig::Boss::B1_LUNGE_DUR;
+        currentboss.cooldownDuration = GameConfig::Boss::B1_COOLDOWN_DUR;
+        currentboss.bulletCount = GameConfig::Boss::B1_BULLET_COUNT;
         break;
 
     case BOSS2:
-        boss.scale = GameConfig::Enemy::SIZE_BIG * GameConfig::Boss::B2_SCALE;
-        boss.hp = static_cast<int>(GameConfig::Boss::B2_BASE_HP * mult);
-        boss.xp = GameConfig::Boss::B2_XP;
-        boss.chaseSpeed = 0.f;
-        boss.idleDuration = GameConfig::Boss::B2_IDLE_DUR;
-        boss.telegraphDuration = GameConfig::Boss::B2_TELEGRAPH_DUR;
-        boss.lungeDuration = GameConfig::Boss::B2_LUNGE_DUR;
-        boss.cooldownDuration = GameConfig::Boss::B2_COOLDOWN_DUR;
-        boss.minionCount = GameConfig::Boss::B2_MINION_COUNT;
+        currentboss.scale = GameConfig::Enemy::SIZE_BIG * GameConfig::Boss::B2_SCALE;
+        currentboss.hp = static_cast<int>(GameConfig::Boss::B2_BASE_HP * mult);
+        currentboss.xp = GameConfig::Boss::B2_XP;
+        currentboss.chaseSpeed = 0.f;
+        currentboss.idleDuration = GameConfig::Boss::B2_IDLE_DUR;
+        currentboss.telegraphDuration = GameConfig::Boss::B2_TELEGRAPH_DUR;
+        currentboss.lungeDuration = GameConfig::Boss::B2_LUNGE_DUR;
+        currentboss.cooldownDuration = GameConfig::Boss::B2_COOLDOWN_DUR;
+        currentboss.minionCount = GameConfig::Boss::B2_MINION_COUNT;
         break;
 
     case BOSS3:
-        boss.scale = GameConfig::Enemy::SIZE_BIG * GameConfig::Boss::B3_SCALE;
-        boss.hp = static_cast<int>(GameConfig::Boss::B3_BASE_HP * mult);
-        boss.xp = GameConfig::Boss::B3_XP;
-        boss.chaseSpeed = GameConfig::Boss::B3_CHASE_SPEED;
-        boss.idleDuration = GameConfig::Boss::B3_IDLE_DUR;
-        boss.telegraphDuration = GameConfig::Boss::B3_TELEGRAPH_DUR;
-        boss.lungeDuration = GameConfig::Boss::B3_LUNGE_DUR;
-        boss.cooldownDuration = GameConfig::Boss::B3_COOLDOWN_DUR;
-        boss.bulletCount = GameConfig::Boss::B3_SPIRAL_ARMS;
+        currentboss.scale = GameConfig::Enemy::SIZE_BIG * GameConfig::Boss::B3_SCALE;
+        currentboss.hp = static_cast<int>(GameConfig::Boss::B3_BASE_HP * mult);
+        currentboss.xp = GameConfig::Boss::B3_XP;
+        currentboss.chaseSpeed = GameConfig::Boss::B3_CHASE_SPEED;
+        currentboss.idleDuration = GameConfig::Boss::B3_IDLE_DUR;
+        currentboss.telegraphDuration = GameConfig::Boss::B3_TELEGRAPH_DUR;
+        currentboss.lungeDuration = GameConfig::Boss::B3_LUNGE_DUR;
+        currentboss.cooldownDuration = GameConfig::Boss::B3_COOLDOWN_DUR;
+        currentboss.bulletCount = GameConfig::Boss::B3_SPIRAL_ARMS;
         break;
 
     case BOSS4:
-        boss.scale = GameConfig::Enemy::SIZE_BIG * GameConfig::Boss::B4_SCALE;
-        boss.hp = static_cast<int>(GameConfig::Boss::B4_BASE_HP * mult);
-        boss.xp = GameConfig::Boss::B4_XP;
-        boss.chaseSpeed = GameConfig::Boss::B4_CHASE_SPEED;
-        boss.idleDuration = GameConfig::Boss::B4_IDLE_DUR;
-        boss.telegraphDuration = GameConfig::Boss::B4_TELEGRAPH_DUR;
-        boss.lungeDuration = GameConfig::Boss::B4_LUNGE_DUR;
-        boss.cooldownDuration = GameConfig::Boss::B4_COOLDOWN_DUR;
-        boss.gunFireRate = GameConfig::Boss::B4_GUN_FIRE_RATE;
-        boss.laserSweepSpeed = GameConfig::Boss::B4_LASER_SWEEP;
+        currentboss.scale = GameConfig::Enemy::SIZE_BIG * GameConfig::Boss::B4_SCALE;
+        currentboss.hp = static_cast<int>(GameConfig::Boss::B4_BASE_HP * mult);
+        currentboss.xp = GameConfig::Boss::B4_XP;
+        currentboss.chaseSpeed = GameConfig::Boss::B4_CHASE_SPEED;
+        currentboss.idleDuration = GameConfig::Boss::B4_IDLE_DUR;
+        currentboss.telegraphDuration = GameConfig::Boss::B4_TELEGRAPH_DUR;
+        currentboss.lungeDuration = GameConfig::Boss::B4_LUNGE_DUR;
+        currentboss.cooldownDuration = GameConfig::Boss::B4_COOLDOWN_DUR;
+        currentboss.gunFireRate = GameConfig::Boss::B4_GUN_FIRE_RATE;
+        currentboss.laserSweepSpeed = GameConfig::Boss::B4_LASER_SWEEP;
         break;
     }
 
-    boss.maxhp = boss.hp;
+    currentboss.maxhp = currentboss.hp;
 }
 
 void BossShootRing(Boss& boss) {

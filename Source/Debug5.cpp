@@ -130,7 +130,7 @@ void LoadDebug5() {
     World::Init_World();
 
     MeshCircle = Gfx::createCircleMesh(0xFFFFFFFF);
-    MeshRect = Gfx::createRectMesh(0xFFFFFFFFF);
+    MeshRect = Gfx::createRectMesh(0xFFFFFFFF);
     MeshTriangle = Gfx::createTriangleMesh(0xFFFFFFFF);
 
     // Reset player
@@ -173,10 +173,10 @@ void UpdateDebug5() {
         updateMinionPhysics(player, deltaTime);
 
         // No EnemySpawner, no updateEnemyPhysics — boss only
-        UpdateBossPhysics(boss, player, deltaTime);
+        UpdateBossPhysics(currentboss, player, deltaTime);
     }
 
-    BossCollision(boss, player, orbitActive,  orbitPosX,  orbitPosY);
+    BossCollision(currentboss, player, orbitActive,  orbitPosX,  orbitPosY);
     circlerectcollision1();
     AEGfxSetCamPosition(player.pos_x, player.pos_y);
 
@@ -248,7 +248,7 @@ void DrawDebug5() {
         DrawMultiBarrels(1, 0.0f, GameConfig::Tank::BARREL_PIVOT_OFFSET * visualScale, player.currentAngle + PI, player.pos_x, player.pos_y, cannonwidthnow * visualScale, GameConfig::Tank::BARREL_LENGTH * visualScale, MeshRect);
     }
     else {
-        DrawMultiBarrels(player.barrelCount, GameConfig::Tank::BARREL_GAP * visualScale, GameConfig::Tank::BARREL_PIVOT_OFFSET * visualScale, player.currentAngle, player.pos_x, player.pos_y, cannonwidthnow * visualScale, GameConfig::Tank::BARREL_LENGTH * visualScale, MeshRect);
+        DrawMultiBarrels(static_cast<int>(player.barrelCount), GameConfig::Tank::BARREL_GAP * visualScale, GameConfig::Tank::BARREL_PIVOT_OFFSET * visualScale, player.currentAngle, player.pos_x, player.pos_y, cannonwidthnow * visualScale, GameConfig::Tank::BARREL_LENGTH * visualScale, MeshRect);
     }
 
     // Turret
@@ -256,9 +256,9 @@ void DrawDebug5() {
     Gfx::printMesh(MeshCircle, playerPos, { GameConfig::Tank::TURRET_SIZE * visualScale, GameConfig::Tank::TURRET_SIZE * visualScale }, player.currentAngle);
 
     // -- Draw Boss --
-    if (boss.alive) {
-        DrawBoss(boss, MeshRect, MeshCircle);
-        DrawBossHP(boss, MeshRect, MeshCircle, player);
+    if (currentboss.alive) {
+        DrawBoss(currentboss, MeshRect, MeshCircle);
+        DrawBossHP(currentboss, MeshRect, MeshCircle, player);
     }
 
     for (const auto& currentEnemy : minionPool) {
