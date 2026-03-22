@@ -66,8 +66,8 @@ void GenerateWave(int waveNumber, shape& player) {
 	// CAN CHANGE ANYTIME
 	EnemyTypeInfo passive1 = { 1, 2, 70, -6.0f, 1, 3 }; //passive small
 	EnemyTypeInfo passive2 = { 2, 6, 20, 2.0f, 1, 3}; //passive big
-	EnemyTypeInfo kamikaze = { 3, 10, 10, 7.5f, 2, 0}; //kamikaze
-	EnemyTypeInfo shooter = { 4, 10, 10, 7.5f, 4, 0 }; //shooter
+	EnemyTypeInfo kamikaze = { 3, 10, 10, 7.0f, 2, 0}; //kamikaze
+	EnemyTypeInfo shooter = { 4, 10, 10, 7.0f, 4, 0 }; //shooter
 
 	//this creates a pool of enemy types 
 	std::vector<EnemyTypeInfo> pool = {
