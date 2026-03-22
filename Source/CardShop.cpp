@@ -86,9 +86,9 @@ namespace { // functions for InitializeCardShop()
 
 	// init shop texts
 	std::vector<GfxText> shopTexts{
-		{"BAG", 0.5f, 0, 0, 0, 255, {575, 375}},
-		{"SHOP", 0.8f, 0, 0, 0, 255, {-200, 195}},
-		{"ACTIVE CARDS", 0.5f, 0, 0, 0, 255, {-125, -225}}
+		{"BAG", 0.5f, 0, 0, 0, 255, {575, 370}},
+		{"SHOP", 0.8f, 0, 0, 0, 255, {-200, 190}},
+		{"ACTIVE CARDS", 0.5f, 0, 0, 0, 255, {-125, -230}}
 	};
 
 	// initialises the card shop array
@@ -201,7 +201,7 @@ namespace { // functions for InitializeCardShop()
 
 void LoadCardShop() {
 	// load audio assets
-	mainbgm = AEAudioLoadMusic("Assets/audio/bgm/credits_bgm.mp3");
+	mainbgm = AEAudioLoadMusic("Assets/audio/bgm/shop_bgm.mp3");
 	bgm = AEAudioCreateGroup();
 	AEAudioPlay(mainbgm, bgm, 2.f, 1.f, -1);
 
@@ -427,6 +427,37 @@ void UpdateCardShop() {
 
 namespace { // functions for DrawCardShop()
 
+	void drawShopUI() {
+		// -- draw background texture fullscreen --
+		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+		AEGfxTextureSet(pBgTex, 0, 0);
+		AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+		AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+		AEGfxSetTransparency(1.f);
+		Gfx::printMesh(pPanelMesh, { 0.f, 0.f },
+			{ (float)AEGfxGetWindowWidth(), (float)AEGfxGetWindowHeight() }, 0.f, { 0.f, 0.f }, true);
+
+		// -- draw textured panels --
+		AEGfxTextureSet(pShopTex, 0, 0);
+		Gfx::printMesh(pPanelMesh, { 575, 0 }, { 350, 800 }, 0.f, { 0.f, 0.f }, true);        // bag
+
+		AEGfxTextureSet(pSlotsTex, 0, 0);
+		Gfx::printMesh(pPanelMesh, { -200, 40 }, { 1100, 380 }, 0.f, { 0.f, 0.f }, true);     // shop
+
+		AEGfxTextureSet(pSlotsTex, 0, 0);
+		Gfx::printMesh(pPanelMesh, { -125, -300 }, { 950, 200 }, 0.f, { 0.f, 0.f }, true);    // active slots
+
+		AEGfxTextureSet(pTrashTex, 0, 0);
+		Gfx::printMesh(pPanelMesh, { -700, -300 }, { 100, 100 }, 0.f, { 0.f, 0.f }, true);    // trash
+
+		// -- desc panel --
+		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+		AEGfxSetTransparency(1.f);
+		Gfx::printMesh(desc, { -200, 325 }, { 1100, 150 });
+	}
+
 	// calculates UV coords of cards spritesheet
 	AEGfxVertexList* createCardMesh(const Card& card) {
 		f32 uMin = card.info.col * (1.0f / NUM_COLS);
@@ -477,19 +508,6 @@ namespace { // functions for DrawCardShop()
 		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
 		AEGfxSetTransparency(1.f);
 	}
-
-	//// draws cards
-	//void drawCards() {
-	//	for (Card& indivCard : shopCards) {
-	//		Gfx::printMesh(rectMesh, indivCard, CARD_SHOP_SCALE);
-	//	}
-	//	for (Card& indivCard : activeCards) {
-	//		Gfx::printMesh(rectMesh, indivCard, ACTIVE_CARD_SCALE);
-	//	}
-	//	for (Card& indivCard : inventoryCards) {
-	//		Gfx::printMesh(rectMesh, indivCard, INVENTORY_CARD_SCALE);
-	//	}
-	//}
 
 	void drawTexts() {
 		// STATIC TEXTS
@@ -568,12 +586,7 @@ namespace { // functions for DrawCardShop()
 		case DECK::ACTIVE: scale = ACTIVE_CARD_SCALE; break;
 		case DECK::BAG:    scale = INVENTORY_CARD_SCALE; break;
 		}
-		//// create mesh to draw
-		//AEGfxVertexList* cardMesh = createCardMesh(*pSelectedCard);
-		//Gfx::printMesh(cardMesh, *pSelectedCard, scale);
-		//AEGfxMeshFree(cardMesh);
-		////Gfx::printMesh(rectMesh, *pSelectedCard, scale);
-
+		// calculate UV offset in spritesheet
 		f32 uOffset = card.info.col * (1.0f / NUM_COLS);
 		f32 vOffset = card.info.row * (1.0f / NUM_ROWS);
 		// UV offset
@@ -659,37 +672,8 @@ namespace { // functions for DrawCardShop()
 
 // -600 -200 200
 void DrawCardShop() {
-	
-	// -- draw background texture fullscreen --
-	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-	AEGfxTextureSet(pBgTex, 0, 0);
-	AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
-	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
-	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-	AEGfxSetTransparency(1.f);
-	Gfx::printMesh(pPanelMesh, { 0.f, 0.f },
-		{ (float)AEGfxGetWindowWidth(), (float)AEGfxGetWindowHeight() }, 0.f, { 0.f, 0.f }, true);
-
-	// -- draw textured panels --
-	AEGfxTextureSet(pShopTex, 0, 0);
-	Gfx::printMesh(pPanelMesh, { 575, 0 }, { 350, 800 }, 0.f, { 0.f, 0.f }, true);        // bag
-
-	AEGfxTextureSet(pSlotsTex, 0, 0);
-	Gfx::printMesh(pPanelMesh, { -200, 40 }, { 1100, 380 }, 0.f, { 0.f, 0.f }, true);     // shop
-
-	AEGfxTextureSet(pSlotsTex, 0, 0);
-	Gfx::printMesh(pPanelMesh, { -125, -300 }, { 950, 200 }, 0.f, { 0.f, 0.f }, true);    // active slots
-
-	AEGfxTextureSet(pTrashTex, 0, 0);
-	Gfx::printMesh(pPanelMesh, { -700, -300 }, { 100, 100 }, 0.f, { 0.f, 0.f }, true);    // trash
-
-	// -- desc panel --
-	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
-	AEGfxSetTransparency(1.f);
-	Gfx::printMesh(desc, { -200, 325 }, { 1100, 150 });
-
 	// print card shop UI to screen
+	drawShopUI();
 	drawCards();
 	drawTexts();
 	PauseScreen::DrawPauseButton();
@@ -702,6 +686,9 @@ void DrawCardShop() {
 	else {
 		drawCardDescription(true);
 	}
+
+	// if currentwave is 2 and tutorial is on, print tutorial text
+	if (currentWave == 2 && tutorialOn) printtutorial();
 
 	// if user cant buy any more cards, block access to shop
 	if (buyable_left <= 0) blockShop();
