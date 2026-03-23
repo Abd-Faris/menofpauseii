@@ -7,7 +7,7 @@ extern int currentWave;
 // --- INITIAL PLAYER STATS ---
 PlayerStats	player_init = {
 	// -- HP DMG SPEED FIRERATE XP --
-	200.0f, 10.0f, 280.0f, 0.5f, 1.0f,
+	250.0f, 15.0f, 300.0f, 0.5f, 1.0f,
 
 	{ 0, 0, 0, 0, 0 },   //initial upgrade amount
 
@@ -15,7 +15,7 @@ PlayerStats	player_init = {
 
 	0, false,  //initial skill point, and menu state
 
-	200.0f // current hp
+	250.0f // current hp
 };
 
 namespace {

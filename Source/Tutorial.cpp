@@ -20,7 +20,7 @@ void printtutorial() {
 		switch (tutorialIndex) {
 		case 0: // print WASD controls
 			text.text = "Press WASD to move";
-			text.scale = 0.5f;
+			text.scale = 0.7f;
 			text.pos = { 0 - camx, 200 - camy };
 			Gfx::printMultiline(text, boldPixels);
 			if (AEInputCheckTriggered(AEVK_W) || AEInputCheckTriggered(AEVK_A) || 
@@ -29,16 +29,16 @@ void printtutorial() {
 			break;
 		case 1:
 			text.text = "Hold Spacebar or LButton to Shoot";
-			text.scale = 0.5f;
+			text.scale = 0.7f;
 			text.pos = { 0 - camx, 200 - camy };
 			Gfx::printMultiline(text, boldPixels);
 			if (AEInputCheckTriggered(AEVK_SPACE) || AEInputCheckTriggered(AEVK_LBUTTON))
 				++tutorialIndex;
 			break;
 		case 2:
-			text.text = "Kill all enemies to proceed! -->";
-			text.scale = 0.3f;
-			text.pos = {325, 400};
+			text.text = "Shoot all the Boxes and Enemies!";
+			text.scale = 0.7f;
+            text.pos = { 0 - camx, 200 - camy };
 			Gfx::printMultiline(text, boldPixels);
 			break;
 		}

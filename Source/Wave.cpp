@@ -62,12 +62,19 @@ void GenerateWave(int waveNumber, shape& player) {
 	pendingBudget = totalWaveBudget;
 	spawnTimer = MAX_SPAWN_TIME;
 
-	// ---- ID, COST, BASE WEIGHT, GROWTH RATE, MIN WAVE, MAX WAVE - 1 ----
+	// ---- ID, COST, BASE WEIGHT, GROWTH RATE, MIN WAVE, MAX WAVE ----
 	// CAN CHANGE ANYTIME
-	EnemyTypeInfo passive1 = { 1, 2, 70, -6.0f, 1, 3 }; //passive small
-	EnemyTypeInfo passive2 = { 2, 6, 20, 2.0f, 1, 3}; //passive big
-	EnemyTypeInfo kamikaze = { 3, 10, 10, 7.0f, 2, 0}; //kamikaze
-	EnemyTypeInfo shooter = { 4, 10, 10, 7.0f, 4, 0 }; //shooter
+	EnemyTypeInfo passive1 = { 1, 2, 60,  0.0f, 1, 1 }; 
+	EnemyTypeInfo passive2 = { 2, 6, 40,  0.0f, 1, 1 }; 
+	EnemyTypeInfo kamikaze = { 3, 10, 10, 8.0f, 1, 0 }; 
+	EnemyTypeInfo shooter = { 4, 10,  5, 8.0f, 3, 0 };
+
+	// --- GUARANTEE WAVE 1 KAMIKAZE ---
+	if (waveNumber == 1) {
+		SpawnAttackEnemy(player); 
+		pendingBudget -= (float)kamikaze.cost;
+		totalEnemiesSpawned++;
+	}
 
 	//this creates a pool of enemy types 
 	std::vector<EnemyTypeInfo> pool = {
