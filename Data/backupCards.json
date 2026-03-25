@@ -459,6 +459,54 @@
                "value": 0
             }
          ]
+      },
+      {
+         "id": "common_reroll",
+         "rarity": 0,
+         "sprite_row": 1,
+         "sprite_col": 0,
+         "active": [],
+         "passive": [
+            {
+               "id": "rerolls_up",
+               "desc": "Shop Rerolls +1\nAllows for rerolling of the card shop!",
+               "type": "",
+               "valuetype": "",
+               "value": 0
+            }
+         ]
+      },
+      {
+         "id": "rare_reroll",
+         "rarity": 1,
+         "sprite_row": 1,
+         "sprite_col": 1,
+         "active": [],
+         "passive": [
+            {
+               "id": "rerolls_up",
+               "desc": "Shop Rerolls +2\nAllows for rerolling of the card shop!",
+               "type": "",
+               "valuetype": "",
+               "value": 0
+            }
+         ]
+      },
+      {
+         "id": "epic_reroll",
+         "rarity": 2,
+         "sprite_row": 1,
+         "sprite_col": 2,
+         "active": [],
+         "passive": [
+            {
+               "id": "rerolls_up",
+               "desc": "Shop Rerolls +3\nAllows for rerolling of the card shop!",
+               "type": "",
+               "valuetype": "",
+               "value": 0
+            }
+         ]
       }
    ]
 }
