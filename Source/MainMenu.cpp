@@ -1,6 +1,5 @@
 #include "MasterHeader.h"
 
-
 namespace {
 	// declares AE objects
 	AEGfxVertexList* rectMesh = nullptr;
@@ -196,6 +195,8 @@ void DrawMainMenu() {
 	AEGfxSetTransform(final.m);
 	AEGfxMeshDraw(pBgMesh, AE_GFX_MDM_TRIANGLES);
 	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+
+
 
 	// get mouse position for hover detection
 	AEVec2 mousepos{};
