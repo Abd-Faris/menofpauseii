@@ -7,7 +7,7 @@ extern int currentWave;
 // --- INITIAL PLAYER STATS ---
 PlayerStats	player_init = {
 	// -- HP DMG SPEED FIRERATE XP --
-	250.0f, 15.0f, 300.0f, 0.5f, 1.0f,
+	300.0f, 15.0f, 300.0f, 0.5f, 1.0f,
 
 	{ 0, 0, 0, 0, 0 },   //initial upgrade amount
 
@@ -15,7 +15,7 @@ PlayerStats	player_init = {
 
 	0, false,  //initial skill point, and menu state
 
-	250.0f // current hp
+	300.0f // current hp
 };
 
 namespace {
@@ -448,6 +448,8 @@ void DrawDebug1() {
 
 	// --- PRINT HP, LEVEL, WAVE TEXT ---
 	char hudHP[64], level[32], wave[32];
+
+	if (max_hp < 0) max_hp = 0;
 
 	sprintf_s(hudHP, "%.0f / %.0f", player_init.current_hp, max_hp);
 	sprintf_s(level, "LEVEL %d", player_init.player_level);
