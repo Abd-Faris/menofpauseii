@@ -90,7 +90,6 @@ namespace { // functions for InitializeCardShop()
 	// init shop texts
 	std::vector<GfxText> shopTexts{
 		{"BAG", 0.5f, 0, 0, 0, 255, {575, 370}},
-		{"SHOP", 0.8f, 0, 0, 0, 255, {-200, 190}},
 		{"ACTIVE CARDS", 0.5f, 0, 0, 0, 255, {-125, -230}},
 		{"TRASH", 0.5f, 0, 0, 0, 255, {-700, -230}}
 	};
@@ -539,6 +538,11 @@ namespace { // functions for DrawCardShop()
 		for (GfxText& text : shopTexts) {
 			Gfx::printText(text, boldPixels);
 		}
+		// BUGFIX: prevent shop text from displaying over the end shop screen
+		GfxText shop{ "SHOP", 0.8f, 0, 0, 0, 255, { -200, 190 } };
+		if (buyable_left > 0) {
+			Gfx::printText(shop, boldPixels);
+		}
 		// DYNAMIC TEXTS
 		// ACTIVE
 		//GfxText cardCount{ "", 0.5f };
@@ -614,16 +618,16 @@ namespace { // functions for DrawCardShop()
 			// dont display if selectedCard was from the bag deck
 			if ((card.from == DECK::BAG)) return;
 			// display bag deck prompt with texture
-			AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-			AEGfxTextureSet(pShopTex, 0, 0);
-			AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
-			AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
-			AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-			AEGfxSetTransparency(1.f);
-			Gfx::printMesh(pPanelMesh, { 575, 0 }, { 350, 800 }, 0.f, { 0.f, 0.f }, true);
-			AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+			//AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+			//AEGfxTextureSet(pShopTex, 0, 0);
+			//AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+			//AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+			//AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+			//AEGfxSetTransparency(1.f);
+			//Gfx::printMesh(pPanelMesh, { 575, 0 }, { 350, 800 }, 0.f, { 0.f, 0.f }, true);
+			//AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 			GfxText text{ "Add to Bag", 0.8f };
-			text.pos = { 575, 0 };
+			text.pos = { 575, 120 };
 			Gfx::printText(text, boldPixels);
 		}
 		// active deck prompt
@@ -631,16 +635,16 @@ namespace { // functions for DrawCardShop()
 			// dont display if selectedCard was from the active deck
 			if ((card.from == DECK::ACTIVE)) return;
 			// display active deck prompt with texture
-			AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-			AEGfxTextureSet(pSlotsTex, 0, 0);
-			AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
-			AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
-			AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-			AEGfxSetTransparency(1.f);
-			Gfx::printMesh(pPanelMesh, { -125, -300 }, { 950, 200 }, 0.f, { 0.f, 0.f }, true);
-			AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-			GfxText text{ "Add to Active Cards" };
-			text.pos = { -125, -300 };
+			//AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+			//AEGfxTextureSet(pSlotsTex, 0, 0);
+			//AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+			//AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+			//AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+			//AEGfxSetTransparency(1.f);
+			//Gfx::printMesh(pPanelMesh, { -125, -300 }, { 950, 200 }, 0.f, { 0.f, 0.f }, true);
+			//AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+			GfxText text{ "Add to Active Cards", 0.6f };
+			text.pos = { -125, -260 };
 			Gfx::printText(text, boldPixels);
 		}
 	}
