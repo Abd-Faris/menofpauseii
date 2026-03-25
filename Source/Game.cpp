@@ -374,7 +374,8 @@ void DrawGame() {
     if (tutorialOn) printtutorial();
 
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-    
+
+    DrawEnemyIndicators(player, MeshTriangle);
     // -- Draw Bullets --
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
     AEGfxTextureSet(pBulletTex, 0, 0);

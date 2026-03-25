@@ -351,6 +351,73 @@ void updateEnemyBullets(float deltaTime) {
     }
 }
 
+void DrawEnemyIndicators(shape& player, AEGfxVertexList* MeshTriangle) {
+    float screenW = (float)AEGfxGetWindowWidth() * 0.5f;
+    float screenH = (float)AEGfxGetWindowHeight() * 0.5f;
+    float padding = 30.f; // distance from screen edge
+    float arrowSize = 30.f;
+
+    // Helper to draw one indicator
+    auto DrawIndicator = [&](AEVec2 enemyPos, float r, float g, float b) {
+        float dx = enemyPos.x - player.pos_x;
+        float dy = enemyPos.y - player.pos_y;
+
+        // Check if enemy is off screen
+        bool offScreen = (fabsf(dx) > screenW || fabsf(dy) > screenH);
+        if (!offScreen) return;
+
+        // Angle from player to enemy
+        float angle = atan2f(dy, dx);
+
+        // Clamp to screen edge
+        float clampedX, clampedY;
+        if (fabsf(dx) / screenW > fabsf(dy) / screenH) {
+            // Clamp to left or right edge
+            float sign = dx > 0 ? 1.f : -1.f;
+            clampedX = player.pos_x + sign * (screenW - padding);
+            clampedY = player.pos_y + dy * (screenW - padding) / fabsf(dx);
+        }
+        else {
+            // Clamp to top or bottom edge
+            float sign = dy > 0 ? 1.f : -1.f;
+            clampedX = player.pos_x + dx * (screenH - padding) / fabsf(dy);
+            clampedY = player.pos_y + sign * (screenH - padding);
+        }
+
+        // Clamp Y within screen bounds too
+        clampedX = max(player.pos_x - screenW + padding, min(player.pos_x + screenW - padding, clampedX));
+        clampedY = max(player.pos_y - screenH + padding, min(player.pos_y + screenH - padding, clampedY));
+
+        AEGfxSetColorToMultiply(r, g, b, 1.f);
+        Gfx::printMesh(MeshTriangle,
+            { clampedX, clampedY },
+            { arrowSize, arrowSize },
+            angle);
+        };
+
+    // Regular enemies
+    for (const auto& enemy : enemyPool) {
+        if (!enemy.alive) continue;
+        if (enemy.enemtype == PASSIVE)
+            DrawIndicator(enemy.pos, 0.6f, 0.2f, 0.6f); // purple
+        else if (enemy.enemtype == ATTACK)
+            DrawIndicator(enemy.pos, 0.2f, 0.2f, 0.8f); // blue
+        else if (enemy.enemtype == SHOOTER)
+            DrawIndicator(enemy.pos, 0.8f, 0.2f, 0.2f); // red
+    }
+
+    // Minions
+    for (const auto& minion : minionPool) {
+        if (!minion.alive) continue;
+        DrawIndicator(minion.pos, 0.6f, 0.2f, 0.6f); // purple
+    }
+
+    // Boss — larger, distinct color
+    if (currentboss.alive) {
+        DrawIndicator(currentboss.pos, 1.0f, 0.5f, 0.0f); // orange
+    }
+}
+
 void FreeEnemies() {
     for (int i = 0; i < 4; ++i) {
         if (pEnemyTex[i]) { AEGfxTextureUnload(pEnemyTex[i]); pEnemyTex[i] = nullptr; }
