@@ -200,7 +200,7 @@ void LoadGame() {
     // load audio assets
     mainbgm = AEAudioLoadMusic("Assets/audio/bgm/game_bgm.mp3");
     bgm = AEAudioCreateGroup();
-    AEAudioPlay(mainbgm, bgm, 1.f, 1.f, -1);
+    AEAudioPlay(mainbgm, bgm, 2.f, 1.f, -1);
    
     LoadDebug1();
     LoadBullets();
