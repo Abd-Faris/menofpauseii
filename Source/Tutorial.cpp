@@ -36,7 +36,7 @@ void printtutorial() {
 				++tutorialIndex;
 			break;
 		case 2:
-			text.text = "Shoot all the Crates and Enemies!";
+			text.text = "The arrows indicate enemies location! Shoot all the enemies!";
 			text.scale = 0.7f;
             text.pos = { 0 - camx, 200 - camy };
 			Gfx::printMultiline(text, boldPixels);

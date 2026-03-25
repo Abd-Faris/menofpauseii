@@ -486,7 +486,7 @@ void DrawDebug1() {
 		}
 
 		if (player_init.skill_point > 0) {
-			AEGfxPrint(boldPixels, "SPEND POINT TO CONTINUE!", -0.23f, -0.63f, 0.4f, 1.0f, 1.0f, 1.0f, 1.0f);
+			AEGfxPrint(boldPixels, "CLICK + TO SPEND SKILL POINT!", -0.28f, -0.63f, 0.4f, 1.0f, 1.0f, 1.0f, 1.0f);
 		}
 		else {
 			AEGfxPrint(boldPixels, "CLICK ANYWHERE TO CLOSE!", -0.23f, -0.63f, 0.4f, 1.0f, 1.0f, 1.0f, 1.0f);

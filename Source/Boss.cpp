@@ -249,6 +249,7 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
     switch (boss.state) {
 
     case BossState::IDLE:
+        
         if (dist > 1.f) {
             boss.velocity.x += (toPlayer.x / dist) * boss.chaseSpeed * deltaTime;
             boss.velocity.y += (toPlayer.y / dist) * boss.chaseSpeed * deltaTime;
@@ -274,15 +275,18 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
         break;
 
     case BossState::TELEGRAPHING:
+        
         boss.velocity = { 0, 0 };
 
         if (boss.stateTimer >= boss.telegraphDuration) {
+            boss.lungehit = false;
             boss.state = BossState::LUNGING;
             boss.stateTimer = 0.f;
         }
         break;
 
     case BossState::LUNGING: {
+        
         float t = boss.stateTimer / boss.lungeDuration;
         float speed = boss.lungeSpeed * (1.0f - t);
         boss.velocity.x = boss.lungeDirection.x * speed;
@@ -717,8 +721,17 @@ void BossCollision(Boss& boss, shape &player, bool orbitActive, float orbitPosX,
     float colRadius = (boss.scale * GameConfig::Enemy::HITBOX_RATIO) + player.scale;
 
     if (distSq < colRadius * colRadius) {
-        playerFlashTimer = 0.15f;
-        player_init.current_hp -= boss.maxhp / 5;
+        if (boss.bosstype == BOSS1) {
+            if (!boss.lungehit) {
+                playerFlashTimer = 0.15f;
+                player_init.current_hp -= boss.maxhp / 8;
+                boss.lungehit = true;
+            }
+        }
+        else {
+            playerFlashTimer = 0.15f;
+            player_init.current_hp -= boss.maxhp / 8;
+        }
     }
 }
 

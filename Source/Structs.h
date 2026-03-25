@@ -164,6 +164,7 @@ struct Boss {
 	float telegraphDuration = 0.6f;
 	float lungeDuration = 0.25f;
 	float cooldownDuration = 0.8f;
+	bool lungehit = false;
 
 	// Shooting
 	float shootTimer = 0.f;
