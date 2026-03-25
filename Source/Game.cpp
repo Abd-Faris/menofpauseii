@@ -187,7 +187,6 @@ void circlerectcollision() {
                 boolet.isActive = false;
                 if (minion.hp <= 0 && minion.alive) {
                     TriggerExplosion(minion.pos.x, minion.pos.y, minion.scale);
-                    playerFlashTimer = 0.15f;
                 }
             }
         }
