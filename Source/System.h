@@ -13,3 +13,5 @@ void Initialise_System(_In_ HINSTANCE hInstance,
 void Load_Global_Assets();
 
 void Unload_Global_Assets();
+
+extern bool fullscreen;

@@ -10,8 +10,6 @@
 #include "MasterHeader.h"
 #include <direct.h>
 
-
-
 //-----------------------------------------------------------//
 // This function defines the beginning of the program and
 // implements frame loops in the program.
@@ -48,6 +46,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         while(GS_next == GS_current){
             AESysFrameStart(); // start of game frame
             
+            if (AEInputCheckTriggered(AEVK_F11)) {
+                if (!fullscreen) {
+                    AESysSetFullScreen(1);
+                    fullscreen = true;
+                }
+                else if (fullscreen) {
+                    AESysSetFullScreen(0);
+                    fullscreen = false;
+                }
+            }
             // Update & Draw Functions
             if(GS_Functions.Update) GS_Functions.Update();
             if(GS_Functions.Draw) GS_Functions.Draw();

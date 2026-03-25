@@ -45,6 +45,7 @@ void circlerectcollision() {
                 player_init.current_hp -= currentEnemy.hp / 3.0f;
                 currentEnemy.hp = 0;
                 TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale);
+                playerFlashTimer = 0.15f;
             }
 
         else {
@@ -73,6 +74,7 @@ void circlerectcollision() {
                     player_init.current_hp -= currentEnemy.hp / 3.0f;
                     currentEnemy.hp = 0;
                     TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale);
+                    playerFlashTimer = 0.15f;
                     break;
                 }
             }
@@ -88,6 +90,7 @@ void circlerectcollision() {
             if (distanceSquared < (collisionRadius * collisionRadius)) {
                 currentEnemy.hp = 0;
                 TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale);
+                playerFlashTimer = 0.15f;
             }
         }
         for (auto& boolet : bulletList) {
@@ -168,6 +171,7 @@ void circlerectcollision() {
             player_init.current_hp -= minion.hp / 3.0f;
             minion.hp = 0;
             TriggerExplosion(minion.pos.x, minion.pos.y, minion.scale);
+            playerFlashTimer = 0.15f;
         }
 
         // Bullet collision
@@ -183,6 +187,7 @@ void circlerectcollision() {
                 boolet.isActive = false;
                 if (minion.hp <= 0 && minion.alive) {
                     TriggerExplosion(minion.pos.x, minion.pos.y, minion.scale);
+                    playerFlashTimer = 0.15f;
                 }
             }
         }
@@ -374,7 +379,8 @@ void DrawGame() {
     if (tutorialOn) printtutorial();
 
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-    
+
+    DrawEnemyIndicators(player, MeshTriangle);
     // -- Draw Bullets --
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
     AEGfxTextureSet(pBulletTex, 0, 0);
