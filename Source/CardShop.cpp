@@ -49,7 +49,8 @@ namespace { // functions for InitializeCardShop()
 	const int base_activeCards   { 5 };
 	const int base_inventoryCards{ 15 };
 	// base num of cards from shop buy-able
-	const int base_buyable	   { 1 };
+	const int base_buyable		 { 1 };
+	const int base_rolls		 { 0 };
 
 	// MAX num of cards available to be displayed to player
 	const int max_shopCards		 { 7 };
@@ -64,7 +65,9 @@ namespace { // functions for InitializeCardShop()
 	
 	// num of cards from shop buy-able
 	int num_buyable		   { 1 };
+	int num_rolls		   { 0 };
 	int buyable_left	   { 0 };
+	int rolls_left		   { 0 };
 
 	// rarity weights (out of 100)
 	const float RARITY_WEIGHTS[] = {
@@ -88,7 +91,8 @@ namespace { // functions for InitializeCardShop()
 	std::vector<GfxText> shopTexts{
 		{"BAG", 0.5f, 0, 0, 0, 255, {575, 370}},
 		{"SHOP", 0.8f, 0, 0, 0, 255, {-200, 190}},
-		{"ACTIVE CARDS", 0.5f, 0, 0, 0, 255, {-125, -230}}
+		{"ACTIVE CARDS", 0.5f, 0, 0, 0, 255, {-125, -230}},
+		{"TRASH", 0.5f, 0, 0, 0, 255, {-700, -230}}
 	};
 
 	// initialises the card shop array
@@ -250,6 +254,7 @@ void InitializeCardShop() {
 	initCardShop(shopCards);
 	computeCardHomePos();
 	buyable_left = num_buyable;
+	rolls_left = num_rolls;
 }
 
 namespace { // functions for UpdateCardShop()
@@ -391,6 +396,25 @@ namespace { // functions for UpdateCardShop()
 		return;
 	}
 
+	// is user has rerolls still, 
+	void checkReroll() {
+		// skip if no rerolls left or user didnt click
+		if (rolls_left <= 0) return;
+		if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
+
+		// reaching here means user clicked and has rolls left
+		// now check if clicked within desc box
+		AEVec2 mousepos{};
+		Comp::getCursorPos(mousepos);
+		if (Comp::collisionPointRect(mousepos, { -200, 325 }, { 1100, 150 })) {
+			// reroll shop cards
+			shopCards.clear();
+			initCardShop(shopCards);
+			computeCardHomePos();
+			--rolls_left;
+		}
+	}
+
 	void checkContinue() {
 		// skip if left click not clicked
 		if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
@@ -418,6 +442,7 @@ void UpdateCardShop() {
 	// else check collision for ALL cards
 	else {
 		checkCardCollision();
+		if (rolls_left > 0) checkReroll();
 	} // endif
 
 	// if player cant buy any more cards, check if player selected to continue
@@ -656,12 +681,23 @@ namespace { // functions for DrawCardShop()
 	void drawCardDescription(bool printDefault = false) {
 
 		if (printDefault) {
-			// print default description text
-			GfxText text{ "", 1.f , 255, 255, 255, 255 };
-			text.pos = { -200, 325 };
-			text.text = "Select a card to continue!";
-			Gfx::printText(text, boldPixels);
-			return;
+			if (rolls_left <= 0) {
+				// print default description text
+				GfxText text{ "", 1.f , 255, 255, 255, 255 };
+				text.pos = { -200, 325 };
+				text.text = "Select a card to continue!";
+				Gfx::printText(text, boldPixels);
+				return;
+			}
+			else {
+				// print default description text
+				GfxText text{ "", 0.8f , 255, 255, 255, 255 };
+				text.pos = { -200, 325 };
+				text.text = "Click here to re-roll cards! (";
+				text.text += std::to_string(rolls_left) + " left)";
+				Gfx::printText(text, boldPixels);
+				return;
+			}
 		}
 
 
@@ -945,6 +981,7 @@ namespace Cards {
 		num_activeCards = base_activeCards;
 		num_shopCards = base_shopCards;
 		num_buyable = base_buyable;
+		num_rolls = base_rolls;
 	}
 
 	// clears all cards, ready for next game
@@ -994,6 +1031,11 @@ namespace Cards {
 				if		(effect.id == "active_cards_up") num_activeCards++;
 				else if (effect.id == "shop_cards_up")   num_shopCards++;
 				else if (effect.id == "shop_buys_up")    num_buyable++;
+				else if (effect.id == "rerolls_up") {
+					if (card.info.rarity == COMMON) num_rolls += 1;
+					else if (card.info.rarity == RARE) num_rolls += 2;
+					else if (card.info.rarity == EPIC) num_rolls += 3;
+				}
 				// flip corresponding upgrade flag
 				else if (effect.id == "big_cannon")  upgradeFlag |= UPGRADE_BIG_CANNON;
 				else if (effect.id == "cannon_180")  upgradeFlag |= UPGRADE_CANNON_180;

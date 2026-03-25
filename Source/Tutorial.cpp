@@ -36,7 +36,7 @@ void printtutorial() {
 				++tutorialIndex;
 			break;
 		case 2:
-			text.text = "Shoot all the Boxes and Enemies!";
+			text.text = "Shoot all the Crates and Enemies!";
 			text.scale = 0.7f;
             text.pos = { 0 - camx, 200 - camy };
 			Gfx::printMultiline(text, boldPixels);
@@ -63,7 +63,7 @@ void printtutorial() {
                 ++tutorialIndex;
             break;
         case 4:
-            text.text = "DRAG a card\nfrom the shop into\nACTIVE CARDS\nto equip it!\n\nLEFT CLICK\nto continue!";
+            text.text = "DRAG a card\nfrom the shop\nto equip it!\n\nLEFT CLICK\nto continue!";
             text.scale = 0.5f;
             text.pos = { 575, 250 };
             Gfx::printMultiline(text, boldPixels);
@@ -71,7 +71,7 @@ void printtutorial() {
                 ++tutorialIndex;
             break;
         case 5:
-            text.text = "ACTIVE CARDS\nbuff your stats\nevery wave!\n\nLEFT CLICK\nto continue!";
+            text.text = "CARDS\nbuff your stats\nevery wave!\n\nLEFT CLICK\nto continue!";
             text.scale = 0.5f;
             text.pos = { 575, 250 };
             Gfx::printMultiline(text, boldPixels);
@@ -79,22 +79,6 @@ void printtutorial() {
                 ++tutorialIndex;
             break;
         case 6:
-            text.text = "DRAG a card\ninto the BAG\nto store it\nfor passive\nupgrades!\n\nLEFT CLICK\nto continue!";
-            text.scale = 0.5f;
-            text.pos = { 575, 250 };
-            Gfx::printMultiline(text, boldPixels);
-            if (AEInputCheckTriggered(AEVK_SPACE) || AEInputCheckTriggered(AEVK_LBUTTON))
-                ++tutorialIndex;
-            break;
-        case 7:
-            text.text = "DRAG a card\nto the TRASH\nto delete it.\n\nYou cannot\nget it back!\n\nLEFT CLICK\nto continue!";
-            text.scale = 0.5f;
-            text.pos = { 575, 250 };
-            Gfx::printMultiline(text, boldPixels);
-            if (AEInputCheckTriggered(AEVK_SPACE) || AEInputCheckTriggered(AEVK_LBUTTON))
-                ++tutorialIndex;
-            break;
-        case 8:
             text.text = "When you are\ndone, click\nthe SHOP to\ncontinue!\n\nGood Luck!";
             text.scale = 0.5f;
             text.pos = { 575, 250 };
