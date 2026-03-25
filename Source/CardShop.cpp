@@ -530,6 +530,58 @@ namespace { // functions for DrawCardShop()
 	// prompts to user to let go to drop into a diff inventory
 	void drawPrompts() {
 		Card& card = *pSelectedCard;
+		// text prompting
+		{ // within block since theres local variables i want to destroy after use
+			// display active deck prompt with texture
+			AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+			AEGfxTextureSet(pSlotsTex, 0, 0);
+			AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+			AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+			AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+			AEGfxSetTransparency(1.f);
+			Gfx::printMesh(pPanelMesh, { -125, -300 }, { 950, 200 }, 0.f, { 0.f, 0.f }, true);
+			AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+			GfxText text{ "", 0.6f };
+
+			// determine text to display if card effect is activated in the respective decks
+			if (!card.info.active.empty()) {
+				text.text = "Place card HERE to activate card effects";
+				text.r = 0.f; text.g = 200.f; text.b = 0.f; text.a = 255.f;
+			}
+			else {
+				text.text = "Card has no effect if placed here";
+				text.r = 255.f; text.g = 0.f; text.b = 0.f; text.a = 255.f;
+			}
+
+			text.pos = { -125, -300 };
+			Gfx::printMultiline(text, boldPixels);
+		}
+		{ // within block since theres local variables i want to destroy after use
+			// display bag deck prompt with texture
+			AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+			AEGfxTextureSet(pShopTex, 0, 0);
+			AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+			AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+			AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+			AEGfxSetTransparency(1.f);
+			Gfx::printMesh(pPanelMesh, { 575, 0 }, { 350, 800 }, 0.f, { 0.f, 0.f }, true);
+			AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+			GfxText text{ "", 0.6f };
+
+			// determines if selected card is valid in this space
+			if (!card.info.passive.empty()) {
+				text.text = "Place card\nHERE to\nactivate card\neffects";
+				text.r = 0.f; text.g = 200.f; text.b = 0.f; text.a = 255.f;
+			}
+			else {
+				text.text = "Card has no\neffect if placed\nhere";
+				text.r = 255.f; text.g = 0.f; text.b = 0.f; text.a = 255.f;
+			}
+
+			text.pos = { 575, 30 };
+			Gfx::printMultiline(text, boldPixels);
+		}
+
 		// check collision with non-shop inventories
 
 		// bag deck prompt
@@ -697,6 +749,7 @@ void DrawCardShop() {
 	// if theres a card selected, draw prompts
 	if (pSelectedCard) {
 		drawPrompts();		// prompts to user to let go within deck bounds
+		drawTexts();		// texts still shown to user
 		drawSelectedCard(); // ensure selected card always draws on top
 	}
 	PauseScreen::DrawPause();
