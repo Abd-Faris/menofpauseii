@@ -368,7 +368,7 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
             break;
         }
 
-        // push boss out of trees/walls  <-- ADD THIS
+        // push boss out of trees/walls
         World::PushOutOfWalls(boss.pos.x, boss.pos.y, boss.scale * 0.5f);
 
         if (boss.hp <= 0) {
