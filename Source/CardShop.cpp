@@ -814,6 +814,9 @@ void FreeCardShop() {
 	f32 speed = calculate_max_stats(2);
 	f32 fire_rate = calculate_max_stats(3);
 	f32 xp_mult = calculate_max_stats(4);
+	
+	// off tutorial
+	tutorialOn = false;
 
 	// reset null pointers
 	pSelectedCard = nullptr;
