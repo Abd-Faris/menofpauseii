@@ -703,6 +703,7 @@ void BossCollision(Boss& boss, shape &player, bool orbitActive, float orbitPosX,
 
         if (distanceSquared < (collisionRadius * collisionRadius)) {
             player_init.current_hp -= 10; // player
+            playerFlashTimer = 0.15f;
             enBullet.isActive = false;     // Destroy the enemy bullet
 
 
@@ -716,6 +717,7 @@ void BossCollision(Boss& boss, shape &player, bool orbitActive, float orbitPosX,
     float colRadius = (boss.scale * GameConfig::Enemy::HITBOX_RATIO) + player.scale;
 
     if (distSq < colRadius * colRadius) {
+        playerFlashTimer = 0.15f;
         player_init.current_hp -= boss.maxhp / 5;
     }
 }
