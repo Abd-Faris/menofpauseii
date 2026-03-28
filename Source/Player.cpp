@@ -103,14 +103,27 @@ void movePlayer(shape& player, float deltaTime) {
     float moveAmount = playerSpeed * deltaTime;
 
     // 2. Create temporary variables to test the new position
-    float nextX = player.pos_x;
-    float nextY = player.pos_y;
+    //float nextX = player.pos_x;
+    //float nextY = player.pos_y;
 
-    // 3. Apply WASD / Arrow Key inputs to the temporary position
-    if (AEInputCheckCurr(AEVK_W) || AEInputCheckCurr(AEVK_UP))    nextY += moveAmount;
-    if (AEInputCheckCurr(AEVK_S) || AEInputCheckCurr(AEVK_DOWN))  nextY -= moveAmount;
-    if (AEInputCheckCurr(AEVK_A) || AEInputCheckCurr(AEVK_LEFT))  nextX -= moveAmount;
-    if (AEInputCheckCurr(AEVK_D) || AEInputCheckCurr(AEVK_RIGHT)) nextX += moveAmount;
+    // 3. Apply WASD / Arrow Key inputs
+    float dirX = 0.f;
+    float dirY = 0.f;
+
+    if (AEInputCheckCurr(AEVK_W) || AEInputCheckCurr(AEVK_UP))    dirY += 1.f;
+    if (AEInputCheckCurr(AEVK_S) || AEInputCheckCurr(AEVK_DOWN))  dirY -= 1.f;
+    if (AEInputCheckCurr(AEVK_A) || AEInputCheckCurr(AEVK_LEFT))  dirX -= 1.f;
+    if (AEInputCheckCurr(AEVK_D) || AEInputCheckCurr(AEVK_RIGHT)) dirX += 1.f;
+
+    // Normalize so diagonal isn't sqrt(2) faster
+    float len = sqrt(dirX * dirX + dirY * dirY);
+    if (len > 0.f) {
+        dirX /= len;
+        dirY /= len;
+    }
+
+    float nextX = player.pos_x + dirX * moveAmount;
+    float nextY = player.pos_y + dirY * moveAmount;
 
     // 4. Split-Axis Collision Check
     // We check X and Y separately so the tank can "slide" against walls instead of getting stuck completely
