@@ -90,7 +90,6 @@ void circlerectcollision() {
             if (distanceSquared < (collisionRadius * collisionRadius)) {
                 currentEnemy.hp = 0;
                 TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale);
-                playerFlashTimer = 0.15f;
             }
         }
         for (auto& boolet : bulletList) {
@@ -265,13 +264,13 @@ void UpdateGame() {
             // Update Animations
             Animations_Update(deltaTime);
 
-            //key 8 back forth
+            //key 3 back forth
             DualBack(player);
 
-            // --- KEY 'U': TOGGLE BIG CANNON ---
+            // --- KEY '2': TOGGLE BIG CANNON ---
             drawBigCannon(player);
 
-            // --- KEY '7': TOGGLE UPGRADE --
+            // --- KEY '1': TOGGLE UPGRADE --
             drawBigTank(player);
 
             // 1. Move Player
