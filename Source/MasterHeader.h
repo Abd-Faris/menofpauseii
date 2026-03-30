@@ -33,6 +33,7 @@
 #include "CardShop.h"
 #include "DebugMenus.h"
 #include "LevelSelect.h"
+#include "Credits.h"
 
 // Graphics & Animations
 #include "Animations.h"
@@ -45,9 +46,6 @@
 // Game World & Waves
 #include "World.h"
 #include "Wave.h"
-
 #include"Results.h"
-
 #include "Pause.h"
-
 #include "Tutorial.h"

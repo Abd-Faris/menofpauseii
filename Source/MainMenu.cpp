@@ -19,7 +19,7 @@ namespace {
 	// init main menu buttons
 	std::vector<GfxButton> mainMenuButtons{
 		{{-400, -200}, {300, 100}, nullptr, GS_LEVEL_SELECT},
-		{{0, -200}, {300, 100}, nullptr},
+		{{0, -200}, {300, 100}, nullptr, GS_CREDITS},
 		{{400, -200}, {300, 100}, nullptr, -1}
 	};
 	// init main menu texts
