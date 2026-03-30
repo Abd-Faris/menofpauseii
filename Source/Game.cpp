@@ -90,7 +90,6 @@ void circlerectcollision() {
             if (distanceSquared < (collisionRadius * collisionRadius)) {
                 currentEnemy.hp = 0;
                 TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale);
-                playerFlashTimer = 0.15f;
             }
         }
         for (auto& boolet : bulletList) {
