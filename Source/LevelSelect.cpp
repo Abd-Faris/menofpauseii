@@ -140,6 +140,13 @@ void LoadLevelSelect() {
 void InitializeLevelSelect() {
 	// Inits exiting boolean
 	exiting = false;
+
+	// update button text based on current gloabl state
+	mainMenuTexts[1].text = tutorialOn ? "Tutorial: ON" : "Tutorial: OFF";
+
+	// update button text to reflect state
+	mainMenuTexts[2].text = cheatsOn ? "Cheats: ON" : "Cheats: OFF";
+
 	// Inits button meshes
 	for (GfxButton& button : mainMenuButtons) {
 		button.mesh = rectMesh;
