@@ -1,15 +1,22 @@
+// -----------------------------Gloomy's Revenge---------------------------- //
+// File:	Player.cpp
+// Authors:	[Men of Pause II]
+// Brief:	This file contains functions for player functionalities and 
+//          weapon upgrade states.
+// 
+// ------------------------------------------------------------------------- //
+
+// ------INCLUDE FILES------------------------------------------------------ //
 #include "MasterHeader.h"
 
-// ===========================================================================
-// GLOBAL VARIABLES & POOLS
-// ===========================================================================
+// ------GLOBAL VARIABLES & POOLS------------------------------------------- //
 namespace {}
 
 BulletObj bulletList[GameConfig::MAX_BULLETS_COUNT];
 float bulletFireTimer = 0.0f; // Cooldown timer for the player's gun
-bool bigcannon = false;       // State tracker for 'U' upgrade
-bool dualback = false;        // State tracker for '8' upgrade
-bool orbitActive = false;     // State tracker for 'C' spinning shield
+bool bigcannon = false;       // State tracker for '1' upgrade
+bool dualback = false;        // State tracker for '3' upgrade
+bool orbitActive = false;     // State tracker for '4' spinning shield
 float orbitAngle = 0.0f;      // Current rotation angle of the shield
 float orbitPosX = 0.0f;       // World X position of the shield
 float orbitPosY = 0.0f;       // World Y position of the shield
@@ -17,10 +24,9 @@ SmokeParticle smokes[100];    // Object pool for damage smoke effect
 AEGfxTexture* pBulletTex = nullptr;
 AEGfxVertexList* pBulletMesh = nullptr;
 
-// ===========================================================================
-// WEAPON DRAWING LOGIC
-// ===========================================================================
+// ------WEAPON DRAWING LOGIC----------------------------------------------- //
 
+// ~ Brief:	Loads the texture and generates the mesh data for player bullets.
 void LoadBullets() {
     pBulletTex = AEGfxTextureLoad("Assets/bulletgreen.png");
 
@@ -34,6 +40,7 @@ void LoadBullets() {
     pBulletMesh = AEGfxMeshEnd();
 }
 
+// ~ Brief:	Draws multiple tank barrels symmetrically relative to the tank's center.
 void DrawMultiBarrels(int count, float gap, float pivotOffset, float tankRot, float tankX, float tankY, float barrelWidth, float barrelLength, AEGfxVertexList* MeshRect) {
     if (count <= 0) return;
 
@@ -68,11 +75,11 @@ void DrawMultiBarrels(int count, float gap, float pivotOffset, float tankRot, fl
     }
 }
 
-// ===========================================================================
-// PLAYER INPUT & UPGRADES
-// ===========================================================================
+// ------PLAYER INPUT & UPGRADES-------------------------------------------- //
+
+// ~ Brief:	Handles input and state tracking to toggle the dual-barrel upgrade.
 void drawBigTank(shape& player) {
-    
+
     // LEGIT: force dual cannon on if upgrade is active
     if (upgradeFlag & UPGRADE_DUAL_CANNON) {
         player.barrelCount = 2;
@@ -97,6 +104,8 @@ void drawBigTank(shape& player) {
     }
 }
 
+// ~ Brief:	Processes WASD input to move the player, handles split-axis wall 
+//          collisions, and triggers low-HP smoke effects.
 void movePlayer(shape& player, float deltaTime) {
     // 1. Calculate how far the player should move this frame based on stats
     float playerSpeed = calculate_max_stats(2);
@@ -144,6 +153,8 @@ void movePlayer(shape& player, float deltaTime) {
     }
 }
 
+// ~ Brief:	Calculates mouse position relative to the screen center and smoothly 
+//          rotates the player's turret to face it.
 void rotatePlayer(shape& player) {
     // 1. Get mouse cursor coordinates
     s32 mouseX, mouseY;
@@ -176,6 +187,8 @@ void rotatePlayer(shape& player) {
     }
 }
 
+// ~ Brief:	Fetches inactive bullets from the object pool and calculates their 
+//          spawn positions/vectors based on active weapon upgrades.
 void SpawnBullet(shape& player, float deltaTime) {
     // 1. Get fire rate stat and reset the cooldown timer
     float fire_rate = calculate_max_stats(3);
@@ -264,6 +277,8 @@ void SpawnBullet(shape& player, float deltaTime) {
     }
 }
 
+// ~ Brief:	Handles input and state tracking to toggle the front-and-back 
+//          shooting upgrade.
 void DualBack(shape& player) {
 
     // LEGIT: Enable if card is present in passive deck
@@ -275,7 +290,7 @@ void DualBack(shape& player) {
         return;
     }
     else { dualback = false; }
-    
+
     // CHEATS: Toggle front-and-back shooting mode when '8' is pressed
     if (AEInputCheckTriggered(AEVK_3)) {
         dualback = !dualback;
@@ -288,6 +303,8 @@ void DualBack(shape& player) {
     }
 }
 
+// ~ Brief:	Monitors left-click/spacebar input and fire rate cooldowns to 
+//          trigger bullet spawning.
 void ShootBullet(shape& player, float deltaTime) {
     // --- Safety Latch ---
     // Prevents the gun from firing instantly if the user held the left click while closing the main menu
@@ -312,6 +329,8 @@ void ShootBullet(shape& player, float deltaTime) {
     }
 }
 
+// ~ Brief:	Calculates the continuous rotation and positional offsets for the 
+//          orbital shield upgrade.
 void updateOrbit(shape& player, float deltaTime) {
 
     // LEGIT: Enable orbital shield weapon when card is in passive deck
@@ -330,7 +349,7 @@ void updateOrbit(shape& player, float deltaTime) {
         orbitPosY = player.pos_y + sinf(orbitAngle) * orbitRadius;
         return;
     }
-    
+
     // CHEATS: Toggle orbital shield weapon when 'C' is pressed
     if (AEInputCheckTriggered(AEVK_4)) {
         orbitActive = !orbitActive;
@@ -351,6 +370,7 @@ void updateOrbit(shape& player, float deltaTime) {
     }
 }
 
+// ~ Brief:	Handles input and state tracking to toggle the Big Cannon upgrade.
 void drawBigCannon(shape& player) {
     // LEGIT: Enable Big Cannon weapon mode when card is present in passive desk
     if (upgradeFlag & UPGRADE_BIG_CANNON) {
@@ -359,7 +379,7 @@ void drawBigCannon(shape& player) {
         player.barrelCount = 1;
         return;
     }
-    
+
     // CHEATS: Toggle Big Cannon weapon mode when 'U' is pressed
     if (AEInputCheckTriggered(AEVK_2)) {
         bigcannon = !bigcannon;
@@ -374,9 +394,10 @@ void drawBigCannon(shape& player) {
     }
 }
 
-// ===========================================================================
-// BULLET & PARTICLE UPDATES
-// ===========================================================================
+// ------BULLET & PARTICLE UPDATES------------------------------------------ //
+
+// ~ Brief:	Updates movement physics, handles wall/border collisions, and 
+//          despawns out-of-bounds player and enemy bullets.
 void updateBullets(shape& player, float deltaTime) {
     // --- 1. UPDATE PLAYER BULLETS ---
     for (auto& boolet : bulletList) {
@@ -421,6 +442,8 @@ void updateBullets(shape& player, float deltaTime) {
     }
 }
 
+// ~ Brief:	Fetches an inactive smoke particle from the pool and initializes 
+//          it with a randomized position offset and size.
 void SpawnSmoke(float x, float y, float baseSize) {
     // Find the first inactive smoke particle in the memory pool
     for (auto& s : smokes) {
@@ -438,6 +461,8 @@ void SpawnSmoke(float x, float y, float baseSize) {
     }
 }
 
+// ~ Brief:	Updates physics, applies wind drift, and shrinks active smoke 
+//          particles over time until they despawn.
 void updateSmoke(float deltaTime) {
     // Process physics for all active smoke clouds
     for (auto& s : smokes) {
@@ -454,6 +479,7 @@ void updateSmoke(float deltaTime) {
     }
 }
 
+// ~ Brief:	Unloads bullet textures and frees mesh memory to prevent memory leaks.
 void FreeBullets() {
     if (pBulletTex) { AEGfxTextureUnload(pBulletTex);  pBulletTex = nullptr; }
     if (pBulletMesh) { AEGfxMeshFree(pBulletMesh);      pBulletMesh = nullptr; }
