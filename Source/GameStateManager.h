@@ -30,7 +30,8 @@ extern GSFunctions GS_Functions;
 enum GS_STATES
 {
 	// Main Game States
-	GS_MAIN_MENU = 0,
+	GS_LOGO = 0,
+	GS_MAIN_MENU,
 	GS_GAME,
 	GS_RESULTS,
 	GS_LEVEL_SELECT,

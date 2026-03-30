@@ -24,6 +24,7 @@ GSFunctions GS_Functions;
 // ENSURE THE ORDER MATCHES THE ENUM IN GameStateManager.h!!!
 std::vector<GSFunctions> gamestates{
 	// Game States
+	{LoadDPLogo, InitializeDPLogo, UpdateDPLogo, DrawDPLogo, FreeDPLogo, UnloadDPLogo},
 	{LoadMainMenu, InitializeMainMenu, UpdateMainMenu, DrawMainMenu, nullptr, UnloadMainMenu},
 	{LoadGame, InitializeGame, UpdateGame, DrawGame, FreeGame, UnloadGame},
 	{LoadResults, nullptr, UpdateResults, DrawResults, FreeResults, nullptr},

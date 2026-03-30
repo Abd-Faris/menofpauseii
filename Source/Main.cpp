@@ -24,7 +24,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     Load_Global_Assets();
 
     // GSM initialize
-    GSM_Initialize(GS_MAIN_MENU);
+    GSM_Initialize(GS_LOGO);
 
     // Game Loop
     while (GS_current != GS_QUIT)
