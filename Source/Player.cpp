@@ -84,7 +84,7 @@ void drawBigTank(shape& player) {
     }
 
     // CHEATS: Toggle double-barrel mode on/off when '7' is pressed
-    if (AEInputCheckTriggered(AEVK_7)) {
+    if (AEInputCheckTriggered(AEVK_1)) {
         if (player.barrelCount == 1) {
             // Turn Dual ON
             player.barrelCount = 2;
@@ -277,7 +277,7 @@ void DualBack(shape& player) {
     else { dualback = false; }
     
     // CHEATS: Toggle front-and-back shooting mode when '8' is pressed
-    if (AEInputCheckTriggered(AEVK_8)) {
+    if (AEInputCheckTriggered(AEVK_3)) {
         dualback = !dualback;
 
         if (dualback) {
@@ -332,7 +332,7 @@ void updateOrbit(shape& player, float deltaTime) {
     }
     
     // CHEATS: Toggle orbital shield weapon when 'C' is pressed
-    if (AEInputCheckTriggered(AEVK_C)) {
+    if (AEInputCheckTriggered(AEVK_4)) {
         orbitActive = !orbitActive;
 
         if (orbitActive) {
@@ -361,7 +361,7 @@ void drawBigCannon(shape& player) {
     }
     
     // CHEATS: Toggle Big Cannon weapon mode when 'U' is pressed
-    if (AEInputCheckTriggered(AEVK_U)) {
+    if (AEInputCheckTriggered(AEVK_2)) {
         bigcannon = !bigcannon;
 
         if (bigcannon) {
