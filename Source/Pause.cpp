@@ -1,12 +1,23 @@
+// -----------------------------Gloomy's Revenge---------------------------- //
+// File:	Main.cpp
+// Authors:	[Men of Pause II]
+// Brief:	This file defines the pause screen logic, UI elements, and 
+//          state management including the quit confirmation menu.
+// 
+// ------------------------------------------------------------------------- //
+
+// ------INCLUDE FILES------------------------------------------------------ //
 #include "MasterHeader.h"
 #include <string> // Added so we can use std::to_string for stats
 
+// ------GLOBAL VARIABLES--------------------------------------------------- //
 extern int currentWave;
 AEGfxTexture* pPauseBgTex = nullptr;
 AEGfxVertexList* pPauseBgMesh = nullptr;
 
 namespace PauseScreen {
     bool isPaused = false;
+    bool isConfirmingQuit = false; // Tracks if we are in the confirm screen
 
     s8 pauseFont;
     AEGfxVertexList* pauseMesh = nullptr;
@@ -14,10 +25,10 @@ namespace PauseScreen {
     GfxButton PauseBtn = { {-750, 400}, {50, 50}, nullptr, 0 };
     GfxText PauseTxt = { "||", 0.8f, 0, 0, 0, 255, {-748, 402} };
 
-    // 1. STATS PANEL (Tightened up to match button width!)
-      
+    // ==========================================
+    // 1. STATS PANEL (Tightened up to match button width)
+    // ==========================================
     GfxButton StatsPanel = { {0, 85}, {700, 180}, nullptr, -1 };
-
     GfxText StatsTitle = { "-- RUN STATS --", 0.6f, 0, 0, 0, 255, {0,   200} };
 
     // Left column
@@ -44,9 +55,29 @@ namespace PauseScreen {
     // ==========================================
     std::vector<GfxText> pauseTexts{
         {"Resume", 1.f, 0, 0, 0, 255, {0, -60}},         // Black Text
-        {"Quit", 1.f, 0, 0, 0, 255, {0, -140}},          // Black Text
-        {"Pause", 2.5f, 255, 140, 0, 255, {0, 280}}      // Orange Title (Pushed higher!)
+        {"Main Menu", 1.f, 0, 0, 0, 255, {0, -140}},     // Black Text
+        {"Pause", 2.5f, 255, 140, 0, 255, {0, 280}}      // Orange Title
     };
+
+    // ==========================================
+    // 4. CONFIRM QUIT UI ELEMENTS
+    // ==========================================
+    std::vector<GfxButton> confirmButtons{
+        {{-100, -50}, {150, 60}, nullptr, 3}, // ID 3 = Yes
+        {{ 100, -50}, {150, 60}, nullptr, 4}  // ID 4 = No
+    };
+
+    std::vector<GfxText> confirmTexts{
+        {"Yes", 1.f, 0, 0, 0, 255, {-100, -50}},
+        {"No",  1.f, 0, 0, 0, 255, { 100, -50}}
+    };
+
+    GfxText ConfirmTxt = { "Are you sure?", 1.5f, 255, 140, 0, 255, {0, 50} };
+
+    // ------PAUSE SYSTEM FUNCTIONS--------------------------------------------- //
+
+        // ~ Brief: Initializes fonts, loads background textures, generates UI meshes,
+        //          and sets up the default states for the pause screen.
     void LoadPause() {
         pauseFont = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
         pauseMesh = Gfx::createRectMesh(0xFFFFFFFF);
@@ -68,22 +99,35 @@ namespace PauseScreen {
             button.mesh = pauseMesh;
         }
 
+        // Apply mesh to confirm buttons
+        for (GfxButton& button : confirmButtons) {
+            button.mesh = pauseMesh;
+        }
+
         // Apply mesh to HUD and Stats panel
         PauseBtn.mesh = pauseMesh;
         StatsPanel.mesh = pauseMesh;
 
         isPaused = false;
+        isConfirmingQuit = false; // Reset confirm state on load
     }
 
+    // ~ Brief: Handles keyboard and mouse inputs, manages state transitions between
+    //          gameplay, pause menu, and confirmation screens, and updates run stats.
     void UpdatePause() {
         // Toggle pause menu with ESCAPE key
         if (AEInputCheckTriggered(AEVK_ESCAPE)) {
-            isPaused = !isPaused;
+            if (isConfirmingQuit) {
+                // If they press ESC while confirming, just back out of the confirm screen
+                isConfirmingQuit = false;
+            }
+            else {
+                isPaused = !isPaused; // Normal pause toggle
+            }
         }
 
         // ==========================================
         // DYNAMIC STATS UPDATE
-        // Change the text to reflect your actual game variables!
         // ==========================================
         if (isPaused) {
             int activeEnemyCount = 0;
@@ -118,37 +162,56 @@ namespace PauseScreen {
             return; // Exit here so we don't accidentally click the big menu!
         }
 
+        // --- BIG MENU CLICK LOGIC ---
         if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
 
         AEVec2 mousepos{};
         Comp::getCursorPos(mousepos);
 
-        // Button Click Logic
-        for (GfxButton& btn : pauseButtons) {
-            if (Comp::collisionPointRect(mousepos, btn.pos, btn.size)) {
+        if (!isConfirmingQuit) {
+            // NORMAL PAUSE MENU LOGIC
+            for (GfxButton& btn : pauseButtons) {
+                if (Comp::collisionPointRect(mousepos, btn.pos, btn.size)) {
+                    if (btn.nextGS == 0) {
+                        // Resume
+                        isPaused = false;
+                    }
+                    else if (btn.nextGS == 2) {
+                        // Quit clicked -> Switch to Confirm Screen
+                        isConfirmingQuit = true;
+                    }
+                    break;
+                }
+            }
+        }
+        else {
+            // CONFIRM QUIT MENU LOGIC
+            for (GfxButton& btn : confirmButtons) {
+                if (Comp::collisionPointRect(mousepos, btn.pos, btn.size)) {
+                    if (btn.nextGS == 3) {
+                        // "Yes" Clicked -> Do the actual quitting
+                        isPaused = false;
+                        isConfirmingQuit = false; // Reset for next time
 
-                if (btn.nextGS == 0) {
-                    // Resume
-                    isPaused = false;
+                        reset_game();
+                        Cards::resetCards();
+                        resetTutorial();
+                        tutorialOn = false;
+                        cheatsOn = false;
+                        GS_next = GS_MAIN_MENU;
+                    }
+                    else if (btn.nextGS == 4) {
+                        // "No" Clicked -> Return to main pause menu
+                        isConfirmingQuit = false;
+                    }
+                    break;
                 }
-                // NOTE: Restart (btn.nextGS == 1) has been removed!
-                else if (btn.nextGS == 2) {
-                    // Quit to Main Menu
-                    isPaused = false;
-                    //reset game stats
-                    reset_game();
-                    //reset card stats
-                    Cards::resetCards();
-                    resetTutorial();
-                    tutorialOn = false;
-                    cheatsOn = false;
-                    GS_next = GS_MAIN_MENU;
-                }
-                break;
             }
         }
     }
 
+    // ~ Brief: Renders the small pause button in the top corner of the screen 
+    //          during active gameplay.
     void DrawPauseButton() {
         if (isPaused) return;
 
@@ -172,6 +235,8 @@ namespace PauseScreen {
         Gfx::printText(PauseTxt, pauseFont);
     }
 
+    // ~ Brief: Renders the active menu state (Main Pause or Confirm Quit), 
+    //          including buttons, text, dynamic stats, and hover effects.
     void DrawPause() {
         if (!isPaused) return;
 
@@ -194,37 +259,54 @@ namespace PauseScreen {
         AEVec2 mousepos{};
         Comp::getCursorPos(mousepos);
 
-        // --- DRAW BUTTONS ---
-        for (GfxButton& button : pauseButtons) {
-            // Hover Logic for clickable buttons
-            if (Comp::collisionPointRect(mousepos, button.pos, button.size)) {
-                AEGfxSetColorToMultiply(0.9f, 0.9f, 0.9f, 1.0f); // Hover
+        if (!isConfirmingQuit) {
+            // --- DRAW MAIN PAUSE MENU ---
+            for (GfxButton& button : pauseButtons) {
+                if (Comp::collisionPointRect(mousepos, button.pos, button.size)) {
+                    AEGfxSetColorToMultiply(0.9f, 0.9f, 0.9f, 1.0f); // Hover
+                }
+                else {
+                    AEGfxSetColorToMultiply(0.8f, 0.8f, 0.8f, 1.0f); // Normal
+                }
+                Gfx::printUIButton(button);
             }
-            else {
-                AEGfxSetColorToMultiply(0.8f, 0.8f, 0.8f, 1.0f); // Normal
+
+            AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); // Reset to pure white for text
+            for (GfxText& text : pauseTexts) {
+                Gfx::printText(text, pauseFont);
             }
-            Gfx::printUIButton(button);
+
+            // Draw Stats
+            Gfx::printText(StatsTitle, pauseFont);
+            Gfx::printText(StatsLine1, pauseFont);
+            Gfx::printText(StatsLine2, pauseFont);
+            Gfx::printText(StatsLine3, pauseFont);
+            Gfx::printText(StatsLine4, pauseFont);
+            Gfx::printText(StatsLine5, pauseFont);
+            Gfx::printText(StatsLine6, pauseFont);
+            Gfx::printText(StatsLine7, pauseFont);
         }
+        else {
+            // --- DRAW CONFIRMATION MENU ---
+            for (GfxButton& button : confirmButtons) {
+                if (Comp::collisionPointRect(mousepos, button.pos, button.size)) {
+                    AEGfxSetColorToMultiply(0.9f, 0.9f, 0.9f, 1.0f); // Hover
+                }
+                else {
+                    AEGfxSetColorToMultiply(0.8f, 0.8f, 0.8f, 1.0f); // Normal
+                }
+                Gfx::printUIButton(button);
+            }
 
-        // --- DRAW TEXT ---
-        AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); // Reset to pure white for text
-
-        // Draw Button Text & Title
-        for (GfxText& text : pauseTexts) {
-            Gfx::printText(text, pauseFont);
+            AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f); // Reset for text
+            for (GfxText& text : confirmTexts) {
+                Gfx::printText(text, pauseFont);
+            }
+            Gfx::printText(ConfirmTxt, pauseFont);
         }
-
-        // Draw Stats Text
-        Gfx::printText(StatsTitle, pauseFont);
-        Gfx::printText(StatsLine1, pauseFont);
-        Gfx::printText(StatsLine2, pauseFont);
-        Gfx::printText(StatsLine3, pauseFont);
-        Gfx::printText(StatsLine4, pauseFont);
-        Gfx::printText(StatsLine5, pauseFont);
-        Gfx::printText(StatsLine6, pauseFont);
-        Gfx::printText(StatsLine7, pauseFont);
     }
 
+    // ~ Brief: Safely cleans up allocated memory for fonts, textures, and meshes.
     void FreePause() {
         AEGfxDestroyFont(pauseFont);
         if (pauseMesh) {
@@ -234,6 +316,5 @@ namespace PauseScreen {
 
         if (pPauseBgTex) { AEGfxTextureUnload(pPauseBgTex);  pPauseBgTex = nullptr; }
         if (pPauseBgMesh) { AEGfxMeshFree(pPauseBgMesh);      pPauseBgMesh = nullptr; }
-
     }
 }
