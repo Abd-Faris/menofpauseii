@@ -161,6 +161,10 @@ void TriggerXpPopup(float xpAmount) {
 
 // --- FUNCTION TO RESET GAME  ---
 void reset_game() {
+
+	// reset tutorial
+	tutorialOn = true;
+
 	// reset wave
 	currentWave = 1;
 
