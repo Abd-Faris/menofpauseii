@@ -54,30 +54,28 @@ void DrawDPLogo() {
     // 1. Tell the engine we want to draw a texture, not just flat colors
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 
-    // 2. Turn on alpha blending so the transparent parts of your PNG show the background
-    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    AEGfxSetTransparency(1.0f);
 
-    // 3. Keep original colors (multiply by 1) and don't artificially brighten (add 0)
     AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
-    AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
+   
 
-    // 4. Bind our specific DigiPen logo texture
+   
     AEGfxTextureSet(dpLogoTexture, 0.0f, 0.0f);
 
-    // 5. Calculate Transformation (Position, Rotation, Scale)
+    // Calculate Transformation (Position, Rotation, Scale)
     AEMtx33 scale, trans, transform;
 
-    // Set how big the logo should be in pixels (Adjust these numbers to fit your screen!)
+    
     AEMtx33Scale(&scale, 600.0f, 200.0f);
 
-    // Set position to (0, 0), which is usually the center of the screen in Alpha Engine
+    // Set position to (0, 0)
     AEMtx33Trans(&trans, 0.0f, 0.0f);
 
     // Combine them and send to the graphics engine
     AEMtx33Concat(&transform, &trans, &scale);
     AEGfxSetTransform(transform.m);
 
-    // 6. Draw the square mesh with the texture painted on it
+    // Draw the square mesh with the texture painted on it
     AEGfxMeshDraw(pMesh, AE_GFX_MDM_TRIANGLES);
 }
 
