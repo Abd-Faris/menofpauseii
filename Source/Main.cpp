@@ -1,19 +1,18 @@
-/*****************************************************************************/
-/*!
-\file	Main.cpp
-\author Men of Pause II
-\brief	This file defines the beginning of the program and frame based loops
-*/
-/*****************************************************************************/
+// -----------------------------Gloomy's Revenge---------------------------- //
+// File:	Main.cpp
+// Authors:	[Men of Pause II]
+// Brief:	This file defines the beginning of the program and frame based loops
+// 
+// ------------------------------------------------------------------------- //
+
+// ------INCLUDE FILES------------------------------------------------------ //
 
 #include <iostream>
 #include "MasterHeader.h"
 #include <direct.h>
 
-//-----------------------------------------------------------//
-// This function defines the beginning of the program and
-// implements frame loops in the program.
-//-----------------------------------------------------------//
+// ~ Brief:	Defines the beginning of the program and implements frame loops
+//          in the program.
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
     _In_ LPWSTR    lpCmdLine,
