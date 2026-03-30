@@ -305,6 +305,9 @@ namespace { // functions for UpdateCardShop()
 			// only trigger if not from active AND have space
 			if ((card.from == DECK::ACTIVE) || (activeCards.size() >= num_activeCards)) return;
 
+			// doesnt trigger if card ONLY has passive traits
+			if ((card.info.active.empty()) && (!card.info.passive.empty())) return;
+
 			// reset pSelectedCard
 			pSelectedCard = nullptr;
 
