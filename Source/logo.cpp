@@ -59,7 +59,7 @@ void UpdateDPLogo() {
     dpLogoTimer += (double)AEFrameRateControllerGetFrameTime();
 
     // 2. Check for skip conditions: 10 seconds passed OR Left Click OR Escape Key
-    if (dpLogoTimer >= 10.0 || AEInputCheckTriggered(AEVK_ESCAPE) || AEInputCheckTriggered(AEVK_LBUTTON)) {
+    if (dpLogoTimer >= 5.0 || AEInputCheckTriggered(AEVK_ESCAPE) || AEInputCheckTriggered(AEVK_LBUTTON)) {
 
         // 3. Trigger the Game State Manager to move to the Main Menu
         GS_next = GS_MAIN_MENU;
@@ -82,22 +82,34 @@ void DrawDPLogo() {
     AEGfxTextureSet(dpLogoTexture, 0.0f, 0.0f);
 
     // 4. Calculate Transformation (Position, Rotation, Scale)
-    AEMtx33 scale, trans, transform;
+    // ADDED 'rot' to our list of matrices
+    AEMtx33 scale, rot, trans, transform;
 
     // --- EXPANSION MATH ---
-    // Start at 1.0 and add a little bit based on how much time has passed.
-    // 0.05f grows the logo by 5% every second.
-    float grow = 1.0f + (float)(dpLogoTimer * 0.05f);
-
-    // Multiply base 600x200 size by the growth factor
+    float grow = 1.0f + (float)(dpLogoTimer * 0.2f);
     AEMtx33Scale(&scale, 600.0f * grow, 200.0f * grow);
+
+    // --- ROTATION MATH ---
+    float angle = 0.0f;
+    // If we are in the last 1 second of the 5-second timer...
+    if (dpLogoTimer >= 4.0) {
+        // Calculate how much time has passed since the 4-second mark (goes from 0.0 to 1.0)
+        float rotationTime = (float)(dpLogoTimer - 4.0);
+
+        // Multiply time by 2*PI (a full circle in radians)
+        angle = rotationTime * 2.0f * 3.14159265f;
+    }
+    // Apply the angle to the rotation matrix
+    AEMtx33Rot(&rot, angle);
     // ----------------------
 
     // 5. Set position to (0, 0) - Center of the screen
     AEMtx33Trans(&trans, 0.0f, 0.0f);
 
     // 6. Combine matrices and send to the graphics engine
-    AEMtx33Concat(&transform, &trans, &scale);
+    // Scale -> Rotate -> Translate
+    AEMtx33Concat(&transform, &rot, &scale);        // 1. Rotate the Scaled logo
+    AEMtx33Concat(&transform, &trans, &transform);  // 2. Translate it to its final position
     AEGfxSetTransform(transform.m);
 
     // 7. Draw the square mesh with the texture painted on it
