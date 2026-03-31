@@ -357,7 +357,7 @@
          "passive": [
             {
                "id": "dual_cannon",
-               "desc": "Dual Cannon Upgrade\nDouble the cannons for Double the damage!\nWILL REPLACE BIG CANNON UPGRADE EFFECT",
+               "desc": "Dual Cannon Upgrade\nDouble the cannons for Double the damage!\nWILL REPLACE OTHER UPGRADE EFFECTS",
                "type": "",
                "valuetype": "",
                "value": 0
@@ -373,7 +373,7 @@
          "passive": [
             {
                "id": "big_cannon",
-               "desc": "Big Cannon Upgrade\nBig Boy cannon for double damage\nWILL REPLACE 180* CANNON UPGRADE EFFECT",
+               "desc": "Big Cannon Upgrade\nBig Boy cannon for double damage",
                "type": "",
                "valuetype": "",
                "value": 0
