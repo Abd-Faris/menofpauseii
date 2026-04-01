@@ -1,5 +1,5 @@
 #include "MasterHeader.h"
-
+// minion pool for boss2
 std::array<Enemies, MAX_MINIONS_COUNT> minionPool;
 extern int currentWave;
 
@@ -8,8 +8,10 @@ AEGfxTexture* pBossTex = nullptr;
 AEGfxTexture* pMinionTex = nullptr;
 AEGfxVertexList* pBossMesh = nullptr;
 
+// current boss
 Boss currentboss;
 
+// Loads Boss texture
 void LoadBoss() {
     pBossTex = AEGfxTextureLoad("./Assets/boss.png");
     pMinionTex = AEGfxTextureLoad("./Assets/minion.png");
@@ -24,6 +26,7 @@ void LoadBoss() {
     pBossMesh = AEGfxMeshEnd();
 }
 
+// Spawns boss based on boss type
 void SpawnBoss(BossType type, shape& player) {
     currentboss = {};
     f32 mult = (1 + (currentWave / 5 * 0.5f));
@@ -35,7 +38,7 @@ void SpawnBoss(BossType type, shape& player) {
     currentboss.currentAttack = Boss3Attack::NONE;
 
     switch (type) {
-    case BOSS1:
+    case BOSS1: // boss 1 stats
         currentboss.scale = GameConfig::Enemy::SIZE_BIG * GameConfig::Boss::B1_SCALE;
         currentboss.hp = static_cast<int>(GameConfig::Boss::B1_BASE_HP * mult);
         currentboss.xp = GameConfig::Boss::B1_XP;
@@ -48,7 +51,7 @@ void SpawnBoss(BossType type, shape& player) {
         currentboss.bulletCount = GameConfig::Boss::B1_BULLET_COUNT;
         break;
 
-    case BOSS2:
+    case BOSS2:// boss 2 stats
         currentboss.scale = GameConfig::Enemy::SIZE_BIG * GameConfig::Boss::B2_SCALE;
         currentboss.hp = static_cast<int>(GameConfig::Boss::B2_BASE_HP * mult);
         currentboss.xp = GameConfig::Boss::B2_XP;
@@ -60,7 +63,7 @@ void SpawnBoss(BossType type, shape& player) {
         currentboss.minionCount = GameConfig::Boss::B2_MINION_COUNT;
         break;
 
-    case BOSS3:
+    case BOSS3: // boss 3 stats
         currentboss.scale = GameConfig::Enemy::SIZE_BIG * GameConfig::Boss::B3_SCALE;
         currentboss.hp = static_cast<int>(GameConfig::Boss::B3_BASE_HP * mult);
         currentboss.xp = GameConfig::Boss::B3_XP;
@@ -72,7 +75,7 @@ void SpawnBoss(BossType type, shape& player) {
         currentboss.bulletCount = GameConfig::Boss::B3_SPIRAL_ARMS;
         break;
 
-    case BOSS4:
+    case BOSS4: // boss 4 stats
         currentboss.scale = GameConfig::Enemy::SIZE_BIG * GameConfig::Boss::B4_SCALE;
         currentboss.hp = static_cast<int>(GameConfig::Boss::B4_BASE_HP * mult);
         currentboss.xp = GameConfig::Boss::B4_XP;
@@ -86,9 +89,10 @@ void SpawnBoss(BossType type, shape& player) {
         break;
     }
 
-    currentboss.maxhp = currentboss.hp;
+    currentboss.maxhp = currentboss.hp; // makes all boss current hp to be the max hp
 }
 
+// Boss 1's cooldown attack
 void BossShootRing(Boss& boss) {
     f32 mult = (1 + (currentWave / 5 * 0.5f));
     float angleStep = (2.f * PI) / boss.bulletCount;
@@ -110,6 +114,7 @@ void BossShootRing(Boss& boss) {
     }
 }
 
+// Boss 3's Spiralling bullets attack
 void Boss3Spiral(Boss& boss, float deltaTime) {
     f32 mult = (1 + (currentWave / 5 * 0.5f));
     boss.shootTimer += deltaTime;
@@ -135,6 +140,7 @@ void Boss3Spiral(Boss& boss, float deltaTime) {
     boss.spiralAngle += GameConfig::Boss::SPIRAL_SPEED * deltaTime;
 }
 
+// Boss 3's Shooting attack
 void Boss3AimedShot(Boss& boss, shape& player) {
     f32 mult = (1 + (currentWave / 5 * 0.5f));
     AEVec2 toPlayer = { player.pos_x - boss.pos.x, player.pos_y - boss.pos.y };
@@ -159,6 +165,7 @@ void Boss3AimedShot(Boss& boss, shape& player) {
     }
 }
 
+// Boss 4's Guns location
 AEVec2 GetGunPosition(Boss& boss, bool leftGun) {
     float rotRad = boss.gunAngle * (PI / 180.f);
     float cosR = cosf(rotRad);
@@ -172,6 +179,7 @@ AEVec2 GetGunPosition(Boss& boss, bool leftGun) {
     };
 }
 
+// Boss 4's shooting attack
 void Boss4ShootGuns(Boss& boss, shape& player, float deltaTime) {
     f32 mult = (1 + (currentWave / 5 * 0.5f));
     boss.gunFireTimer += deltaTime;
@@ -211,6 +219,7 @@ void Boss4ShootGuns(Boss& boss, shape& player, float deltaTime) {
     }
 }
 
+// Boss 4's laser attack
 void DrawBossLaser(Boss& boss, AEGfxVertexList* MeshRect) {
     if (boss.state == BossState::TELEGRAPHING && boss.currentAttack != Boss3Attack::LASER) return;
     if (!boss.laserActive && boss.state != BossState::TELEGRAPHING) return;
@@ -234,6 +243,7 @@ void DrawBossLaser(Boss& boss, AEGfxVertexList* MeshRect) {
     }
 }
 
+// All bosses' physics
 void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
     if (!boss.alive) return;
 
@@ -648,6 +658,8 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
         boss.alive = false;
     }
 }
+
+// Boss collision logic
 void BossCollision(Boss& boss, shape &player, bool orbitActive, float orbitPosX, float orbitPosY) {
     if (!boss.alive) return;
 
@@ -735,6 +747,7 @@ void BossCollision(Boss& boss, shape &player, bool orbitActive, float orbitPosX,
     }
 }
 
+// Drawing bosses
 void DrawBoss(Boss& boss, AEGfxVertexList* MeshRect, AEGfxVertexList* MeshCircle) {
     if (!boss.alive) return;
 
@@ -777,6 +790,7 @@ void DrawBoss(Boss& boss, AEGfxVertexList* MeshRect, AEGfxVertexList* MeshCircle
     }
 }
 
+// Boss's hp indicator
 void DrawBossHP(Boss& boss, AEGfxVertexList* MeshRect, AEGfxVertexList* MeshCircle, shape& player) {
 
     // HP bar above boss
@@ -794,6 +808,7 @@ void DrawBossHP(Boss& boss, AEGfxVertexList* MeshRect, AEGfxVertexList* MeshCirc
         { filledWidth, 50.f }, 0.f);
 }
 
+// Boss 2's minions
 void BossSpawnMinion(Boss& boss, shape& player) {
     float angleStep = (2.f * PI) / boss.minionCount;
     float radius = boss.scale + GameConfig::Boss::MINION_SPAWN_RADIUS;
@@ -818,6 +833,7 @@ void BossSpawnMinion(Boss& boss, shape& player) {
     }
 }
 
+// Physics for the minions
 void updateMinionPhysics(shape& player, float deltaTime) {
     for (auto& currentEnemy : minionPool) {
         if (!currentEnemy.alive) continue;
@@ -960,6 +976,7 @@ void updateMinionPhysics(shape& player, float deltaTime) {
 
 }
 
+// Frees boss after use
 void FreeBoss() {
     if (pBossTex) { AEGfxTextureUnload(pBossTex);   pBossTex = nullptr; }
     if (pMinionTex) { AEGfxTextureUnload(pMinionTex); pMinionTex = nullptr; }
