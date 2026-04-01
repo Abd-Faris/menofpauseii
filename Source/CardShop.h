@@ -2,6 +2,7 @@
 #include "MasterHeader.h"
 
 // Externs
+extern std::array<std::vector<Card>, 3>    allCards;
 extern std::array<std::vector<CardStats>, NUM_OF_RARITIES> cardPool;
 extern PlayerStatsModifier cardBaseMod, cardMultMod;
 extern u32 upgradeFlag;
@@ -33,3 +34,4 @@ namespace Cards {
 	// compute card effects
 	void computeCardEffects();
 }
+

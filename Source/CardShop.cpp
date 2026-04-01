@@ -78,7 +78,7 @@ namespace { // functions for InitializeCardShop()
 	};
 
 	// declare array for cards
-	std::array<std::vector<Card>, 3>    allCards;	// vector for all cards
+	std::array<std::vector<Card>, 3>    allCards{};	// vector for all cards
 	// reference for easy ref
 	std::vector<Card>& shopCards      = allCards[0];// reference to shop cards
 	std::vector<Card>& activeCards    = allCards[1];// ref to active cards

@@ -238,7 +238,33 @@ void InitializeGame() {
     for (auto& minion : minionPool) ResetEnemy(&minion);
 
     // Initialize Wave
-    GenerateWave(currentWave, player);
+    SaveData data;
+    if (::LoadGame(data)) {
+        // Restore from save
+        currentWave = data.currentWave;
+        player_init.current_hp = data.current_hp;
+        player_init.current_xp = data.current_xp;
+        player_init.player_level = data.player_level;
+        player.barrelCount = data.barrelCount;
+        player.scale = GameConfig::Tank::SCALE;
+        bigcannon = data.bigcannon;
+
+        for (const auto& id : data.shopCardIDs)
+            allCards[0].push_back(Cards::GetCardByID(id));
+        for (const auto& id : data.activeCardIDs)
+            allCards[1].push_back(Cards::GetCardByID(id));
+        for (const auto& id : data.inventoryCardIDs)
+            allCards[2].push_back(Cards::GetCardByID(id));
+
+        GenerateWave(currentWave, player);
+    }
+    else {
+        // Fresh run
+        player.scale = GameConfig::Tank::SCALE;
+        player.barrelCount = 1;
+        currentWave = 1;
+        GenerateWave(currentWave, player);
+    }
 }
 
 // ===========================================================================
@@ -532,6 +558,21 @@ void DrawGame() {
 }
 
 void FreeGame() {
+    SaveData data;
+    data.currentWave = currentWave;
+    data.current_hp = player_init.current_hp;
+    data.current_xp = player_init.current_xp;
+    data.player_level = player_init.player_level;
+    data.barrelCount = player.barrelCount;
+    data.bigcannon = bigcannon;
+
+    // Save each card pool as IDs
+    for (const auto& card : allCards[0])      data.shopCardIDs.push_back(card.info.ID);
+    for (const auto& card : allCards[1])    data.activeCardIDs.push_back(card.info.ID);
+    for (const auto& card : allCards[2]) data.inventoryCardIDs.push_back(card.info.ID);
+
+    SaveGame(data);
+
     AEGfxSetCamPosition(0.0f, 0.0f);
     if (MeshRect) { AEGfxMeshFree(MeshRect);     MeshRect = nullptr; }
     if (MeshCircle) { AEGfxMeshFree(MeshCircle);   MeshCircle = nullptr; }

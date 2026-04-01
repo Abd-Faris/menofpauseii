@@ -1,4 +1,6 @@
 #pragma once
+#include "MasterHeader.h"
+
 
 struct SaveData {
     int   currentWave = 1;
@@ -7,6 +9,8 @@ struct SaveData {
     int   player_level = 1;
     int   barrelCount = 1;
     bool  bigcannon = false;
+    std::vector<std::string> activecards{};
+    std::vector<std::string> passivecards{};
 };
 
 bool SaveGame(const SaveData& data, const char* filepath = "save.dat");

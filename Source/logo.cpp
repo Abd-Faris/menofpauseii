@@ -8,7 +8,7 @@
 
 // ------INCLUDE FILES------------------------------------------------------ //
 #include "MasterHeader.h"
-#define PI  3.14159265f
+//#define PI  3.14159265f
 
 // ------GLOBAL VARIABLES & POOLS------------------------------------------- //
 static double dpLogoTimer = 0.0;        // Tracks how long the logo has been on screen
