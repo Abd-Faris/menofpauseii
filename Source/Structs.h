@@ -45,6 +45,10 @@ enum BossType {
 	numofBosses
 };
 
+enum SFX {
+	//
+};
+
 // player upgrade flag (set to u32 so can have 32 possible flags)
 enum PlayerUpgradeFlags : u32 {
 	UPGRADE_NONE		= 0,
