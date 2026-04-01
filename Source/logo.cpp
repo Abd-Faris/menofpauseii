@@ -8,6 +8,7 @@
 
 // ------INCLUDE FILES------------------------------------------------------ //
 #include "MasterHeader.h"
+#define PI  3.14159265f
 
 // ------GLOBAL VARIABLES & POOLS------------------------------------------- //
 static double dpLogoTimer = 0.0;        // Tracks how long the logo has been on screen
@@ -58,7 +59,7 @@ void UpdateDPLogo() {
     // 1. Add the frame time (delta time) to the state timer
     dpLogoTimer += (double)AEFrameRateControllerGetFrameTime();
 
-    // 2. Check for skip conditions: 10 seconds passed OR Left Click OR Escape Key
+    // 2. Check for skip conditions: 5 seconds passed OR Left Click OR Escape Key
     if (dpLogoTimer >= 5.0 || AEInputCheckTriggered(AEVK_ESCAPE) || AEInputCheckTriggered(AEVK_LBUTTON)) {
 
         // 3. Trigger the Game State Manager to move to the Main Menu
@@ -97,7 +98,7 @@ void DrawDPLogo() {
         float rotationTime = (float)(dpLogoTimer - 4.0);
 
         // Multiply time by 2*PI (a full circle in radians)
-        angle = rotationTime * 2.0f * 3.14159265f;
+        angle = rotationTime * 2.0f * PI;
     }
     // Apply the angle to the rotation matrix
     AEMtx33Rot(&rot, angle);
