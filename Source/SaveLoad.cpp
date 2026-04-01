@@ -27,53 +27,70 @@ static void ReadStringVector(std::ifstream& file, std::vector<std::string>& vec)
         file.read(&str[0], len);
     }
 }
-
 bool SaveGame(const SaveData& data, const char* filepath) {
-    std::ofstream file(filepath, std::ios::binary);
-    if (!file.is_open()) return false;
+    std::ofstream file(filepath);  // no std::ios::binary
+    if (!file.is_open()) {
+        OutputDebugStringA("SAVE FAILED: could not open file\n");
+        return false;
+    }
 
-    file.write(reinterpret_cast<const char*>(&SAVE_MAGIC), sizeof(SAVE_MAGIC));
-    file.write(reinterpret_cast<const char*>(&SAVE_VERSION), sizeof(SAVE_VERSION));
+    file << data.currentWave << "\n";
+    file << data.current_hp << "\n";
+    file << data.current_xp << "\n";
+    file << data.player_level << "\n";
+    file << data.lastGameState << "\n";
 
-    // Write plain data
-    file.write(reinterpret_cast<const char*>(&data.currentWave), sizeof(data.currentWave));
-    file.write(reinterpret_cast<const char*>(&data.current_hp), sizeof(data.current_hp));
-    file.write(reinterpret_cast<const char*>(&data.current_xp), sizeof(data.current_xp));
-    file.write(reinterpret_cast<const char*>(&data.player_level), sizeof(data.player_level));
+    // Write card pools — count first then each ID
+    file << data.shopCardIDs.size() << "\n";
+    for (const auto& id : data.shopCardIDs)
+        file << id << "\n";
 
+    file << data.activeCardIDs.size() << "\n";
+    for (const auto& id : data.activeCardIDs)
+        file << id << "\n";
 
-    // Write card pools
-    WriteStringVector(file, data.shopCardIDs);
-    WriteStringVector(file, data.activeCardIDs);
-    WriteStringVector(file, data.inventoryCardIDs);
+    file << data.inventoryCardIDs.size() << "\n";
+    for (const auto& id : data.inventoryCardIDs)
+        file << id << "\n";
 
-    return file.good();
+    if (!file.good()) {
+        OutputDebugStringA("SAVE FAILED: write error\n");
+        return false;
+    }
+
+    OutputDebugStringA("SAVE SUCCESS\n");
+    return true;
 }
 
 bool LoadGame(SaveData& data, const char* filepath) {
-    std::ifstream file(filepath, std::ios::binary);
+    std::ifstream file(filepath); // no std::ios::binary
     if (!file.is_open()) return false;
 
-    int magic = 0, version = 0;
-    file.read(reinterpret_cast<char*>(&magic), sizeof(magic));
-    file.read(reinterpret_cast<char*>(&version), sizeof(version));
-    if (magic != SAVE_MAGIC || version != SAVE_VERSION) return false;
+    file >> data.currentWave;
+    file >> data.current_hp;
+    file >> data.current_xp;
+    file >> data.player_level;
+    file >> data.lastGameState;
 
-    file.read(reinterpret_cast<char*>(&data.currentWave), sizeof(data.currentWave));
-    file.read(reinterpret_cast<char*>(&data.current_hp), sizeof(data.current_hp));
-    file.read(reinterpret_cast<char*>(&data.current_xp), sizeof(data.current_xp));
-    file.read(reinterpret_cast<char*>(&data.player_level), sizeof(data.player_level));
+    // Read card pools
+    auto readStringVector = [&](std::vector<std::string>& vec) {
+        int count = 0;
+        file >> count;
+        file.ignore(); // consume newline after count
+        vec.resize(count);
+        for (auto& id : vec)
+            std::getline(file, id);
+        };
 
-
-    ReadStringVector(file, data.shopCardIDs);
-    ReadStringVector(file, data.activeCardIDs);
-    ReadStringVector(file, data.inventoryCardIDs);
+    readStringVector(data.shopCardIDs);
+    readStringVector(data.activeCardIDs);
+    readStringVector(data.inventoryCardIDs);
 
     return file.good();
 }
 
 bool SaveExists(const char* filepath) {
-    std::ifstream file(filepath, std::ios::binary);
+    std::ifstream file(filepath);
     return file.is_open();
 }
 
