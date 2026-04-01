@@ -47,6 +47,8 @@ void Unload_Global_Assets() {
 	}
 	// Unload Font
 	AEGfxDestroyFont(boldPixels);
+	// Unload SFX
+	SFX::unload();
 }
 
 namespace SFX {
@@ -54,7 +56,7 @@ namespace SFX {
 	AEAudio gamebgm{ nullptr };
 	AEAudio mainbgm{ nullptr };
 	AEAudio shopbgm{ nullptr };
-	AEAudioGroup bgm{ mullptr };
+	AEAudioGroup bgm{ nullptr };
 
 	void load() {
 		// loads audio groups

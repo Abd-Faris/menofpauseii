@@ -162,6 +162,7 @@ void InitializeMainMenu() {
 	for (GfxButton& button : exitingButtons) {
 		button.mesh = rectMesh;
 	}
+	SFX::playBGM();
 }
 
 void UpdateMainMenu() {

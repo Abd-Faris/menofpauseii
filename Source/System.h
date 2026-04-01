@@ -16,5 +16,7 @@ void Load_Global_Assets();
 void Unload_Global_Assets();
 
 namespace SFX {
+	void load();
+	void unload();
 	void playBGM();
 }
