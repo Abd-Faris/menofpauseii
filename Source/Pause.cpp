@@ -35,7 +35,7 @@ namespace PauseScreen {
     GfxText StatsLine1 = { "Wave: 0",      0.5f, 0, 0, 0, 255, {-150, 150} };
     GfxText StatsLine3 = { "HP: 0",        0.5f, 0, 0, 0, 255, {-150,  110} };
     GfxText StatsLine5 = { "SPD: 0",       0.5f, 0, 0, 0, 255, {-150,  70} };
-    GfxText StatsLine7 = { "XP GAIN: 0",   0.5f, 0, 0, 0, 255, {-150,  30} };
+    GfxText StatsLine7 = { "XP MULT: 0",   0.5f, 0, 0, 0, 255, {-150,  30} };
 
     // Right column
     GfxText StatsLine2 = { "Enemies: 0",   0.5f, 0, 0, 0, 255, { 120, 150} };
@@ -46,8 +46,8 @@ namespace PauseScreen {
     // 2. STACKED BUTTON LAYOUT
     // ==========================================
     std::vector<GfxButton> pauseButtons{
-        {{0, -60}, {300, 60}, nullptr, 0},   // ID 0 = Resume
-        {{0, -140}, {300, 60}, nullptr, 2}   // ID 2 = Quit
+        {{0, -60}, {320, 60}, nullptr, 0},   // ID 0 = Resume
+        {{0, -140}, {320, 60}, nullptr, 2}   // ID 2 = Quit
     };
 
     // ==========================================

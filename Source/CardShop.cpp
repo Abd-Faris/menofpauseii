@@ -825,14 +825,14 @@ void FreeCardShop() {
 	pSelectedCard = nullptr;
 	pHoveredCard = nullptr;
 
-	std::cout 
+	/*std::cout
 		<< "\n====================================\n" 
 		<< "HP: " << hp
 		<< "\nDamage: " << dmg
 		<< "\nSpeed: " << speed
 		<< "\nFire Rate: " << fire_rate
 		<< "\nXP Mult: " << xp_mult
-		<< "\n====================================\n";
+		<< "\n====================================\n";*/
 }
 
 void UnloadCardShop() {
