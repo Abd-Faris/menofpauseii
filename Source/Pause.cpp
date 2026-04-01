@@ -189,6 +189,7 @@ namespace PauseScreen {
             for (GfxButton& btn : confirmButtons) {
                 if (Comp::collisionPointRect(mousepos, btn.pos, btn.size)) {
                     if (btn.nextGS == 3) {
+                        SaveCurrentProgress(GS_GAME);
                         // "Yes" Clicked -> Do the actual quitting
                         isPaused = false;
                         isConfirmingQuit = false; // Reset for next time

@@ -234,46 +234,42 @@ void InitializeGame() {
     // Initialize Wave
     SaveData data;
     if (::LoadGame(data)) {
-        // Restore from save
         currentWave = data.currentWave;
         player_init.current_hp = data.current_hp;
         player_init.current_xp = data.current_xp;
         player_init.player_level = data.player_level;
         player.scale = GameConfig::Tank::SCALE;
 
-        // reference for easy ref
-        std::vector<Card>& shopCards = allCards[0];// reference to shop cards
-        std::vector<Card>& activeCards = allCards[1];// ref to active cards
-        std::vector<Card>& inventoryCards = allCards[2];// reference to cards in bag
+        // Use globals directly — no local redeclaration
+        for ( auto& id : data.shopCardIDs) {
+            Card card;
+            card.info = Cards::GetCardByID(id);
+            allCards[0].push_back(card);
+        }
+        for ( auto& id : data.activeCardIDs) {
+            Card card;
+            card.info = Cards::GetCardByID(id);
+            allCards[1].push_back(card);
+        }
+        for ( auto& id : data.inventoryCardIDs) {
+            Card card;
+            card.info = Cards::GetCardByID(id);
+            allCards[2].push_back(card);
+        }
 
-        // get back shop cards (if any)
-        for (auto& id : data.shopCardIDs) {
-            Card card;
-            card.info = Cards::GetCardByID(id);
-            shopCards.push_back(card);
-        }
-        // get back all active cards
-        for (auto& id : data.activeCardIDs) {
-            Card card;
-            card.info = Cards::GetCardByID(id);
-            activeCards.push_back(card);
-        }
-        // get back all passive / bag cards
-        for (auto& id : data.inventoryCardIDs) {
-            Card card;
-            card.info = Cards::GetCardByID(id);
-            inventoryCards.push_back(card);
-        }
         if (data.lastGameState == GS_CARD_SHOP)
             GS_next = GS_CARD_SHOP;
+
         GenerateWave(currentWave, player);
+
+        std::cout << "Loaded saves\n";
     }
     else {
-        // Fresh run
         player.scale = GameConfig::Tank::SCALE;
         player.barrelCount = 1;
         currentWave = 1;
         GenerateWave(currentWave, player);
+        std::cout << "New Run\n";
     }
 }
 
