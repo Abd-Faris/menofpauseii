@@ -279,15 +279,6 @@ void handle_menu_input(float camX, float camY) {
 		f32 speed = calculate_max_stats(2);
 		f32 fire_rate = calculate_max_stats(3);
 		f32 xp_mult = calculate_max_stats(4);
-
-		std::cout
-			<< "\n====================================\n"
-			<< "HP: " << hp
-			<< "\nDamage: " << dmg
-			<< "\nSpeed: " << speed
-			<< "\nFire Rate: " << fire_rate
-			<< "\nXP Mult: " << xp_mult
-			<< "\n====================================\n";
 		return;
 	}
 
@@ -474,7 +465,7 @@ void DrawDebug1() {
 		draw_upgrade_rows(camX, camY);
 
 		// prints current player stats on upgrade menu
-		const char* stats[] = { "HP", "DMG", "SPEED", "FIRE RATE", "XP GAIN" };
+		const char* stats[] = { "HP", "DMG", "SPEED", "FIRE RATE", "XP MULT" };
 		float rowStartY = 0.43f;
 		float rowSpacing = 0.22f;
 		for (int i = 0; i < 5; ++i) {

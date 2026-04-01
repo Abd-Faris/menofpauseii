@@ -2,7 +2,8 @@
 // File:	logo.cpp
 // Authors:	[Men of Pause II]
 // Brief:	This file contains the Game State logic for displaying and 
-//          animating the DigiPen logo splash screen before the main menu.
+//          animating the DigiPen logo splash screen before the main menu,
+//          including a rotational and particle explosion transition.
 // 
 // ------------------------------------------------------------------------- //
 
@@ -16,122 +17,174 @@ AEGfxTexture* dpLogoTexture = nullptr;  // Pointer to the loaded logo image data
 AEGfxVertexList* pMesh = nullptr;       // 2D square mesh to paint the texture onto
 
 
+
+
+const int EXPLOSION_COUNT = 150; // Number of particles
+SplashParticle particles[EXPLOSION_COUNT];
+bool explosionTriggered = false; // Ensures the explosion only triggers once
+
+
 // ------GAME STATE LOGIC--------------------------------------------------- //
 
-// ~ Brief:	Loads the DigiPen logo texture from the Assets folder and 
-//          generates a 1x1 square mesh to render the image onto.
+// ~ Brief:	Loads the DigiPen logo texture and the 1x1 square mesh.
 void LoadDPLogo() {
-    // 1. Load the texture from the Assets directory
     dpLogoTexture = AEGfxTextureLoad("./Assets/DigiPen_Singapore_WEB_RED.png");
 
-    // 2. Quick safety check: If it fails to load, alert the console
     if (dpLogoTexture == nullptr) {
         std::cout << "ERROR: Failed to load DP Logo texture!" << std::endl;
     }
 
-    // 3. Create a 1x1 Square Mesh for the texture to map to
     AEGfxMeshStart();
-
-    // First Triangle (X, Y, Color, Texture U, Texture V)
     AEGfxTriAdd(
         -0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
         0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
         -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-
-    // Second Triangle
     AEGfxTriAdd(
         0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
         0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
         -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-
     pMesh = AEGfxMeshEnd();
 }
 
-// ~ Brief:	Resets the state variables each time the splash screen is entered.
+// ~ Brief:	Resets the state timers and deactivates all particles.
 void InitializeDPLogo() {
-    // Reset the timer so it always starts fresh at 0 seconds
     dpLogoTimer = 0.0;
+    explosionTriggered = false;
+
+    // Reset the particle pool
+    for (int i = 0; i < EXPLOSION_COUNT; i++) {
+        particles[i].active = false;
+    }
 }
 
-// ~ Brief:	Updates the state timer and listens for user input to skip the 
-//          splash screen, transitioning to the main menu.
+// ~ Brief:	Updates timers, physics, and listens for state transitions.
 void UpdateDPLogo() {
-    // 1. Add the frame time (delta time) to the state timer
-    dpLogoTimer += (double)AEFrameRateControllerGetFrameTime();
+    float dt = (float)AEFrameRateControllerGetFrameTime();
+    dpLogoTimer += (double)dt;
 
-    // 2. Check for skip conditions: 5 seconds passed OR Left Click OR Escape Key
+    // --- EXPLOSION LOGIC ---
+    // If we hit 4 seconds, trigger the explosion blast exactly once
+    if (dpLogoTimer >= 4.0 && !explosionTriggered) {
+        explosionTriggered = true;
+
+        for (int i = 0; i < EXPLOSION_COUNT; i++) {
+            particles[i].active = true;
+            particles[i].x = 0.0f; // Start at center of screen
+            particles[i].y = 0.0f;
+
+            // Random direction (0 to 2*PI)
+            float angle = AERandFloat() * 2.0f * PI;
+            // Random blast speed (between 300 and 1000 pixels per second)
+            float speed = 300.0f + AERandFloat() * 700.0f;
+
+            particles[i].velX = cosf(angle) * speed;
+            particles[i].velY = sinf(angle) * speed;
+
+            // Random life span between 0.5s and 1.2s
+            particles[i].maxLife = 0.5f + AERandFloat() * 0.7f;
+            particles[i].life = particles[i].maxLife;
+
+            // Random size between 4 and 12 pixels
+            particles[i].scale = 30.0f + AERandFloat() * 8.0f;
+        }
+    }
+
+    // Update active particles (move them and fade them out)
+    if (explosionTriggered) {
+        for (int i = 0; i < EXPLOSION_COUNT; i++) {
+            if (particles[i].active) {
+                particles[i].x += particles[i].velX * dt;
+                particles[i].y += particles[i].velY * dt;
+
+                // Add a little bit of "drag" so they slow down over time
+                particles[i].velX *= 0.95f;
+                particles[i].velY *= 0.95f;
+
+                particles[i].life -= dt;
+                if (particles[i].life <= 0.0f) {
+                    particles[i].active = false;
+                }
+            }
+        }
+    }
+
+    // --- SKIP LOGIC ---
     if (dpLogoTimer >= 5.0 || AEInputCheckTriggered(AEVK_ESCAPE) || AEInputCheckTriggered(AEVK_LBUTTON)) {
-
-        // 3. Trigger the Game State Manager to move to the Main Menu
         GS_next = GS_MAIN_MENU;
     }
 }
 
-// ~ Brief:	Renders the DigiPen logo to the center of the screen, slowly 
-//          scaling it up over time to create a smooth zoom-in effect.
+// ~ Brief:	Renders the scaling logo and the particle explosion.
 void DrawDPLogo() {
-    // 1. Configure engine render modes for textured drawing with transparency
+    // ==========================================
+    // 1. DRAW THE LOGO
+    // ==========================================
+    AEGfxSetBackgroundColor(0.0f, 0.0f, 0.0f);
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
     AEGfxSetBlendMode(AE_GFX_BM_BLEND);
     AEGfxSetTransparency(1.0f);
-
-    // 2. Keep original texture colors (multiply by 1, add 0)
     AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
     AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
-
-    // 3. Bind the DigiPen logo texture to the engine
     AEGfxTextureSet(dpLogoTexture, 0.0f, 0.0f);
 
-    // 4. Calculate Transformation (Position, Rotation, Scale)
-    // ADDED 'rot' to our list of matrices
     AEMtx33 scale, rot, trans, transform;
 
-    // --- EXPANSION MATH ---
+    // Zoom in
     float grow = 1.0f + (float)(dpLogoTimer * 0.2f);
     AEMtx33Scale(&scale, 600.0f * grow, 200.0f * grow);
 
-    // --- ROTATION MATH ---
+    // Spin in the last 1 second
     float angle = 0.0f;
-    // If we are in the last 1 second of the 5-second timer...
     if (dpLogoTimer >= 4.0) {
-        // Calculate how much time has passed since the 4-second mark (goes from 0.0 to 1.0)
         float rotationTime = (float)(dpLogoTimer - 4.0);
-
-        // Multiply time by 2*PI (a full circle in radians)
         angle = rotationTime * 2.0f * PI;
     }
-    // Apply the angle to the rotation matrix
     AEMtx33Rot(&rot, angle);
-    // ----------------------
-
-    // 5. Set position to (0, 0) - Center of the screen
     AEMtx33Trans(&trans, 0.0f, 0.0f);
 
-    // 6. Combine matrices and send to the graphics engine
-    // Scale -> Rotate -> Translate
-    AEMtx33Concat(&transform, &rot, &scale);        // 1. Rotate the Scaled logo
-    AEMtx33Concat(&transform, &trans, &transform);  // 2. Translate it to its final position
+    AEMtx33Concat(&transform, &rot, &scale);
+    AEMtx33Concat(&transform, &trans, &transform);
     AEGfxSetTransform(transform.m);
-
-    // 7. Draw the square mesh with the texture painted on it
     AEGfxMeshDraw(pMesh, AE_GFX_MDM_TRIANGLES);
+
+
+    // ==========================================
+    // 2. DRAW THE EXPLOSION PARTICLES
+    // ==========================================
+    if (explosionTriggered) {
+        // Switch to COLOR render mode since particles don't have textures
+        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+
+        for (int i = 0; i < EXPLOSION_COUNT; i++) {
+            if (particles[i].active) {
+
+                // Calculate how faded it should be based on its remaining life
+                float alpha = particles[i].life / particles[i].maxLife;
+
+                // Set color 
+                AEGfxSetColorToMultiply(1.0f, 0.6f + (alpha * 0.4f), 0.0f, alpha);
+
+                AEMtx33 pScale, pTrans, pTransform;
+                AEMtx33Scale(&pScale, particles[i].scale, particles[i].scale);
+                AEMtx33Trans(&pTrans, particles[i].x, particles[i].y);
+                AEMtx33Concat(&pTransform, &pTrans, &pScale);
+
+                AEGfxSetTransform(pTransform.m);
+                AEGfxMeshDraw(pMesh, AE_GFX_MDM_TRIANGLES);
+            }
+        }
+    }
 }
 
-// ~ Brief:	Frees any dynamically allocated instances used in Initialize.
-void FreeDPLogo() {
-    // Free anything allocated in Initialize (Nothing right now)
-}
+// ~ Brief:	Frees instances
+void FreeDPLogo() {}
 
-// ~ Brief:	Unloads the texture and frees the mesh geometry from memory 
-//          to prevent memory leaks before changing states.
+// ~ Brief:	Unloads texture/mesh to prevent leaks
 void UnloadDPLogo() {
-    // 1. Unload texture from memory
     if (dpLogoTexture != nullptr) {
         AEGfxTextureUnload(dpLogoTexture);
         dpLogoTexture = nullptr;
     }
-
-    // 2. Free the mesh geometry from memory
     if (pMesh != nullptr) {
         AEGfxMeshFree(pMesh);
         pMesh = nullptr;

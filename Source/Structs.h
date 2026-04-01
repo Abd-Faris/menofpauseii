@@ -234,6 +234,14 @@ struct SmokeParticle {
 	bool isActive;
 };
 
+struct SplashParticle {
+	float x, y;          // World position
+	float velX, velY;    // Movement speed
+	float life, maxLife; // How long until it disappears
+	float scale;         // Size of the particle
+	bool active;         // Is it currently on screen?
+};
+
 // Externs
 extern PlayerStats player_init;
 extern SmokeParticle smokes[100];
