@@ -405,7 +405,7 @@
          "passive": [
             {
                "id": "orbit",
-               "desc": "Defense Orbit Upgrade\nSummons an orbiting orb that deals damage to anything that comes close!",
+               "desc": "Defense Orbit Upgrade\nSummons an orbiting orb that deals damage to\nanything that comes close!",
                "type": "",
                "valuetype": "",
                "value": 0
