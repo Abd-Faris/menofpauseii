@@ -39,7 +39,7 @@ void UpdateCredits() {
 	float deltaTime = (float)AEFrameRateControllerGetFrameTime();
 
 	// Scroll up each frame
-	for (auto& c : CreditTexts) // reference not copy
+	for (GfxText& c : CreditTexts) // reference not copy
 		c.pos.y += 200.f * deltaTime;
 
 	// Go back to main menu when done
@@ -52,7 +52,7 @@ void UpdateCredits() {
 }
 void DrawCredits() {
 	AEGfxSetBackgroundColor(0.2f, 0.2f, 0.2f);
-	for (auto c : CreditTexts)
+	for (GfxText& c : CreditTexts)
 	Gfx::printMultiline(c, boldPixels);
 
 }

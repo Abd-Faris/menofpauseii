@@ -239,9 +239,7 @@ void InitializeGame() {
         player_init.current_hp = data.current_hp;
         player_init.current_xp = data.current_xp;
         player_init.player_level = data.player_level;
-        player.barrelCount = data.barrelCount;
         player.scale = GameConfig::Tank::SCALE;
-        bigcannon = data.bigcannon;
 
         // reference for easy ref
         std::vector<Card>& shopCards = allCards[0];// reference to shop cards
@@ -249,24 +247,25 @@ void InitializeGame() {
         std::vector<Card>& inventoryCards = allCards[2];// reference to cards in bag
 
         // get back shop cards (if any)
-        for (const auto& id : data.shopCardIDs) {
+        for (auto& id : data.shopCardIDs) {
             Card card;
             card.info = Cards::GetCardByID(id);
             shopCards.push_back(card);
         }
         // get back all active cards
-        for (const auto& id : data.activeCardIDs) {
+        for (auto& id : data.activeCardIDs) {
             Card card;
             card.info = Cards::GetCardByID(id);
-            shopCards.push_back(card);
+            activeCards.push_back(card);
         }
         // get back all passive / bag cards
-        for (const auto& id : data.inventoryCardIDs) {
+        for (auto& id : data.inventoryCardIDs) {
             Card card;
             card.info = Cards::GetCardByID(id);
-            shopCards.push_back(card);
+            inventoryCards.push_back(card);
         }
-
+        if (data.lastGameState == GS_CARD_SHOP)
+            GS_next = GS_CARD_SHOP;
         GenerateWave(currentWave, player);
     }
     else {
@@ -569,20 +568,7 @@ void DrawGame() {
 }
 
 void FreeGame() {
-    SaveData data;
-    data.currentWave = currentWave;
-    data.current_hp = player_init.current_hp;
-    data.current_xp = player_init.current_xp;
-    data.player_level = player_init.player_level;
-    data.barrelCount = player.barrelCount;
-    data.bigcannon = bigcannon;
-
-    // Save each card pool as IDs
-    for (const auto& card : allCards[0])      data.shopCardIDs.push_back(card.info.ID);
-    for (const auto& card : allCards[1])    data.activeCardIDs.push_back(card.info.ID);
-    for (const auto& card : allCards[2]) data.inventoryCardIDs.push_back(card.info.ID);
-
-    SaveGame(data);
+    SaveCurrentProgress(GS_GAME);
 
     AEGfxSetCamPosition(0.0f, 0.0f);
     if (MeshRect) { AEGfxMeshFree(MeshRect);     MeshRect = nullptr; }

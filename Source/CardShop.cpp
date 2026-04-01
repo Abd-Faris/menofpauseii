@@ -7,6 +7,7 @@
 
 // externs
 // declare array for ALL loaded cards in the game
+std::array<std::vector<Card>, 3>    allCards{};	// vector for all cards
 std::array<std::vector<CardStats>, NUM_OF_RARITIES> cardPool;
 // structs to keep track of player modifiers
 PlayerStatsModifier cardBaseMod{0.f, 0.f, 0.f, 0.f, 0.f}, cardMultMod{1.f, 1.f, 1.f, 1.f, 1.f};
@@ -76,7 +77,7 @@ namespace { // functions for InitializeCardShop()
 	};
 
 	// declare array for cards
-	std::array<std::vector<Card>, 3>    allCards{};	// vector for all cards
+
 	// reference for easy ref
 	std::vector<Card>& shopCards      = allCards[0];// reference to shop cards
 	std::vector<Card>& activeCards    = allCards[1];// ref to active cards
