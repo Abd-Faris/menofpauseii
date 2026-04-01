@@ -13,8 +13,8 @@ struct SaveData {
     int   lastGameState = GS_current;
 };
 
-bool SaveGame(const SaveData& data, const char* filepath = "save.dat");
-bool LoadGame(SaveData& data, const char* filepath = "save.dat");
-bool SaveExists(const char* filepath = "save.dat");
-void DeleteSave(const char* filepath = "save.dat");
+bool SaveGame(const SaveData& data, const char* filepath = "save.txt");
+bool LoadGame(SaveData& data, const char* filepath = "save.txt");
+bool SaveExists(const char* filepath = "save.txt");
+void DeleteSave(const char* filepath = "save.txt");
 void SaveCurrentProgress(int gameState);
