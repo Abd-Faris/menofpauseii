@@ -13,6 +13,23 @@ float playerFlashTimer = 0.0f;
 float waveActiveTimer = 0.0f;
 
 
+// =============================================================================
+// INITIAL PLAYER STATS
+// =============================================================================
+
+PlayerStats player_init = {
+    // HP    DMG   SPEED  FIRERATE  XP
+    300.0f, 15.0f, 300.0f,   0.5f,  1.0f,
+
+    { 0, 0, 0, 0, 0 },  // initial upgrade levels
+
+    0.0f, 0.0f, 0,      // initial XP stats (current_xp, xp_needed, player_level)
+
+    0, false,           // initial skill_point, menu_open
+
+    300.0f              // current_hp
+};
+
 namespace {
     // -- Assets --
     AEGfxVertexList* MeshRect = nullptr;

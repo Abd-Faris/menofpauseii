@@ -12,14 +12,14 @@
 
 extern std::array<Enemies, 50> enemyPool;  // Object pool for enemies
 extern int   currentWave;                  // Current wave number
-extern float bulletFireTimer;              // Cooldown timer for the player's gun
+extern float bulletFireTimer;              // Cooldown timer for the shooting
 
 // =============================================================================
 // INITIAL PLAYER STATS
 // =============================================================================
 
 PlayerStats player_init = {
-    // HP       DMG    SPEED  FIRERATE  XP
+    // HP    DMG   SPEED  FIRERATE  XP
     300.0f, 15.0f, 300.0f,   0.5f,  1.0f,
 
     { 0, 0, 0, 0, 0 },  // initial upgrade levels
@@ -170,7 +170,7 @@ namespace {
 
     float kStatMultiplier[NUM_STATS] = { 25.0f, 4.0f, 30.0f,  0.033f,  0.5f };
 
-    const char* kStatNames[NUM_STATS] = { "HP", "DMG", "SPEED", "FIRE RATE", "XP GAIN" };
+    const char* kStatNames[NUM_STATS] = { "HP", "DMG", "SPEED", "FIRE RATE", "XP MULT" };
 
     float kBaseStats[NUM_STATS] = {
         player_init.baseHp,
@@ -341,6 +341,7 @@ namespace {
 //
 // FORMULA:  (base + cardBaseMod + upgradeLevel * multiplier) * cardMultMod
 // HP is special: upgrade bonus is applied after card scaling (flat increase).
+
 float calculate_max_stats(int i) {
     switch (i) {
     case STAT_HP:
@@ -367,19 +368,20 @@ float calculate_max_stats(int i) {
 }
 
 void UpdateCurrentHpAfterCards(float oldMaxHp) {
-    float newMaxHp = calculate_max_stats(0);
+    float newMaxHp = calculate_max_stats(STAT_HP);
 
-    // if max hp increased, give the player the difference
-    if (newMaxHp > oldMaxHp) {
-        player_init.current_hp += (newMaxHp - oldMaxHp);
-    }
+    float healthRatio = (oldMaxHp > 0) ? (player_init.current_hp / oldMaxHp) : 1.0f;
+
+    player_init.current_hp = newMaxHp * healthRatio;
 
     if (player_init.current_hp > newMaxHp) {
         player_init.current_hp = newMaxHp;
     }
-    if (player_init.current_hp < 1.0f) {
+    if (player_init.current_hp < 1.0f && newMaxHp >= 1.0f) {
         player_init.current_hp = 1.0f;
     }
+
+    printf("SYNC: Ratio: %.2f | NewHP: %.1f/%.1f\n", healthRatio, player_init.current_hp, newMaxHp);
 }
 
 float get_max_hp() {
@@ -485,10 +487,13 @@ void handle_menu_input(float camX, float camY) {
             mouseY >= btnY - MENU_CLICK_HALF && mouseY <= btnY + MENU_CLICK_HALF);
 
         if (hovered && player_init.upgradeLevels[i] < MAX_UPGRADE_LEVEL) {
+            float oldMax = calculate_max_stats(STAT_HP);
             player_init.upgradeLevels[i]++;
             player_init.skill_point--;
-            if (i == STAT_HP)
-                player_init.current_hp += kStatMultiplier[STAT_HP];
+
+            if (i == STAT_HP) UpdateCurrentHpAfterCards(oldMax);
+
+            return;
         }
     }
 }
@@ -579,11 +584,13 @@ void UpdateDebug1() {
 void DrawDebug1() {
     float camX, camY;
     AEGfxGetCamPosition(&camX, &camY);
-
     float hudX = camX;
     float hudY = camY + HUD_OFFSET_Y;
     float maxHp = calculate_max_stats(STAT_HP);
     float xpNeeded = XP_BASE + (powf((float)player_init.player_level, XP_EXPONENT) * XP_MULTIPLIER);
+
+    printf("DRAW: CurHP: %.1f | MaxHP: %.1f | Level: %d\n",
+        player_init.current_hp, maxHp, player_init.player_level);
 
     // -- Shoot-cooldown bar --
     DrawShootCooldownBar(camX, camY, bulletFireTimer, calculate_max_stats(STAT_FIRERATE));
@@ -594,7 +601,7 @@ void DrawDebug1() {
             DrawEnemyHealthBar(enemyPool[i], camX, camY);
     }
 
-    // -- Player HUD (HP + XP bars) --
+    // -- Player HUD (HP + XP bars) -- 
     DrawColorMesh(pMeshBlack, hudX, hudY, HUD_MAX_WIDTH + HUD_BORDER, HUD_OUTER_HEIGHT);
     DrawHudBar(pMeshRed, player_init.current_hp, maxHp, hudX, hudY, HUD_HP_BAR_OFFSET_Y, HUD_HP_BAR_HEIGHT, HUD_MAX_WIDTH);
     DrawHudBar(pMeshYellow, player_init.current_xp, xpNeeded, hudX, hudY, HUD_XP_BAR_OFFSET_Y, HUD_XP_BAR_HEIGHT, HUD_MAX_WIDTH);
