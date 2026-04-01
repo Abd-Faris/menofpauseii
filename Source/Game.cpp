@@ -18,8 +18,6 @@ namespace {
     AEGfxVertexList* MeshRect = nullptr;
     AEGfxVertexList* MeshCircle = nullptr;
     AEGfxVertexList* MeshTriangle = nullptr;
-    AEAudio mainbgm{ nullptr };
-    AEAudioGroup bgm{ nullptr };
     
 
     // -- Player State --
@@ -196,10 +194,6 @@ void circlerectcollision() {
 // LOAD GAME
 // ===========================================================================
 void LoadGame() {
-    // load audio assets
-    mainbgm = AEAudioLoadMusic("Assets/audio/bgm/game_bgm.mp3");
-    bgm = AEAudioCreateGroup();
-    AEAudioPlay(mainbgm, bgm, 2.f, 1.f, -1);
    
     LoadDebug1();
     LoadBullets();
@@ -603,8 +597,4 @@ void FreeGame() {
 	World::Free_World();
 }
 
-void UnloadGame() {
-    // unload audio
-    AEAudioUnloadAudio(mainbgm);
-    AEAudioUnloadAudioGroup(bgm);
-}
+void UnloadGame() {}

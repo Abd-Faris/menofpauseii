@@ -10,9 +10,6 @@ namespace {
 	AEGfxTexture* pBtnHoverTex = nullptr;
 	AEGfxTexture* pBgExitTex = nullptr;
 
-	AEAudio mainbgm{ nullptr };
-	AEAudioGroup bgm{ nullptr };
-
 	// exiting game app boolean (to display confirmation screen)
 	bool exiting{};
 
@@ -121,10 +118,6 @@ namespace {
 }
 
 void LoadMainMenu() {
-	// load audio assets
-	mainbgm = AEAudioLoadMusic("Assets/audio/bgm/mainmenu_bgm.mp3");
-	bgm = AEAudioCreateGroup();
-	AEAudioPlay(mainbgm, bgm, 1.f, 1.f, -1);
 
 	// load textures
 	pBgTex = AEGfxTextureLoad("./Assets/menu.png");
@@ -212,9 +205,6 @@ void DrawMainMenu() {
 }
 
 void UnloadMainMenu() {
-	// unload audio
-	AEAudioUnloadAudio(mainbgm);
-	AEAudioUnloadAudioGroup(bgm);
 
 	if (rectMesh) { AEGfxMeshFree(rectMesh);           rectMesh = nullptr; }
 	if (pBgMesh) { AEGfxMeshFree(pBgMesh);            pBgMesh = nullptr; }

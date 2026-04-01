@@ -4,6 +4,7 @@
 
 // Declare Externs
 extern s8 boldPixels;
+extern bool fullscreen;
 
 void Initialise_System(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
@@ -14,4 +15,6 @@ void Load_Global_Assets();
 
 void Unload_Global_Assets();
 
-extern bool fullscreen;
+namespace SFX {
+	void playBGM();
+}

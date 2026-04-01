@@ -35,6 +35,8 @@ void Load_Global_Assets() {
 	Cards::Load_Cards("../../Data/Cards.json");
 	// Load Font
 	boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
+	// Load SFX
+	SFX::load();
 }
 
 void Unload_Global_Assets() {
@@ -45,5 +47,45 @@ void Unload_Global_Assets() {
 	}
 	// Unload Font
 	AEGfxDestroyFont(boldPixels);
+}
+
+namespace SFX {
+	// namespace scope variables
+	AEAudio gamebgm{ nullptr };
+	AEAudio mainbgm{ nullptr };
+	AEAudio shopbgm{ nullptr };
+	AEAudioGroup bgm{ mullptr };
+
+	void load() {
+		// loads audio groups
+		bgm = AEAudioCreateGroup();
+
+		// loads bgm
+		mainbgm = AEAudioLoadMusic("Assets/audio/bgm/main_bgm.mp3");
+		gamebgm = AEAudioLoadMusic("Assets/audio/bgm/game_bgm.mp3");
+		shopbgm = AEAudioLoadMusic("Assets/audio/bgm/shop_bgm.mp3");
+	}
+
+	void unload() {
+		// unload audio groups
+		AEAudioUnloadAudioGroup(bgm);
+
+		// unload bgms
+		AEAudioUnloadAudio(mainbgm);
+		AEAudioUnloadAudio(gamebgm);
+		AEAudioUnloadAudio(shopbgm);
+	}
+
+	void playBGM() {
+		switch (GS_current) {
+		case GS_MAIN_MENU:
+			AEAudioPlay(mainbgm, bgm, 1.f, 1.f, -1); break;
+		case GS_GAME:
+			AEAudioPlay(gamebgm, bgm, 2.f, 1.f, -1); break;
+		case GS_CARD_SHOP:
+			AEAudioPlay(shopbgm, bgm, 2.f, 1.f, -1); break;
+		default: break;
+		}
+	}
 }
 
