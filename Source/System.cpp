@@ -81,12 +81,18 @@ namespace SFX {
 	void playBGM() {
 		switch (GS_current) {
 		case GS_MAIN_MENU:
-			AEAudioPlay(mainbgm, bgm, 1.f, 1.f, -1); break;
+			AEAudioStopGroup(bgm); AEAudioPlay(mainbgm, bgm, 1.f, 1.f, -1); break;
 		case GS_GAME:
-			AEAudioPlay(gamebgm, bgm, 2.f, 1.f, -1); break;
+			AEAudioStopGroup(bgm); AEAudioPlay(gamebgm, bgm, 2.f, 1.f, -1); break;
 		case GS_CARD_SHOP:
-			AEAudioPlay(shopbgm, bgm, 2.f, 1.f, -1); break;
+			AEAudioStopGroup(bgm); AEAudioPlay(shopbgm, bgm, 2.f, 1.f, -1); break;
 		default: break;
+		}
+	}
+
+	void playSFX(int sfx) {
+		switch (sfx) {
+			//
 		}
 	}
 }

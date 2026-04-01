@@ -249,6 +249,8 @@ void InitializeCardShop() {
 	computeCardHomePos();
 	buyable_left = num_buyable;
 	rolls_left = num_rolls;
+
+	SFX::playBGM();
 }
 
 namespace { // functions for UpdateCardShop()

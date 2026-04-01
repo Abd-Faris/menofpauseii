@@ -271,6 +271,7 @@ void InitializeGame() {
         GenerateWave(currentWave, player);
         std::cout << "New Run\n";
     }
+    SFX::playBGM();
 }
 
 // ===========================================================================
