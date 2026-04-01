@@ -1,513 +1,680 @@
+// -----------------------------Gloomy's Revenge---------------------------- //
+// File:    Debug XP.cpp
+// Authors: [Men of Pause II]
+// Brief:   Player HUD, XP/level-up logic, upgrade menu, and debug cheats.
+// ------------------------------------------------------------------------- //
+
 #include "MasterHeader.h"
 
-// --- GLOBALS FROM GAME.CPP ---
-extern std::array<Enemies, 50> enemyPool;
-extern int currentWave;
+// =============================================================================
+// EXTERNS
+// =============================================================================
 
-// --- INITIAL PLAYER STATS ---
-PlayerStats	player_init = {
-	// -- HP DMG SPEED FIRERATE XP --
-	300.0f, 15.0f, 300.0f, 0.5f, 1.0f,
+extern std::array<Enemies, 50> enemyPool;  // Object pool for enemies
+extern int   currentWave;                  // Current wave number
+extern float bulletFireTimer;              // Cooldown timer for the player's gun
 
-	{ 0, 0, 0, 0, 0 },   //initial upgrade amount
+// =============================================================================
+// INITIAL PLAYER STATS
+// =============================================================================
 
-	0.0f, 0.0f, 0,    //initial xp stats
+PlayerStats player_init = {
+    // HP       DMG    SPEED  FIRERATE  XP
+    300.0f, 15.0f, 300.0f,   0.5f,  1.0f,
 
-	0, false,  //initial skill point, and menu state
+    { 0, 0, 0, 0, 0 },  // initial upgrade levels
 
-	300.0f // current hp
+    0.0f, 0.0f, 0,      // initial XP stats (current_xp, xp_needed, player_level)
+
+    0, false,           // initial skill_point, menu_open
+
+    300.0f              // current_hp
 };
+
+// =============================================================================
+// ANONYMOUS NAMESPACE — file-private data and helpers
+// =============================================================================
 
 namespace {
 
-	//color meshes
-	AEGfxVertexList* pBlackRectMesh = nullptr;
-	AEGfxVertexList* pWhiteRectMesh = nullptr;
-	AEGfxVertexList* pGreenRectMesh = nullptr;
-	AEGfxVertexList* pRedRectMesh = nullptr;
-	AEGfxVertexList* pYellowRectMesh = nullptr;
+    // -------------------------------------------------------------------------
+    // CONSTANTS
+    // -------------------------------------------------------------------------
 
-	//mesh for icons
-	AEGfxVertexList* pIconMesh = nullptr;
+    // Stat indices
+    constexpr int STAT_HP = 0;
+    constexpr int STAT_DMG = 1;
+    constexpr int STAT_SPEED = 2;
+    constexpr int STAT_FIRERATE = 3;
+    constexpr int STAT_XP = 4;
+    constexpr int NUM_STATS = 5;
 
-	//stat icons
-	AEGfxTexture* upgradeIcons[5] = { nullptr, nullptr, nullptr, nullptr, nullptr };
-	const char* iconPaths[5] = {
-		"Assets/hp.png",
-		"Assets/dmg.png",
-		"Assets/speed.png",
-		"Assets/firerate.png",
-		"Assets/xp.png"
-	};
+    // Pool / upgrade limits
+    constexpr int   ENEMY_POOL_SIZE = 50;
+    constexpr int   MAX_UPGRADE_LEVEL = 5;
+    constexpr int   MENU_LEVEL_CAP = 26;  // menu stops opening at this level
 
-	//+ icon
-	AEGfxTexture* upgradeConfirmIcon = nullptr;
+    // Gameplay
+    constexpr float MIN_FIRE_RATE = 0.1f;
+    constexpr float MIN_CURRENT_HP = 1.0f;
+    constexpr float LEVEL_UP_HEAL_PERCENT = 0.2f;
 
-	//helper to create color mesh
-	AEGfxVertexList* createmesh(uint32_t color) {
-		AEGfxMeshStart();
-		AEGfxTriAdd(
-			-0.5f, -0.5f, color, 0.0f, 0.0f,
-			0.5f, -0.5f, color, 0.0f, 0.0f,
-			-0.5f, 0.5f, color, 0.0f, 0.0f);
-		AEGfxTriAdd(
-			0.5f, -0.5f, color, 0.0f, 0.0f,
-			0.5f, 0.5f, color, 0.0f, 0.0f,
-			-0.5f, 0.5f, color, 0.0f, 0.0f);
-		return AEGfxMeshEnd();
-	}
+    // XP formula:  xp_needed = XP_BASE + level^XP_EXPONENT * XP_MULTIPLIER
+    constexpr float XP_BASE = 100.0f;
+    constexpr float XP_MULTIPLIER = 25.0f;
+    constexpr float XP_EXPONENT = 1.5f;
 
-	//helper to draw color mesh
-	void drawmesh(AEGfxVertexList* mesh, float x, float y, float scale_x, float scale_y, float r = 1, float g = 1, float b = 1) {
-		if (mesh == nullptr) return;
-		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-		AEMtx33 scale, trans, final;
-		AEMtx33Scale(&scale, scale_x, scale_y);
-		AEMtx33Trans(&trans, x, y);
-		AEMtx33Concat(&final, &trans, &scale);
-		AEGfxSetTransform(final.m);
-		AEGfxSetColorToMultiply(r, g, b, 1.0f);
-		AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
-	}
+    // UV mesh vertex colour (white, full alpha)
+    constexpr uint32_t UV_MESH_COLOR = 0xFFFFFFFF;
 
-	//helper to draw textured icon
-	void drawicon(AEGfxTexture* tex, float x, float y, float size) {
-		if (tex == nullptr || pIconMesh == nullptr) return;
-		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-		AEGfxTextureSet(tex, 0, 0);
-		AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
-		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
-		AEGfxSetTransparency(1.0f);
-		AEMtx33 scale, trans, final;
-		AEMtx33Scale(&scale, size, size);
-		AEMtx33Trans(&trans, x, y);
-		AEMtx33Concat(&final, &trans, &scale);
-		AEGfxSetTransform(final.m);
-		AEGfxMeshDraw(pIconMesh, AE_GFX_MDM_TRIANGLES);
-		AEGfxSetRenderMode(AE_GFX_RM_COLOR); // reset back to color mode
-	}
+    // ---- HUD bars ----
+    constexpr float HUD_OFFSET_Y = -410.0f;
+    constexpr float HUD_MAX_WIDTH = 300.0f;
+    constexpr float HUD_BORDER = 10.0f;
+    constexpr float HUD_OUTER_HEIGHT = 52.0f;
+    constexpr float HUD_HP_BAR_OFFSET_Y = 7.0f;
+    constexpr float HUD_HP_BAR_HEIGHT = 25.0f;
+    constexpr float HUD_XP_BAR_OFFSET_Y = -15.0f;
+    constexpr float HUD_XP_BAR_HEIGHT = 10.0f;
 
-	//helper to draw enemy health bar
-	void draw_enemy_health_bar(Enemies& enemy, float camX, float camY) {
-		if (!enemy.alive || enemy.hp >= enemy.maxhp || enemy.hp <= 0) return;
+    // ---- Shoot-cooldown bar ----
+    constexpr float SHOOT_BAR_WIDTH = 100.0f;
+    constexpr float SHOOT_BAR_HEIGHT = 15.0f;
+    constexpr float SHOOT_BAR_OFFSET_X = -250.0f;
+    constexpr float SHOOT_BAR_OFFSET_Y = -410.0f;
+    constexpr float SHOOT_BAR_BORDER_X = 6.0f;
+    constexpr float SHOOT_BAR_BORDER_Y = 4.0f;
 
-		float barWidth = enemy.scale;
-		float barHeight = 6.0f;
-		float yOffset = -(enemy.scale * 0.9f);
+    // ---- Enemy health bar ----
+    constexpr float ENEMY_BAR_HEIGHT = 6.0f;
+    constexpr float ENEMY_BAR_BORDER = 2.0f;   // outline padding
+    constexpr float ENEMY_BAR_Y_SCALE = 0.9f;   // vertical offset relative to enemy scale
 
-		float perc = (float)enemy.hp / (float)enemy.maxhp;
-		if (perc < 0.0f) perc = 0.0f;
+    // ---- Upgrade menu layout ----
+    constexpr float MENU_BG_WIDTH = 900.0f;
+    constexpr float MENU_BG_HEIGHT = 650.0f;
+    constexpr float MENU_ROW_START_Y = 200.0f;
+    constexpr float MENU_ROW_SPACING_Y = 100.0f;
+    constexpr float MENU_OFFSET_MIDDLE = 260.0f;  // X distance from centre to icon columns
+    constexpr float MENU_ROW_BG_WIDTH = 400.0f;
+    constexpr float MENU_ROW_BG_HEIGHT = 60.0f;
+    constexpr float MENU_ICON_SIZE = 55.0f;
+    constexpr float MENU_CLICK_HALF = 30.0f;   // half-size of icon hit region
 
-		drawmesh(pBlackRectMesh, enemy.pos.x, enemy.pos.y + yOffset, barWidth + 4.0f, barHeight + 2.0f);
+    // ---- Upgrade segment boxes ----
+    constexpr float SEGMENT_WIDTH = 70.0f;
+    constexpr float SEGMENT_GAP = 8.0f;
+    constexpr float SEGMENT_HEIGHT = 50.0f;
 
-		float actualW = barWidth * perc;
-		float shiftX = (barWidth - actualW) / 2.0f;
-		drawmesh(pRedRectMesh, enemy.pos.x - shiftX, enemy.pos.y + yOffset, actualW, barHeight, 1.0f, 0.0f, 0.0f);
-	}
+    // ---- HUD text ----
+    constexpr float TEXT_SCALE_HUD = 0.35f;
+    constexpr float TEXT_SCALE_LABEL = 0.4f;
+    constexpr float TEXT_HP_Y = -0.91f;
+    constexpr float TEXT_LEVEL_X = -0.18f;
+    constexpr float TEXT_LEVEL_Y = -0.84f;
+    constexpr float TEXT_WAVE_X = 0.06f;
+    constexpr float TEXT_WAVE_Y = -0.84f;
+    constexpr float TEXT_PROMPT_Y = -0.63f;
 
-	//***** IMPORTANT: CHANGE MULTIPLIERS HERE *****
-	// HP , DMG , MV SPEED , FIRE RATE , XP GAIN //
-	float multiplier[] = { 25.0f, 4.0f, 30.0f, 0.033f, 0.5f };
+    // ---- Upgrade menu stat text ----
+    constexpr float STATS_TEXT_X = -0.55f;
+    constexpr float STATS_TEXT_START_Y = 0.43f;
+    constexpr float STATS_TEXT_SPACING_Y = 0.22f;
+    constexpr float STATS_TEXT_SCALE = 0.28f;
 
-	//storing into arrays (mainly for printing)
-	const char* stats[] = { "HP", "DMG", "SPEED", "FIRE RATE", "XP GAIN" };
+    // ---- Floating XP popup ----
+    constexpr float XP_POPUP_DURATION = 0.7f;
+    constexpr float XP_POPUP_DRIFT_SCALE = 0.07f;
+    constexpr float XP_POPUP_X = 0.22f;
+    constexpr float XP_POPUP_BASE_Y = -0.93f;
+    constexpr float XP_POPUP_SCALE = 0.35f;
 
-	//to put into update loop for implementation of cards
-	float base_stats[] = { player_init.baseHp, player_init.baseDmg, player_init.baseSpeed, player_init.baseFireRate, player_init.baseXpGain };
+    // ---- Debug cheat overlay ----
+    constexpr int   DEBUG_CHEAT_COUNT = 8;
+    constexpr float DEBUG_TEXT_START_X = 0.73f;
+    constexpr float DEBUG_TEXT_START_Y = -0.95f;
+    constexpr float DEBUG_TEXT_SCALE = 0.3f;
+    constexpr float DEBUG_LINE_GAP = 0.045f;
+    constexpr float DEBUG_HEADER_SCALE = 0.28f;
 
-	//floating xp text pop up variables
-	float xpPopuptimer = 0.0f;
-	float xpPopupduration = 0.7f;
-	float xpPopupvalue = 0.0f;
-}
+    // -------------------------------------------------------------------------
+    // MESHES & TEXTURES
+    // -------------------------------------------------------------------------
 
+    // Solid-colour meshes
+    AEGfxVertexList* pMeshBlack = nullptr;
+    AEGfxVertexList* pMeshWhite = nullptr;
+    AEGfxVertexList* pMeshGreen = nullptr;
+    AEGfxVertexList* pMeshRed = nullptr;
+    AEGfxVertexList* pMeshYellow = nullptr;
 
-void LoadDebug1() {
-	// load font
-	//boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
+    // UV-mapped mesh shared by all icons
+    AEGfxVertexList* pMeshIcon = nullptr;
 
-	// create color meshes
-	pBlackRectMesh = createmesh(0xFF000000);
-	pWhiteRectMesh = createmesh(0xFFFFFFFF);
-	pGreenRectMesh = createmesh(0xFF00FF00);
-	pRedRectMesh = createmesh(0xFFFF0000);
-	pYellowRectMesh = createmesh(0xFFFFFF00);
+    // Per-stat upgrade icons
+    AEGfxTexture* upgradeIcons[NUM_STATS] = { nullptr, nullptr, nullptr, nullptr, nullptr };
+    const char* kIconPaths[NUM_STATS] = {
+        "Assets/hp.png",
+        "Assets/dmg.png",
+        "Assets/speed.png",
+        "Assets/firerate.png",
+        "Assets/xp.png"
+    };
 
-	// create UV-mapped mesh for icons
-	AEGfxMeshStart();
-	AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
-		0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
-		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-	AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
-		0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
-		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-	pIconMesh = AEGfxMeshEnd();
+    // Confirm ( + ) icon
+    AEGfxTexture* pIconConfirm = nullptr;
 
-	// load per-stat icons (left squares)
-	for (int i = 0; i < 5; ++i) {
-		upgradeIcons[i] = AEGfxTextureLoad(iconPaths[i]);
-	}
+    // -------------------------------------------------------------------------
+    // STAT TABLES  (*** CHANGE MULTIPLIERS HERE ***)
+    // -------------------------------------------------------------------------
 
-	// load confirm icon (right squares)
-	upgradeConfirmIcon = AEGfxTextureLoad("Assets/plus.png");
-}
+    float kStatMultiplier[NUM_STATS] = { 25.0f, 4.0f, 30.0f,  0.033f,  0.5f };
 
+    const char* kStatNames[NUM_STATS] = { "HP", "DMG", "SPEED", "FIRE RATE", "XP GAIN" };
 
-//  --- FUNCTION TO TRIGGER FLOATING XP TEXT ---
-void TriggerXpPopup(float xpAmount) {
-	xpPopupvalue = xpAmount;
-	xpPopuptimer = xpPopupduration;
-}
+    float kBaseStats[NUM_STATS] = {
+        player_init.baseHp,
+        player_init.baseDmg,
+        player_init.baseSpeed,
+        player_init.baseFireRate,
+        player_init.baseXpGain
+    };
 
-// --- FUNCTION TO RESET GAME  ---
-void reset_game() {
+    // -------------------------------------------------------------------------
+    // FLOATING XP POPUP STATE
+    // -------------------------------------------------------------------------
 
-	// reset tutorial
-	tutorialOn = true;
+    float xpPopupTimer = 0.0f;
+    float xpPopupDuration = XP_POPUP_DURATION;
+    float xpPopupValue = 0.0f;
 
-	// reset wave
-	currentWave = 1;
+    // -------------------------------------------------------------------------
+    // MESH HELPERS
+    // -------------------------------------------------------------------------
 
-	// clear boss
-	currentboss.alive = false;
+    // Build a solid-colour unit quad
+    AEGfxVertexList* CreateColorMesh(uint32_t color) {
+        AEGfxMeshStart();
+        AEGfxTriAdd(-0.5f, -0.5f, color, 0.0f, 0.0f,
+            0.5f, -0.5f, color, 0.0f, 0.0f,
+            -0.5f, 0.5f, color, 0.0f, 0.0f);
+        AEGfxTriAdd(0.5f, -0.5f, color, 0.0f, 0.0f,
+            0.5f, 0.5f, color, 0.0f, 0.0f,
+            -0.5f, 0.5f, color, 0.0f, 0.0f);
+        return AEGfxMeshEnd();
+    }
 
-	// clear minions
-	for (auto& minion : minionPool) {
-		minion.alive = false;
-		minion.hp = 0;
-	}
+    // Draw a solid-colour mesh at world position (x, y)
+    void DrawColorMesh(AEGfxVertexList* mesh, float x, float y, float scaleX, float scaleY,
+        float r = 1.0f, float g = 1.0f, float b = 1.0f) {
+        if (!mesh) return;
+        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+        AEMtx33 scale, trans, final;
+        AEMtx33Scale(&scale, scaleX, scaleY);
+        AEMtx33Trans(&trans, x, y);
+        AEMtx33Concat(&final, &trans, &scale);
+        AEGfxSetTransform(final.m);
+        AEGfxSetColorToMultiply(r, g, b, 1.0f);
+        AEGfxMeshDraw(mesh, AE_GFX_MDM_TRIANGLES);
+    }
 
-	// reset wave spawning
-	pendingBudget = 0.0f;
-	spawnTimer = 0.0f;
-	totalWaveBudget = 0.0f;
+    // Draw a textured icon at world position (x, y)
+    void DrawIconMesh(AEGfxTexture* tex, float x, float y, float size) {
+        if (!tex || !pMeshIcon) return;
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        AEGfxTextureSet(tex, 0, 0);
+        AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+        AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+        AEGfxSetTransparency(1.0f);
+        AEMtx33 scale, trans, final;
+        AEMtx33Scale(&scale, size, size);
+        AEMtx33Trans(&trans, x, y);
+        AEMtx33Concat(&final, &trans, &scale);
+        AEGfxSetTransform(final.m);
+        AEGfxMeshDraw(pMeshIcon, AE_GFX_MDM_TRIANGLES);
+        AEGfxSetRenderMode(AE_GFX_RM_COLOR);  // restore colour mode
+    }
 
-	// reset enemy
-	for (auto& enemy : enemyPool) {
-		enemy.alive = false;
-		enemy.hp = 0;
-	}
-	 
-	// reset bullets
-	for (auto& bullet : bulletList) {
-		bullet.isActive = false;
-	}
-	for (auto& enBullet : enemyBulletList) {
-		enBullet.isActive = false;
-	}
+    // -------------------------------------------------------------------------
+    // DRAW HELPERS
+    // -------------------------------------------------------------------------
 
-	player_init.player_level = 0;
-	player_init.current_xp = 0;
-	player_init.skill_point = 0;
-	player_init.menu_open = false;
-	for (int i = 0; i < 5; ++i) {
-		player_init.upgradeLevels[i] = 0;
-	}
-	player_init.current_hp = player_init.baseHp;
-}
+    // Draw a health bar above an enemy (only when damaged)
+    void DrawEnemyHealthBar(Enemies& enemy, float camX, float camY) {
+        if (!enemy.alive || enemy.hp >= enemy.maxhp || enemy.hp <= 0) return;
 
+        float barWidth = enemy.scale;
+        float yOffset = -(enemy.scale * ENEMY_BAR_Y_SCALE);
 
+        float perc = (float)enemy.hp / (float)enemy.maxhp;
+        if (perc < 0.0f) perc = 0.0f;
 
+        // Black outline
+        DrawColorMesh(pMeshBlack,
+            enemy.pos.x, enemy.pos.y + yOffset,
+            barWidth + ENEMY_BAR_BORDER + 2.0f, ENEMY_BAR_HEIGHT + ENEMY_BAR_BORDER);
+
+        // Red fill
+        float fillW = barWidth * perc;
+        float shiftX = (barWidth - fillW) / 2.0f;
+        DrawColorMesh(pMeshRed,
+            enemy.pos.x - shiftX, enemy.pos.y + yOffset,
+            fillW, ENEMY_BAR_HEIGHT,
+            1.0f, 0.0f, 0.0f);
+    }
+
+    // Draw the shoot-cooldown bar (static HUD position)
+    void DrawShootCooldownBar(float camX, float camY, float timeSinceLast, float fireRate) {
+        float progress = timeSinceLast / fireRate;
+        if (progress > 1.0f) progress = 1.0f;
+        if (progress < 0.0f) progress = 0.0f;
+
+        float finalX = camX + SHOOT_BAR_OFFSET_X;
+        float finalY = camY + SHOOT_BAR_OFFSET_Y;
+
+        // Black outline
+        DrawColorMesh(pMeshBlack, finalX, finalY,
+            SHOOT_BAR_WIDTH + SHOOT_BAR_BORDER_X,
+            SHOOT_BAR_HEIGHT + SHOOT_BAR_BORDER_Y);
+
+        float fillW = SHOOT_BAR_WIDTH * progress;
+        float shiftX = (SHOOT_BAR_WIDTH - fillW) / 2.0f;
+
+        if (progress >= 1.0f)
+            DrawColorMesh(pMeshYellow, finalX, finalY, SHOOT_BAR_WIDTH, SHOOT_BAR_HEIGHT);
+        else
+            DrawColorMesh(pMeshRed, finalX - shiftX, finalY, fillW, SHOOT_BAR_HEIGHT);
+    }
+
+    // Draw a single proportional bar (HP or XP) anchored to the HUD
+    void DrawHudBar(AEGfxVertexList* mesh, float current, float maxVal,
+        float anchorX, float anchorY, float relOffsetY,
+        float barHeight, float maxWidth) {
+        float perc = current / maxVal;
+        if (perc > 1.0f) perc = 1.0f;
+        if (perc < 0.0f) perc = 0.0f;
+
+        float fillW = maxWidth * perc;
+        float shiftRight = (maxWidth - fillW) / 2.0f;
+
+        DrawColorMesh(mesh,
+            anchorX - shiftRight, anchorY + relOffsetY,
+            fillW, barHeight);
+    }
+
+    // Draw the five upgrade rows inside the upgrade menu
+    void DrawUpgradeRows(float camX, float camY) {
+        constexpr float kSegmentStep = SEGMENT_WIDTH + SEGMENT_GAP;
+        constexpr float kRowStartX = -(kSegmentStep * 2.0f);
+
+        for (int i = 0; i < NUM_STATS; ++i) {
+            float rowY = MENU_ROW_START_Y - (i * MENU_ROW_SPACING_Y);
+
+            // Row background
+            DrawColorMesh(pMeshWhite, camX, rowY + camY, MENU_ROW_BG_WIDTH, MENU_ROW_BG_HEIGHT);
+
+            // Left stat icon
+            DrawIconMesh(upgradeIcons[i], -MENU_OFFSET_MIDDLE + camX, rowY + camY, MENU_ICON_SIZE);
+
+            // Right confirm ( + ) icon
+            DrawIconMesh(pIconConfirm, MENU_OFFSET_MIDDLE + camX, rowY + camY, MENU_ICON_SIZE);
+
+            // Upgrade segment boxes
+            for (int j = 0; j < MAX_UPGRADE_LEVEL; ++j) {
+                float segX = kRowStartX + (j * kSegmentStep);
+                if (j < player_init.upgradeLevels[i])
+                    DrawColorMesh(pMeshWhite, segX + camX, rowY + camY, SEGMENT_WIDTH, SEGMENT_HEIGHT, 0.0f, 1.0f, 0.0f);  // green = upgraded
+                else
+                    DrawColorMesh(pMeshWhite, segX + camX, rowY + camY, SEGMENT_WIDTH, SEGMENT_HEIGHT, 0.8f, 0.8f, 0.8f);  // grey = locked
+            }
+        }
+    }
+
+}  // namespace
+
+// =============================================================================
+// STAT CALCULATION
+// =============================================================================
+
+// Returns the current effective value for stat index i, accounting for
+// base stats, card modifiers, and skill-point upgrades.
+//
+// FORMULA:  (base + cardBaseMod + upgradeLevel * multiplier) * cardMultMod
+// HP is special: upgrade bonus is applied after card scaling (flat increase).
 float calculate_max_stats(int i) {
-	// FORMULA:
-	// (base + cardBaseMod + (upgradeLevel * multiplier)) * cardMultMod
-	switch (i) {
-		// for hp: (base + cardBaseMod) * cardMultMod + (upgrade level * mutiplier) (to make sure upgrading for skill points are flat)
-	case 0: return ((player_init.baseHp + cardBaseMod.hp) * cardMultMod.hp) + (player_init.upgradeLevels[0] * multiplier[0]);
-	case 1: return (player_init.baseDmg + cardBaseMod.dmg + (player_init.upgradeLevels[1] * multiplier[1])) * cardMultMod.dmg;
-	case 2: return (player_init.baseSpeed + cardBaseMod.moveSpeed + (player_init.upgradeLevels[2] * multiplier[2])) * cardMultMod.moveSpeed;
-	case 3: {
-		float result = (player_init.baseFireRate - cardBaseMod.fireRate - (player_init.upgradeLevels[3] * multiplier[3])) * cardMultMod.fireRate;
-		if (result < 0.1f) result = 0.1f;
-		return result;
-	}
-	case 4: return (player_init.baseXpGain + cardBaseMod.xp + (player_init.upgradeLevels[4] * multiplier[4])) * cardMultMod.xp;
-	default: return 0.0f;
-	}
-}
-
-float get_max_hp() {
-	return calculate_max_stats(0);
+    switch (i) {
+    case STAT_HP:
+        return ((player_init.baseHp + cardBaseMod.hp) * cardMultMod.hp)
+            + (player_init.upgradeLevels[STAT_HP] * kStatMultiplier[STAT_HP]);
+    case STAT_DMG:
+        return (player_init.baseDmg + cardBaseMod.dmg
+            + (player_init.upgradeLevels[STAT_DMG] * kStatMultiplier[STAT_DMG])) * cardMultMod.dmg;
+    case STAT_SPEED:
+        return (player_init.baseSpeed + cardBaseMod.moveSpeed
+            + (player_init.upgradeLevels[STAT_SPEED] * kStatMultiplier[STAT_SPEED])) * cardMultMod.moveSpeed;
+    case STAT_FIRERATE: {
+        float result = (player_init.baseFireRate - cardBaseMod.fireRate
+            - (player_init.upgradeLevels[STAT_FIRERATE] * kStatMultiplier[STAT_FIRERATE])) * cardMultMod.fireRate;
+        if (result < MIN_FIRE_RATE) result = MIN_FIRE_RATE;
+        return result;
+    }
+    case STAT_XP:
+        return (player_init.baseXpGain + cardBaseMod.xp
+            + (player_init.upgradeLevels[STAT_XP] * kStatMultiplier[STAT_XP])) * cardMultMod.xp;
+    default:
+        return 0.0f;
+    }
 }
 
 void UpdateCurrentHpAfterCards(float oldMaxHp) {
-	float newMaxHp = calculate_max_stats(0);
+    float newMaxHp = calculate_max_stats(0);
 
-	// if max hp increased, give the player the difference
-	if (newMaxHp > oldMaxHp) {
-		player_init.current_hp += (newMaxHp - oldMaxHp);
-	}
+    // if max hp increased, give the player the difference
+    if (newMaxHp > oldMaxHp) {
+        player_init.current_hp += (newMaxHp - oldMaxHp);
+    }
 
-	// always clamp current hp to new max
-	if (player_init.current_hp > newMaxHp) {
-		player_init.current_hp = newMaxHp;
-	}
-
-	// never go below 1
-	if (player_init.current_hp < 1.0f) {
-		player_init.current_hp = 1.0f;
-	}
+    if (player_init.current_hp > newMaxHp) {
+        player_init.current_hp = newMaxHp;
+    }
+    if (player_init.current_hp < 1.0f) {
+        player_init.current_hp = 1.0f;
+    }
 }
 
-//---- LEVEL UP LOGIC ----
-void level_up(float xp_needed) {
-	if (player_init.current_xp >= xp_needed) {
-		player_init.current_xp -= xp_needed;
-		player_init.player_level++;
-		player_init.skill_point++;
-
-		if (player_init.player_level < 26) {
-			player_init.menu_open = true;
-		}
-
-		float max_hp = calculate_max_stats(0);
-		player_init.current_hp += max_hp * 0.2f;
-		if (player_init.current_hp > max_hp) {
-			player_init.current_hp = max_hp;
-		}
-	}
+float get_max_hp() {
+    return calculate_max_stats(STAT_HP);
 }
 
-// --- CURSOR COORDS CHECKING AND CLICKING ---
+// =============================================================================
+// GAME STATE
+// =============================================================================
+
+void TriggerXpPopup(float xpAmount) {
+    xpPopupValue = xpAmount;
+    xpPopupTimer = xpPopupDuration;
+}
+
+void reset_game() {
+    // Tutorial
+    tutorialOn = true;
+
+    // Wave
+    currentWave = 1;
+
+    // Boss
+    currentboss.alive = false;
+
+    // Minions
+    for (auto& minion : minionPool) {
+        minion.alive = false;
+        minion.hp = 0;
+    }
+
+    // Wave spawning
+    pendingBudget = 0.0f;
+    spawnTimer = 0.0f;
+    totalWaveBudget = 0.0f;
+
+    // Enemies
+    for (auto& enemy : enemyPool) {
+        enemy.alive = false;
+        enemy.hp = 0;
+    }
+
+    // Bullets
+    for (auto& bullet : bulletList)      bullet.isActive = false;
+    for (auto& enBullet : enemyBulletList) enBullet.isActive = false;
+
+    // Player
+    player_init.player_level = 0;
+    player_init.current_xp = 0;
+    player_init.skill_point = 0;
+    player_init.menu_open = false;
+    for (int i = 0; i < NUM_STATS; ++i)
+        player_init.upgradeLevels[i] = 0;
+    player_init.current_hp = player_init.baseHp;
+}
+
+// =============================================================================
+// LEVEL-UP LOGIC
+// =============================================================================
+
+void level_up(float xpNeeded) {
+    if (player_init.current_xp < xpNeeded) return;
+
+    player_init.current_xp -= xpNeeded;
+    player_init.player_level++;
+    player_init.skill_point++;
+
+    if (player_init.player_level < MENU_LEVEL_CAP)
+        player_init.menu_open = true;
+
+    // Partial heal on level-up
+    float maxHp = calculate_max_stats(STAT_HP);
+    player_init.current_hp += maxHp * LEVEL_UP_HEAL_PERCENT;
+    if (player_init.current_hp > maxHp)
+        player_init.current_hp = maxHp;
+}
+
+// =============================================================================
+// INPUT HANDLING
+// =============================================================================
+
+// Handle mouse clicks on the upgrade menu
 void handle_menu_input(float camX, float camY) {
-	if (player_init.skill_point <= 0 && AEInputCheckTriggered(AEVK_LBUTTON)) {
-		player_init.menu_open = false;
-		// print player stats to console
-	// calculates player stats
-		f32 hp = calculate_max_stats(0);
-		f32 dmg = calculate_max_stats(1);
-		f32 speed = calculate_max_stats(2);
-		f32 fire_rate = calculate_max_stats(3);
-		f32 xp_mult = calculate_max_stats(4);
-		return;
-	}
+    if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
 
-	if (AEInputCheckTriggered(AEVK_LBUTTON)) {
-		s32 screenX, screenY;
-		AEInputGetCursorPosition(&screenX, &screenY);
+    // No skill points left — close menu on any click
+    if (player_init.skill_point <= 0) {
+        player_init.menu_open = false;
+        return;
+    }
 
-		s32 winWidth = AEGfxGetWindowWidth();
-		s32 winHeight = AEGfxGetWindowHeight();
+    s32 screenX, screenY;
+    AEInputGetCursorPosition(&screenX, &screenY);
 
-		float mouseX = (float)screenX - (winWidth / 2.0f);
-		float mouseY = (winHeight / 2.0f) - (float)screenY;
+    float mouseX = (float)screenX - (AEGfxGetWindowWidth() / 2.0f);
+    float mouseY = (AEGfxGetWindowHeight() / 2.0f) - (float)screenY;
 
-		float start_y = 200.0f;
-		float spacing_y = 100.0f;
-		float offset_middle = 260.0f;
-		float squaresize = 60.0f;
-		float middle_to_edge = squaresize / 2.0f;
+    for (int i = 0; i < NUM_STATS; ++i) {
+        float btnX = MENU_OFFSET_MIDDLE;
+        float btnY = MENU_ROW_START_Y - (i * MENU_ROW_SPACING_Y);
 
-		for (int i = 0; i < 5; ++i) {
-			float buttonX = offset_middle;
-			float buttonY = start_y - (i * spacing_y);
+        bool hovered = (mouseX >= btnX - MENU_CLICK_HALF && mouseX <= btnX + MENU_CLICK_HALF &&
+            mouseY >= btnY - MENU_CLICK_HALF && mouseY <= btnY + MENU_CLICK_HALF);
 
-			if (mouseX >= (buttonX - middle_to_edge) && mouseX <= (buttonX + middle_to_edge) &&
-				mouseY >= (buttonY - middle_to_edge) && mouseY <= (buttonY + middle_to_edge))
-			{
-				if (player_init.skill_point > 0 && player_init.upgradeLevels[i] < 5) {
-					player_init.upgradeLevels[i]++;
-					player_init.skill_point--;
-					if (i == 0) player_init.current_hp += multiplier[0];
-				}
-			}
-		}
-	}
+        if (hovered && player_init.upgradeLevels[i] < MAX_UPGRADE_LEVEL) {
+            player_init.upgradeLevels[i]++;
+            player_init.skill_point--;
+            if (i == STAT_HP)
+                player_init.current_hp += kStatMultiplier[STAT_HP];
+        }
+    }
 }
 
-// --- CHEATS ---
-void debug_inputs(float max_hp) {
-	if (AEInputCheckTriggered(AEVK_R)) {
-		player_init.current_hp += 100.0f;
-		if (player_init.current_hp > max_hp)
-			player_init.current_hp = max_hp;
-	}
+// Debug / cheat key inputs
+void debug_inputs(float xpNeeded) {
+    if (!cheatsOn) return;
 
-	if (AEInputCheckTriggered(AEVK_T)) {
-		player_init.current_hp -= 50.0f;
-		if (player_init.current_hp < 0.0f)
-			player_init.current_hp = 0.0f;
-	}
+    float maxHp = calculate_max_stats(STAT_HP);
 
-	if (AEInputCheckCurr(AEVK_E)) {
-		float xp_multiplier = 1.0f + (player_init.upgradeLevels[4] * 5.0f);
-		player_init.current_xp += 5.0f * xp_multiplier;
-	}
+    if (AEInputCheckTriggered(AEVK_1)) player_init.current_hp = maxHp;    // full heal
+    if (AEInputCheckTriggered(AEVK_2)) player_init.current_hp = 0.0f;     // instant death
+    if (AEInputCheckTriggered(AEVK_3)) player_init.current_xp = xpNeeded; // instant level-up
 }
 
-// --- DRAW PLAYER HUD ---
-void draw_hud_bar(AEGfxVertexList* mesh, float current, float max, float anchorX, float anchorY, float relativeY, float bar_height, float max_width) {
-	float perc = current / max;
-	if (perc > 1.0f) perc = 1.0f;
-	if (perc < 0.0f) perc = 0.0f;
+// =============================================================================
+// LOAD / FREE
+// =============================================================================
 
-	float actual_w = max_width * perc;
-	float shiftRight = (max_width - actual_w) / 2.0f;
-	float finalX = anchorX - shiftRight;
-	float finalY = anchorY + relativeY;
+void LoadDebug1() {
+    // Solid-colour meshes
+    pMeshBlack = CreateColorMesh(0xFF000000);
+    pMeshWhite = CreateColorMesh(0xFFFFFFFF);
+    pMeshGreen = CreateColorMesh(0xFF00FF00);
+    pMeshRed = CreateColorMesh(0xFFFF0000);
+    pMeshYellow = CreateColorMesh(0xFFFFFF00);
 
-	drawmesh(mesh, finalX, finalY, actual_w, bar_height);
+    // UV-mapped mesh for icons
+    AEGfxMeshStart();
+    AEGfxTriAdd(-0.5f, -0.5f, UV_MESH_COLOR, 0.0f, 1.0f,
+        0.5f, -0.5f, UV_MESH_COLOR, 1.0f, 1.0f,
+        -0.5f, 0.5f, UV_MESH_COLOR, 0.0f, 0.0f);
+    AEGfxTriAdd(0.5f, -0.5f, UV_MESH_COLOR, 1.0f, 1.0f,
+        0.5f, 0.5f, UV_MESH_COLOR, 1.0f, 0.0f,
+        -0.5f, 0.5f, UV_MESH_COLOR, 0.0f, 0.0f);
+    pMeshIcon = AEGfxMeshEnd();
+
+    // Stat icons
+    for (int i = 0; i < NUM_STATS; ++i)
+        upgradeIcons[i] = AEGfxTextureLoad(kIconPaths[i]);
+
+    // Confirm icon
+    pIconConfirm = AEGfxTextureLoad("Assets/plus.png");
 }
-
-// --- DRAWS THE UPGRADE ROWS ---
-void draw_upgrade_rows(float camX, float camY) {
-	float start_y = 200.0f, spacing_y = 100.0f, offset_middle = 260.0f;
-	float segment_w = 70.0f, gap = 8.0f;
-	float total_segment_dist = segment_w + gap;
-	float start_x = -(total_segment_dist * 2.0f);
-
-	for (int i = 0; i < 5; ++i) {
-		float actual_y = start_y - (i * spacing_y);
-
-		//row background
-		drawmesh(pWhiteRectMesh, 0.0f + camX, actual_y + camY, 400.0f, 60.0f);
-
-		//left squares
-		drawicon(upgradeIcons[i], -offset_middle + camX, actual_y + camY, 55.0f);
-
-		//right squares
-		drawicon(upgradeConfirmIcon, offset_middle + camX, actual_y + camY, 55.0f);
-
-		//upgrade boxes
-		for (int j = 0; j < 5; ++j) {
-			float current_x = start_x + (j * total_segment_dist);
-
-			if (j < player_init.upgradeLevels[i]) {
-				drawmesh(pWhiteRectMesh, current_x + camX, actual_y + camY, segment_w, 50.0f, 0.0f, 1.0f, 0.0f); // green
-			}
-			else {
-				drawmesh(pWhiteRectMesh, current_x + camX, actual_y + camY, segment_w, 50.0f, 0.8f, 0.8f, 0.8f); // grey
-			}
-		}
-	}
-}
-
-
-void UpdateDebug1() {
-	float camX, camY;
-	AEGfxGetCamPosition(&camX, &camY);
-
-	float xp_needed = 100.0f + (powf((float)player_init.player_level, 1.5f) * 25.0f);
-	float max_hp = calculate_max_stats(0);
-	float max_dmg = calculate_max_stats(1);
-	float max_speed = calculate_max_stats(2);
-	float max_fire_rate = calculate_max_stats(3);
-
-	level_up(xp_needed);
-
-	if (player_init.menu_open) {
-		handle_menu_input(camX, camY);
-	}
-	else {
-		//debug_inputs(max_hp);
-	}
-}
-
-
-void DrawDebug1() {
-
-	// --- GET CAM POS FOR UPGRADE MENU ---
-	float camX, camY;
-	AEGfxGetCamPosition(&camX, &camY);
-
-	float hudX = camX + 0.0f;
-	float hudY = camY - 410.0f;
-	float max_width = 300.0f;
-	float max_hp = calculate_max_stats(0);
-	float xp_needed = 100.0f + (powf((float)player_init.player_level, 1.5f) * 25.0f);
-
-	// --- DRAW ENEMY HEALTH BARS ---
-	for (int i = 0; i < 50; i++) {
-		if (enemyPool[i].alive) {
-			draw_enemy_health_bar(enemyPool[i], camX, camY);
-		}
-	}
-
-	// --- DRAW PLAYER HUD ---
-	drawmesh(pBlackRectMesh, hudX, hudY, max_width + 10.0f, 52.0f);
-	draw_hud_bar(pRedRectMesh, player_init.current_hp, max_hp, hudX, hudY, 7.0f, 25.0f, max_width);
-	draw_hud_bar(pYellowRectMesh, player_init.current_xp, xp_needed, hudX, hudY, -15.0f, 10.0f, max_width);
-
-	// --- DRAW FLOATING XP TEXT ---
-	if (xpPopuptimer > 0.0f) {
-		float dt = static_cast<f32>(AEFrameRateControllerGetFrameTime());
-		char xppopup[32];
-		sprintf_s(xppopup, "+%.0fxp", xpPopupvalue);
-
-		float alpha = xpPopuptimer / xpPopupduration;
-		float upward_drift = (xpPopupduration - xpPopuptimer) * 0.07f;
-
-		AEGfxPrint(boldPixels, xppopup, 0.22f, -0.93f + upward_drift, 0.35f, 1.0f, 1.0f, 1.0f, alpha);
-		xpPopuptimer -= dt;
-	}
-
-	// --- PRINT HP, LEVEL, WAVE TEXT ---
-	char hudHP[64], level[32], wave[32];
-
-	if (max_hp < 0) max_hp = 0;
-
-	sprintf_s(hudHP, "%.0f / %.0f", player_init.current_hp, max_hp);
-	sprintf_s(level, "LEVEL %d", player_init.player_level);
-	sprintf_s(wave, "WAVE %d", currentWave);
-
-	float textScale = 0.35f;
-	float textWidth, textHeight;
-	AEGfxGetPrintSize(boldPixels, hudHP, textScale, &textWidth, &textHeight);
-
-	// center on screen using fixed normalized coords
-	AEGfxPrint(boldPixels, hudHP, -(textWidth / 2.0f), -0.91f, textScale, 1.0f, 1.0f, 1.0f, 1.0f);
-	AEGfxPrint(boldPixels, level, -0.18f, -0.84f, 0.4f, 0.0f, 0.0f, 0.0f, 1.0f);
-	AEGfxPrint(boldPixels, wave, 0.06f, -0.84f, 0.4f, 0.0f, 0.0f, 0.0f, 1.0f);
-
-	// --- DRAW UPGRADE MENU ---
-	if (player_init.menu_open) {
-		drawmesh(pBlackRectMesh, 0.0f + camX, 0.0f + camY, 900.0f, 650.0f);
-		draw_upgrade_rows(camX, camY);
-
-		// prints current player stats on upgrade menu
-		const char* stats[] = { "HP", "DMG", "SPEED", "FIRE RATE", "XP MULT" };
-		float rowStartY = 0.43f;
-		float rowSpacing = 0.22f;
-		for (int i = 0; i < 5; ++i) {
-			char statText[64];
-			if (i == 3) {
-				float shotsPerSec = 1.0f / calculate_max_stats(3);
-				sprintf_s(statText, "F-RATE: %.1f/s", shotsPerSec);
-			}
-			else {
-				sprintf_s(statText, "%s: %.1f", stats[i], calculate_max_stats(i));
-			}
-			AEGfxPrint(boldPixels, statText, -0.55f, rowStartY - (i * rowSpacing), 0.28f, 1.0f, 1.0f, 1.0f, 1.0f);
-		}
-
-		if (player_init.skill_point > 0) {
-			AEGfxPrint(boldPixels, "CLICK + TO SPEND SKILL POINT!", -0.28f, -0.63f, 0.4f, 1.0f, 1.0f, 1.0f, 1.0f);
-		}
-		else {
-			AEGfxPrint(boldPixels, "CLICK ANYWHERE TO CLOSE!", -0.23f, -0.63f, 0.4f, 1.0f, 1.0f, 1.0f, 1.0f);
-		}
-	}
-}
-
 
 void FreeDebug1() {
-	//AEGfxDestroyFont(boldPixels);
+    // Solid-colour meshes
+    AEGfxVertexList* meshes[] = { pMeshBlack, pMeshWhite, pMeshGreen, pMeshRed, pMeshYellow };
+    for (int i = 0; i < 5; ++i) {
+        if (meshes[i]) AEGfxMeshFree(meshes[i]);
+    }
+    pMeshBlack = pMeshWhite = pMeshGreen = pMeshRed = pMeshYellow = nullptr;
 
-	// free color meshes
-	AEGfxVertexList* meshes[] = { pBlackRectMesh, pWhiteRectMesh, pGreenRectMesh, pRedRectMesh, pYellowRectMesh };
-	for (int i = 0; i < 5; ++i) {
-		if (meshes[i]) AEGfxMeshFree(meshes[i]);
-	}
-	pBlackRectMesh = pWhiteRectMesh = pGreenRectMesh = pRedRectMesh = pYellowRectMesh = nullptr;
+    // Icon mesh
+    if (pMeshIcon) { AEGfxMeshFree(pMeshIcon); pMeshIcon = nullptr; }
 
-	// free icon mesh
-	if (pIconMesh) { AEGfxMeshFree(pIconMesh); pIconMesh = nullptr; }
+    // Stat textures
+    for (int i = 0; i < NUM_STATS; ++i) {
+        if (upgradeIcons[i]) { AEGfxTextureUnload(upgradeIcons[i]); upgradeIcons[i] = nullptr; }
+    }
 
-	// free stat textures
-	for (int i = 0; i < 5; ++i) {
-		if (upgradeIcons[i]) { AEGfxTextureUnload(upgradeIcons[i]); upgradeIcons[i] = nullptr; }
-	}
+    // Confirm icon texture
+    if (pIconConfirm) { AEGfxTextureUnload(pIconConfirm); pIconConfirm = nullptr; }
+}
 
-	// free + icon
-	if (upgradeConfirmIcon) { AEGfxTextureUnload(upgradeConfirmIcon); upgradeConfirmIcon = nullptr; }
+// =============================================================================
+// UPDATE
+// =============================================================================
+
+void UpdateDebug1() {
+    float camX, camY;
+    AEGfxGetCamPosition(&camX, &camY);
+
+    float xpNeeded = XP_BASE + (powf((float)player_init.player_level, XP_EXPONENT) * XP_MULTIPLIER);
+
+    level_up(xpNeeded);
+
+    if (player_init.menu_open)
+        handle_menu_input(camX, camY);
+    else
+        debug_inputs(xpNeeded);
+}
+
+// =============================================================================
+// DRAW
+// =============================================================================
+
+void DrawDebug1() {
+    float camX, camY;
+    AEGfxGetCamPosition(&camX, &camY);
+
+    float hudX = camX;
+    float hudY = camY + HUD_OFFSET_Y;
+    float maxHp = calculate_max_stats(STAT_HP);
+    float xpNeeded = XP_BASE + (powf((float)player_init.player_level, XP_EXPONENT) * XP_MULTIPLIER);
+
+    // -- Shoot-cooldown bar --
+    DrawShootCooldownBar(camX, camY, bulletFireTimer, calculate_max_stats(STAT_FIRERATE));
+
+    // -- Enemy health bars --
+    for (int i = 0; i < ENEMY_POOL_SIZE; ++i) {
+        if (enemyPool[i].alive)
+            DrawEnemyHealthBar(enemyPool[i], camX, camY);
+    }
+
+    // -- Player HUD (HP + XP bars) --
+    DrawColorMesh(pMeshBlack, hudX, hudY, HUD_MAX_WIDTH + HUD_BORDER, HUD_OUTER_HEIGHT);
+    DrawHudBar(pMeshRed, player_init.current_hp, maxHp, hudX, hudY, HUD_HP_BAR_OFFSET_Y, HUD_HP_BAR_HEIGHT, HUD_MAX_WIDTH);
+    DrawHudBar(pMeshYellow, player_init.current_xp, xpNeeded, hudX, hudY, HUD_XP_BAR_OFFSET_Y, HUD_XP_BAR_HEIGHT, HUD_MAX_WIDTH);
+
+    // -- Floating XP popup --
+    if (xpPopupTimer > 0.0f) {
+        float dt = static_cast<f32>(AEFrameRateControllerGetFrameTime());
+        char  buf[32];
+        sprintf_s(buf, "+%.0fxp", xpPopupValue);
+
+        float alpha = xpPopupTimer / xpPopupDuration;
+        float upwardDrift = (xpPopupDuration - xpPopupTimer) * XP_POPUP_DRIFT_SCALE;
+
+        AEGfxPrint(boldPixels, buf,
+            XP_POPUP_X, XP_POPUP_BASE_Y + upwardDrift,
+            XP_POPUP_SCALE, 1.0f, 1.0f, 1.0f, alpha);
+        xpPopupTimer -= dt;
+    }
+
+    // -- HUD text (HP / Level / Wave) --
+    char hudHpText[64], levelText[32], waveText[32];
+    if (maxHp < 0) maxHp = 0;
+
+    sprintf_s(hudHpText, "%.0f / %.0f", player_init.current_hp, maxHp);
+    sprintf_s(levelText, "LEVEL %d", player_init.player_level);
+    sprintf_s(waveText, "WAVE %d", currentWave);
+
+    float textW, textH;
+    AEGfxGetPrintSize(boldPixels, hudHpText, TEXT_SCALE_HUD, &textW, &textH);
+
+    AEGfxPrint(boldPixels, hudHpText, -(textW / 2.0f), TEXT_HP_Y, TEXT_SCALE_HUD, 1.0f, 1.0f, 1.0f, 1.0f);
+    AEGfxPrint(boldPixels, levelText, TEXT_LEVEL_X, TEXT_LEVEL_Y, TEXT_SCALE_LABEL, 0.0f, 0.0f, 0.0f, 1.0f);
+    AEGfxPrint(boldPixels, waveText, TEXT_WAVE_X, TEXT_WAVE_Y, TEXT_SCALE_LABEL, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    // -- Upgrade menu --
+    if (player_init.menu_open) {
+        DrawColorMesh(pMeshBlack, camX, camY, MENU_BG_WIDTH, MENU_BG_HEIGHT);
+        DrawUpgradeRows(camX, camY);
+
+        // Stat values (left side of menu)
+        const char* kMenuStatNames[NUM_STATS] = { "HP", "DMG", "SPEED", "FIRE RATE", "XP MULT" };
+        for (int i = 0; i < NUM_STATS; ++i) {
+            char statBuf[64];
+            if (i == STAT_FIRERATE)
+                sprintf_s(statBuf, "F-RATE: %.1f/s", 1.0f / calculate_max_stats(STAT_FIRERATE));
+            else
+                sprintf_s(statBuf, "%s: %.1f", kMenuStatNames[i], calculate_max_stats(i));
+
+            AEGfxPrint(boldPixels, statBuf,
+                STATS_TEXT_X, STATS_TEXT_START_Y - (i * STATS_TEXT_SPACING_Y),
+                STATS_TEXT_SCALE, 1.0f, 1.0f, 1.0f, 1.0f);
+        }
+
+        // Prompt
+        const char* prompt = (player_init.skill_point > 0) ? "CLICK + TO SPEND SKILL POINT!" : "CLICK ANYWHERE TO CLOSE!";
+        float       promptX = (player_init.skill_point > 0) ? -0.28f : -0.23f;
+        AEGfxPrint(boldPixels, prompt, promptX, TEXT_PROMPT_Y, TEXT_SCALE_LABEL, 1.0f, 1.0f, 1.0f, 1.0f);
+    }
+
+    // -- Debug cheat overlay --
+    if (cheatsOn) {
+        const char* kCheatLabels[DEBUG_CHEAT_COUNT] = {
+            "1: FULL HEAL",
+            "2: DIE",
+            "3: LEVEL UP",
+            "4: DUAL CANNON",
+            "5: BIG CANNON",
+            "6: 180 SHOT",
+            "7: ORBIT SHIELD",
+            "8: SKIP WAVE"
+        };
+
+        AEGfxPrint(boldPixels, "[ CHEATS MENU ]",
+            DEBUG_TEXT_START_X, DEBUG_TEXT_START_Y + (DEBUG_LINE_GAP * 8),
+            DEBUG_HEADER_SCALE, 0.0f, 0.0f, 0.0f, 1.0f);
+
+        for (int i = 0; i < DEBUG_CHEAT_COUNT; ++i) {
+            AEGfxPrint(boldPixels, kCheatLabels[i],
+                DEBUG_TEXT_START_X, DEBUG_TEXT_START_Y + (DEBUG_LINE_GAP * (7 - i)),
+                DEBUG_TEXT_SCALE, 0.0f, 0.0f, 0.0f, 1.0f);
+        }
+    }
 }

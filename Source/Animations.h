@@ -6,3 +6,4 @@ void Animations_Draw();
 void Animations_Free();
 
 void TriggerExplosion(float x, float y, float size);
+void TriggerBulletImpact(float x, float y, float bulletDirX, float bulletDirY);

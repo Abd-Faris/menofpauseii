@@ -688,6 +688,7 @@ void BossCollision(Boss& boss, shape &player, bool orbitActive, float orbitPosX,
         float colRadius = (boss.scale * GameConfig::Enemy::HITBOX_RATIO) + boolet.size;
 
         if (distSq < colRadius * colRadius) {
+			TriggerBulletImpact(boolet.posX, boolet.posY, boolet.directionX, boolet.directionY);
             float dmg = calculate_max_stats(1);
             boss.hp -= (int)(dmg * boolet.damagemul);
             boolet.isActive = false;
@@ -718,6 +719,7 @@ void BossCollision(Boss& boss, shape &player, bool orbitActive, float orbitPosX,
         float collisionRadius = player.scale + enBullet.size;
 
         if (distanceSquared < (collisionRadius * collisionRadius)) {
+            TriggerBulletImpact(enBullet.posX, enBullet.posY, enBullet.directionX, enBullet.directionY);
             player_init.current_hp -= 10; // player
             playerFlashTimer = 0.15f;
             enBullet.isActive = false;     // Destroy the enemy bullet
@@ -964,11 +966,6 @@ void updateMinionPhysics(shape& player, float deltaTime) {
         World::PushOutOfWalls(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale * 0.5f);
 
         if (currentEnemy.hp <= 0) {
-            //float xp_multiplier = calculate_max_stats(4);
-            //float baseReward = (currentEnemy.maxhp >= (int)GameConfig::Enemy::HP_BIG) ? 80.0f : 20.0f;
-            //float finalReward = baseReward * xp_multiplier;
-            //player_init.current_xp += finalReward;
-            //TriggerXpPopup(finalReward);
             ResetEnemy(&currentEnemy);
 
         }

@@ -84,18 +84,20 @@ void drawBigTank(shape& player) {
     if (upgradeFlag & UPGRADE_DUAL_CANNON) {
         player.barrelCount = 2;
         bigcannon = false; // force off big cannon to prevent clashing
+        dualback = false; // Add this!
         return;
     }
-    else {
+    else if (!cheatsOn) {
         player.barrelCount = 1; // reset if upgrade not active
     }
 
-    // CHEATS: Toggle double-barrel mode on/off when '7' is pressed
-    if (AEInputCheckTriggered(AEVK_1)) {
+    // CHEATS: Toggle double-barrel mode on/off when '4' is pressed
+    if (cheatsOn && AEInputCheckTriggered(AEVK_4)) {
         if (player.barrelCount == 1) {
             // Turn Dual ON
             player.barrelCount = 2;
             bigcannon = false; // Force turn off big cannon to prevent overlapping visual states
+            dualback = false;
         }
         else {
             // Turn Dual OFF
@@ -191,8 +193,7 @@ void rotatePlayer(shape& player) {
 //          spawn positions/vectors based on active weapon upgrades.
 void SpawnBullet(shape& player, float deltaTime) {
     // 1. Get fire rate stat and reset the cooldown timer
-    float fire_rate = calculate_max_stats(3);
-    bulletFireTimer = fire_rate;
+    bulletFireTimer = 0.0f;
 
     // 2. Determine how many bullets to shoot this frame
     int bulletsNeeded = dualback ? 2 : static_cast<int>(player.barrelCount);
@@ -289,10 +290,10 @@ void DualBack(shape& player) {
         bigcannon = false;
         return;
     }
-    else { dualback = false; }
+    else if (!cheatsOn) { dualback = false; }
 
-    // CHEATS: Toggle front-and-back shooting mode when '8' is pressed
-    if (AEInputCheckTriggered(AEVK_3)) {
+    // CHEATS: Toggle front-and-back shooting mode when '6' is pressed
+    if (cheatsOn && AEInputCheckTriggered(AEVK_6)) {
         dualback = !dualback;
 
         if (dualback) {
@@ -306,24 +307,23 @@ void DualBack(shape& player) {
 // ~ Brief:	Monitors left-click/spacebar input and fire rate cooldowns to 
 //          trigger bullet spawning.
 void ShootBullet(shape& player, float deltaTime) {
-    // --- Safety Latch ---
-    // Prevents the gun from firing instantly if the user held the left click while closing the main menu
+	//increment the fire timer by the time elapsed since last frame
+    bulletFireTimer += deltaTime;
+	// Check if the mouse button was released to prevent auto-firing when holding down the button
     if (!mousereleased) {
         if (!AEInputCheckCurr(AEVK_LBUTTON)) {
-            mousereleased = true; // Unlock the gun once the mouse is let go
+            mousereleased = true;
         }
         else {
-            return; // Ignore shooting completely until unlocked
+            return;
         }
     }
-
-    // --- Normal Shooting ---
-    // Use CheckCurr so the gun autofires while holding the button down
+	// If spacebar or left mouse button is currently held down, attempt to fire
     if (AEInputCheckCurr(AEVK_SPACE) || AEInputCheckCurr(AEVK_LBUTTON)) {
-        bulletFireTimer -= deltaTime; // Tick down cooldown
+        float fire_rate = calculate_max_stats(3);
 
-        // Fire once timer hits zero
-        if (bulletFireTimer <= 0) {
+        // Fire only when the timer has reached or exceeded the fire_rate
+        if (bulletFireTimer >= fire_rate) {
             SpawnBullet(player, deltaTime);
         }
     }
@@ -332,41 +332,31 @@ void ShootBullet(shape& player, float deltaTime) {
 // ~ Brief:	Calculates the continuous rotation and positional offsets for the 
 //          orbital shield upgrade.
 void updateOrbit(shape& player, float deltaTime) {
-
-    // LEGIT: Enable orbital shield weapon when card is in passive deck
+    // LEGIT Check
     if (upgradeFlag & UPGRADE_ORBIT) {
         orbitActive = true;
-        float orbitSpeed = 4.0f; // Spin speed in radians per second
-        float orbitRadius = 150.0f * (player.scale / GameConfig::Tank::SCALE); // Distance from tank (scales with tank size)
+    }
+    // If no card, and cheats are OFF, kill the orbit
+    else if (!cheatsOn) {
+        orbitActive = false;
+    }
 
-        // Advance the rotation angle, looping back to 0 if it completes a full circle
+    // CHEAT Toggle
+    if (cheatsOn && AEInputCheckTriggered(AEVK_7)) {
+        orbitActive = !orbitActive;
+    }
+
+    // ACTIVE STATE MATH (Runs every frame if active)
+    if (orbitActive) {
+        float orbitSpeed = 4.0f;
+        float orbitRadius = 150.0f * (player.scale / GameConfig::Tank::SCALE);
+
         orbitAngle += orbitSpeed * deltaTime;
         if (orbitAngle > TWO_PI) orbitAngle -= TWO_PI;
 
-
-        // Calculate exact world X and Y using standard circle trigonometry
+        // Calculate world position based on player center
         orbitPosX = player.pos_x + cosf(orbitAngle) * orbitRadius;
         orbitPosY = player.pos_y + sinf(orbitAngle) * orbitRadius;
-        return;
-    }
-
-    // CHEATS: Toggle orbital shield weapon when 'C' is pressed
-    if (AEInputCheckTriggered(AEVK_4)) {
-        orbitActive = !orbitActive;
-
-        if (orbitActive) {
-            float orbitSpeed = 4.0f; // Spin speed in radians per second
-            float orbitRadius = 150.0f * (player.scale / GameConfig::Tank::SCALE); // Distance from tank (scales with tank size)
-
-            // Advance the rotation angle, looping back to 0 if it completes a full circle
-            orbitAngle += orbitSpeed * deltaTime;
-            if (orbitAngle > TWO_PI) orbitAngle -= TWO_PI;
-
-
-            // Calculate exact world X and Y using standard circle trigonometry
-            orbitPosX = player.pos_x + cosf(orbitAngle) * orbitRadius;
-            orbitPosY = player.pos_y + sinf(orbitAngle) * orbitRadius;
-        }
     }
 }
 
@@ -378,10 +368,13 @@ void drawBigCannon(shape& player) {
         // Turn Big Cannon ON and force off dual barrels to prevent stat clashing
         player.barrelCount = 1;
         return;
+    } // If no card, and cheats are OFF, reset to normal
+    else if (!cheatsOn) {
+        bigcannon = false;
     }
 
-    // CHEATS: Toggle Big Cannon weapon mode when 'U' is pressed
-    if (AEInputCheckTriggered(AEVK_2)) {
+    // CHEATS: Toggle Big Cannon weapon mode when '5' is pressed
+    if (cheatsOn && AEInputCheckTriggered(AEVK_5)) {
         bigcannon = !bigcannon;
 
         if (bigcannon) {
@@ -412,6 +405,7 @@ void updateBullets(shape& player, float deltaTime) {
 
             // Bullet to environment border collision check
             if (World::isPointColliding(edgeX, edgeY)) {
+                TriggerBulletImpact(boolet.posX, boolet.posY, boolet.directionX, boolet.directionY);
                 boolet.isActive = false;
                 continue;
             }

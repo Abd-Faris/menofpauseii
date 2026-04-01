@@ -101,6 +101,7 @@ void circlerectcollision() {
             float currentdmg = calculate_max_stats(1);
 
             if (distanceSquared < (collisionRadius * collisionRadius)) {
+                TriggerBulletImpact(boolet.posX, boolet.posY, boolet.directionX, boolet.directionY);
                 currentEnemy.hp -= (int)(currentdmg*boolet.damagemul);
                 boolet.isActive = false;
                 
@@ -149,6 +150,7 @@ void circlerectcollision() {
             }
 
             if (hit){
+                TriggerBulletImpact(enBullet.posX, enBullet.posY, enBullet.directionX, enBullet.directionY);
                 player_init.current_hp -= 10; // player
                 enBullet.isActive = false;     // Destroy the enemy bullet
                 playerFlashTimer = 0.15f;
@@ -179,6 +181,7 @@ void circlerectcollision() {
             float bdistSq = (bdx * bdx) + (bdy * bdy);
             float bradius = (minion.scale * GameConfig::Enemy::HITBOX_RATIO) + boolet.size;
             if (bdistSq < bradius * bradius) {
+                TriggerBulletImpact(boolet.posX, boolet.posY, boolet.directionX, boolet.directionY);
                 float dmg = calculate_max_stats(1);
                 minion.hp -= (int)(dmg * boolet.damagemul);
                 boolet.isActive = false;
@@ -344,9 +347,9 @@ void UpdateGame() {
             }
 
             // =========================================================
-            // FOR DEBUGGING: Skip wave with Z
+            // FOR DEBUGGING: Skip wave with 8
             // =========================================================
-            if (GS_next == GS_GAME && AEInputCheckTriggered(AEVK_Z)) {
+            if (cheatsOn && GS_next == GS_GAME && AEInputCheckTriggered(AEVK_8)) {
 
                 // Check if we are currently skipping the Final Boss
                 bool skippingFinalBoss = (currentWave == (numofBosses * 5));

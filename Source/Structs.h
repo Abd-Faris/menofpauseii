@@ -45,8 +45,8 @@ enum BossType {
 	numofBosses
 };
 
-enum SFX {
-	//
+
+enum SFX_ID {
 };
 
 // player upgrade flag (set to u32 so can have 32 possible flags)
@@ -103,7 +103,7 @@ struct PlayerStatsModifier {
 
 struct shape {
 	f32 scale;			//scale
-	f32 pos_x, pos_y;	// x and y positions
+	f32 pos_x, pos_y; 	// x and y positions
 	f32 currentAngle;
 	AEMtx33 transform;  // Final transformation matrix for rendering
 	f32 barrelCount;
@@ -222,6 +222,16 @@ struct Explosion {
 	float scale;
 };
 
+struct BulletSpark {
+	float posX, posY;
+	float dirX, dirY;
+	float speed;
+	float size;
+	float lifetime;     
+	float maxLifetime;  
+	bool isActive;
+};
+
 // -- Bullet Pool --
 struct BulletObj {
 	float posX, posY;
@@ -249,5 +259,6 @@ struct SplashParticle {
 // Externs
 extern PlayerStats player_init;
 extern SmokeParticle smokes[100];
+
 
 

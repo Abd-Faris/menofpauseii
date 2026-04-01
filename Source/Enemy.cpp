@@ -329,6 +329,7 @@ void updateEnemyPhysics(shape& player, float deltaTime) {
             float baseReward = (currentEnemy.maxhp >= (int)(GameConfig::Enemy::HP_BIG * mult)) ? 60.0f : 10.0f;
             float finalReward = baseReward * xp_multiplier;
             player_init.current_xp += finalReward;
+            TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale * 1.5f);
             TriggerXpPopup(finalReward);
             ResetEnemy(&currentEnemy);
         }
@@ -345,6 +346,7 @@ void updateEnemyBullets(float deltaTime) {
         float edgeY = eBullet.posY + (eBullet.size * eBullet.directionY);
 
         if (World::isPointColliding(edgeX, edgeY)) {
+            TriggerBulletImpact(eBullet.posX, eBullet.posY, eBullet.directionX, eBullet.directionY);
             eBullet.isActive = false;
             continue;
         }
