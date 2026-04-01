@@ -33,5 +33,8 @@ namespace Cards {
 
 	// compute card effects
 	void computeCardEffects();
+
+	// returns card of that ID
+	CardStats& GetCardByID(std::string& search);
 }
 

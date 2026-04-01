@@ -1067,9 +1067,16 @@ namespace Cards {
 		UpdateCurrentHpAfterCards(oldMaxHp); //calls debugxp to update hp
 	} // endfunction
 
-	// computes player stats
-	void computePlayerStats() {
-		//
+	// returns CardStats of a given ID
+	CardStats& GetCardByID(std::string& search) {
+		// iterate thru entire cardPool
+		for (int i{}; i < NUM_OF_RARITIES; i++) {
+			for (CardStats stat : cardPool[i]) {
+				if (stat.ID == search) return stat;
+			}
+		}
+		// default return first card in common card pool
+		return cardPool[0][0];
 	}
 
 }

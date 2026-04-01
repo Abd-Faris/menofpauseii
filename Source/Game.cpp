@@ -249,12 +249,29 @@ void InitializeGame() {
         player.scale = GameConfig::Tank::SCALE;
         bigcannon = data.bigcannon;
 
-        for (const auto& id : data.shopCardIDs)
-            allCards[0].push_back(Cards::GetCardByID(id));
-        for (const auto& id : data.activeCardIDs)
-            allCards[1].push_back(Cards::GetCardByID(id));
-        for (const auto& id : data.inventoryCardIDs)
-            allCards[2].push_back(Cards::GetCardByID(id));
+        // reference for easy ref
+        std::vector<Card>& shopCards = allCards[0];// reference to shop cards
+        std::vector<Card>& activeCards = allCards[1];// ref to active cards
+        std::vector<Card>& inventoryCards = allCards[2];// reference to cards in bag
+
+        // get back shop cards (if any)
+        for (const auto& id : data.shopCardIDs) {
+            Card card;
+            card.info = Cards::GetCardByID(id);
+            shopCards.push_back(card);
+        }
+        // get back all active cards
+        for (const auto& id : data.activeCardIDs) {
+            Card card;
+            card.info = Cards::GetCardByID(id);
+            shopCards.push_back(card);
+        }
+        // get back all passive / bag cards
+        for (const auto& id : data.inventoryCardIDs) {
+            Card card;
+            card.info = Cards::GetCardByID(id);
+            shopCards.push_back(card);
+        }
 
         GenerateWave(currentWave, player);
     }
