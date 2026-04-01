@@ -57,7 +57,7 @@ namespace {
     // Gameplay
     constexpr float MIN_FIRE_RATE = 0.1f;
     constexpr float MIN_CURRENT_HP = 1.0f;
-    constexpr float LEVEL_UP_HEAL_PERCENT = 0.2f;
+    constexpr float LEVEL_UP_HEAL_PERCENT = 0.15f;
 
     // XP formula:  xp_needed = XP_BASE + level^XP_EXPONENT * XP_MULTIPLIER
     constexpr float XP_BASE = 100.0f;
@@ -344,9 +344,7 @@ namespace {
 
 float calculate_max_stats(int i) {
     switch (i) {
-    case STAT_HP:
-        return ((player_init.baseHp + cardBaseMod.hp) * cardMultMod.hp)
-            + (player_init.upgradeLevels[STAT_HP] * kStatMultiplier[STAT_HP]);
+    case STAT_HP: return ((player_init.baseHp + cardBaseMod.hp) * cardMultMod.hp) + (player_init.upgradeLevels[0] * kStatMultiplier[STAT_HP]);
     case STAT_DMG:
         return (player_init.baseDmg + cardBaseMod.dmg
             + (player_init.upgradeLevels[STAT_DMG] * kStatMultiplier[STAT_DMG])) * cardMultMod.dmg;
@@ -370,18 +368,20 @@ float calculate_max_stats(int i) {
 void UpdateCurrentHpAfterCards(float oldMaxHp) {
     float newMaxHp = calculate_max_stats(STAT_HP);
 
-    float healthRatio = (oldMaxHp > 0) ? (player_init.current_hp / oldMaxHp) : 1.0f;
+    // if max hp increased, give the player the difference
+    if (newMaxHp > oldMaxHp) {
+        player_init.current_hp += (newMaxHp - oldMaxHp);
+    }
 
-    player_init.current_hp = newMaxHp * healthRatio;
-
+    // always clamp current hp to new max
     if (player_init.current_hp > newMaxHp) {
         player_init.current_hp = newMaxHp;
     }
-    if (player_init.current_hp < 1.0f && newMaxHp >= 1.0f) {
+
+    // never go below 1
+    if (player_init.current_hp < 1.0f) {
         player_init.current_hp = 1.0f;
     }
-
-    printf("SYNC: Ratio: %.2f | NewHP: %.1f/%.1f\n", healthRatio, player_init.current_hp, newMaxHp);
 }
 
 float get_max_hp() {
@@ -435,7 +435,7 @@ void reset_game() {
     player_init.menu_open = false;
     for (int i = 0; i < NUM_STATS; ++i)
         player_init.upgradeLevels[i] = 0;
-    player_init.current_hp = player_init.baseHp;
+    player_init.current_hp = calculate_max_stats(STAT_HP);
 }
 
 // =============================================================================
@@ -589,9 +589,6 @@ void DrawDebug1() {
     float maxHp = calculate_max_stats(STAT_HP);
     float xpNeeded = XP_BASE + (powf((float)player_init.player_level, XP_EXPONENT) * XP_MULTIPLIER);
 
-    printf("DRAW: CurHP: %.1f | MaxHP: %.1f | Level: %d\n",
-        player_init.current_hp, maxHp, player_init.player_level);
-
     // -- Shoot-cooldown bar --
     DrawShootCooldownBar(camX, camY, bulletFireTimer, calculate_max_stats(STAT_FIRERATE));
 
@@ -623,9 +620,8 @@ void DrawDebug1() {
 
     // -- HUD text (HP / Level / Wave) --
     char hudHpText[64], levelText[32], waveText[32];
-    if (maxHp < 0) maxHp = 0;
-
-    sprintf_s(hudHpText, "%.0f / %.0f", player_init.current_hp, maxHp);
+    float displayHp = (player_init.current_hp < 0.0f) ? 0.0f : player_init.current_hp;
+    sprintf_s(hudHpText, "%.0f / %.0f", displayHp, maxHp);
     sprintf_s(levelText, "LEVEL %d", player_init.player_level);
     sprintf_s(waveText, "WAVE %d", currentWave);
 
