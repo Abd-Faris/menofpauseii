@@ -291,6 +291,7 @@ void updateEnemyPhysics(shape& player, float deltaTime) {
 
                 for (auto& eBullet : enemyBulletList) {
                     if (!eBullet.isActive) {
+                        SFX::playSFX(SFX_ENEMY_SHOOT);
                         eBullet.isActive = true;
                         eBullet.posX = currentEnemy.pos.x;
                         eBullet.posY = currentEnemy.pos.y;

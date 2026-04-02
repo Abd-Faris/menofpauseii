@@ -70,6 +70,7 @@ namespace SFX {
 
 	const std::vector<std::vector<std::string>> sfxPaths = {
 		{ "Assets/audio/sfx/Enemy_Death1.mp3", "Assets/audio/sfx/Enemy_Death2.mp3" }, // SFX_ENEMY_DEATH
+		{ "Assets/audio/sfx/Enemy_Shoot.mp3"}, // SFX_ENEMY_SHOOT
 	};
 
 	void load() {

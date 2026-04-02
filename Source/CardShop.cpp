@@ -31,7 +31,11 @@ namespace { // functions for InitializeCardShop()
 	AEGfxTexture* pShopTex = nullptr; // shoporange.png — bag panel
 	AEGfxTexture* pSlotsTex = nullptr; // shopyellow.png — shop + active slots
 	AEGfxTexture* pTrashTex = nullptr; // trash.png
+	AEGfxTexture* pBtnNormalTex = nullptr; // button default texture
+	AEGfxTexture* pBtnHoverTex = nullptr; // button on hover texture
 	AEGfxVertexList* pPanelMesh = nullptr; // shared UV mesh for panels
+	AEGfxVertexList* pBtnMesh = nullptr; // button mesh
+
 
 	// spritesheet constants
 	AEGfxTexture* cardSpriteSheet{ nullptr };
@@ -86,11 +90,17 @@ namespace { // functions for InitializeCardShop()
 	Card* pSelectedCard{nullptr};
 	Card* pHoveredCard {nullptr};
 
+	// init shop buttons
+	std::vector<GfxButton> shopButtons{
+		{{-700, -230}, {100, 100}, nullptr, GS_GAME}
+	};
+
 	// init shop texts
 	std::vector<GfxText> shopTexts{
 		{"BAG", 0.5f, 0, 0, 0, 255, {575, 370}},
 		{"ACTIVE CARDS", 0.5f, 0, 0, 0, 255, {-125, -230}},
-		{"TRASH", 0.5f, 0, 0, 0, 255, {-700, -230}}
+		{"TRASH", 0.5f, 0, 0, 0, 255, {-700, -300}},
+		{"NEXT\nROUND", 0.35f, 0, 0, 0, 255, {-700, -220}}
 	};
 
 	// initialises the card shop array
@@ -212,6 +222,8 @@ void LoadCardShop() {
 	pShopTex = AEGfxTextureLoad("./Assets/shoporange.png");
 	pSlotsTex = AEGfxTextureLoad("./Assets/shopyellow.png");
 	pTrashTex = AEGfxTextureLoad("./Assets/trash.png");
+	pBtnNormalTex = AEGfxTextureLoad("./Assets/mainmenubutton1.png");
+	pBtnHoverTex = AEGfxTextureLoad("./Assets/mainmenubutton2.png");
 
 	// shared UV mesh for panels
 	AEGfxMeshStart();
@@ -222,6 +234,16 @@ void LoadCardShop() {
 		0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
 		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
 	pPanelMesh = AEGfxMeshEnd();
+
+	// UV mapped mesh for buttons
+	AEGfxMeshStart();
+	AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
+		0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+	AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+		0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
+		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+	pBtnMesh = AEGfxMeshEnd();
 
 	PauseScreen::LoadPause();
 }
@@ -434,6 +456,19 @@ namespace { // functions for UpdateCardShop()
 
 void UpdateCardShop() {
 	PauseScreen::UpdatePause();
+
+	// checks if Next Round button is clicked
+	if (AEInputCheckTriggered(AEVK_LBUTTON)) {
+		AEVec2 mousepos{};
+		Comp::getCursorPos(mousepos);
+		for (GfxButton& btn : shopButtons) {
+			if (Comp::collisionPointRect(mousepos, btn.pos, btn.size)) {
+				GS_next = btn.nextGS;
+				break;
+			}
+		}
+	}
+
 	// if theres a card selected, update selected card position
 	if (pSelectedCard) {
 		updateCardPosition();
@@ -475,7 +510,7 @@ namespace { // functions for DrawCardShop()
 		Gfx::printMesh(pPanelMesh, { -125, -300 }, { 950, 200 }, 0.f, { 0.f, 0.f }, true);    // active slots
 
 		AEGfxTextureSet(pTrashTex, 0, 0);
-		Gfx::printMesh(pPanelMesh, { -700, -300 }, { 100, 100 }, 0.f, { 0.f, 0.f }, true);    // trash
+		Gfx::printMesh(pPanelMesh, { -700, -370 }, { 100, 100 }, 0.f, { 0.f, 0.f }, true);    // trash
 
 		// -- desc panel --
 		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
@@ -535,10 +570,38 @@ namespace { // functions for DrawCardShop()
 		AEGfxSetTransparency(1.f);
 	}
 
+	// draws a textured button, swapping to hover texture if mouse is over it
+	void drawTexturedButton(GfxButton& btn, AEVec2& mousepos) {
+		bool hovered = Comp::collisionPointRect(mousepos, btn.pos, btn.size);
+
+		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+		AEGfxTextureSet(hovered ? pBtnHoverTex : pBtnNormalTex, 0, 0);
+		AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+		AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+		AEGfxSetTransparency(1.f);
+
+		AEMtx33 scale, trans, final;
+		AEMtx33Scale(&scale, btn.size.x, btn.size.y);
+		AEMtx33Trans(&trans, btn.pos.x, btn.pos.y);
+		AEMtx33Concat(&final, &trans, &scale);
+		AEGfxSetTransform(final.m);
+		AEGfxMeshDraw(pBtnMesh, AE_GFX_MDM_TRIANGLES);
+
+		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+	}
+
 	void drawTexts() {
+		// STATIC BUTTONS
+		AEVec2 mousepos{};
+		Comp::getCursorPos(mousepos);
+		for (GfxButton& btn : shopButtons) {
+			drawTexturedButton(btn, mousepos);
+		}
+		
 		// STATIC TEXTS
 		for (GfxText& text : shopTexts) {
-			Gfx::printText(text, boldPixels);
+			Gfx::printMultiline(text, boldPixels);
 		}
 		// BUGFIX: prevent shop text from displaying over the end shop screen
 		GfxText shoptxt{ "SHOP", 0.8f, 0, 0, 0, 255, { -200, 190 } };
@@ -557,7 +620,6 @@ namespace { // functions for DrawCardShop()
 		Gfx::printText(cardCount, boldPixels);
 	}
 
-	// prompts to user to let go to drop into a diff inventory
 	// prompts to user to let go to drop into a diff inventory
 	void drawPrompts() {
 		Card& card = *pSelectedCard;
@@ -1084,5 +1146,4 @@ namespace Cards {
 		// default assign first card in common card pool
 		card.info = cardPool[0][0];
 	}
-
 }

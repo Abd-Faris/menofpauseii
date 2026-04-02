@@ -1,6 +1,6 @@
 #include "MasterHeader.h"
 
-float sfxVolume{ 1.0f };
+float sfxVolume{ 0.5f };
 float bgmVolume{ 1.0f };
 
 namespace {

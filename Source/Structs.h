@@ -48,6 +48,7 @@ enum BossType {
 
 enum SFX_ID {
 	SFX_ENEMY_DEATH,
+	SFX_ENEMY_SHOOT,
 	SFX_COUNT
 };
 
