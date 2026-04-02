@@ -64,29 +64,58 @@ namespace SFX {
 	AEAudio credbgm{ nullptr };
 	AEAudioGroup bgm{ nullptr };
 
+	// sfx library 
+	std::vector<std::vector<AEAudio>> sfxLibrary;
+	AEAudioGroup sfx{ nullptr };
+
+	const std::vector<std::vector<std::string>> sfxPaths = {
+		{ "Assets/audio/sfx/Enemy_Death1.mp3", "Assets/audio/sfx/Enemy_Death2.mp3" }, // SFX_ENEMY_DEATH
+	};
+
 	void load() {
 		// loads audio groups
 		bgm = AEAudioCreateGroup();
+		sfx = AEAudioCreateGroup();
 
 		// loads bgm
 		mainbgm = AEAudioLoadMusic("Assets/audio/bgm/main_bgm.mp3");
 		gamebgm = AEAudioLoadMusic("Assets/audio/bgm/game_bgm.mp3");
 		shopbgm = AEAudioLoadMusic("Assets/audio/bgm/shop_bgm.mp3");
 		credbgm = AEAudioLoadMusic("Assets/audio/bgm/cred_bgm.mp3");
+
+		// loads sfx
+		sfxLibrary.resize(SFX_COUNT);
+		// for each sfx type
+		for (int i = 0; i < SFX_COUNT; ++i)
+			// for each sfx
+			for (const std::string& path : sfxPaths[i]) {
+				// push into library
+				AEAudio sfx = AEAudioLoadSound(path.c_str());
+				sfxLibrary[i].push_back(sfx);
+			}
 	}
 
 	void unload() {
 		// unload audio groups
 		AEAudioUnloadAudioGroup(bgm);
+		AEAudioUnloadAudioGroup(sfx);
 
 		// unload bgms
 		AEAudioUnloadAudio(mainbgm);
 		AEAudioUnloadAudio(gamebgm);
 		AEAudioUnloadAudio(shopbgm);
 		AEAudioUnloadAudio(credbgm);
+
+		// unloads sfx
+		for (auto& sfxtype : sfxLibrary)
+			for (AEAudio& sfx : sfxtype)
+				AEAudioUnloadAudio(sfx);
+		// clears sfx library
+		sfxLibrary.clear();
 	}
 
 	void playBGM() {
+		// plays BGM depending on what gamestate it is
 		switch (GS_current) {
 		case GS_MAIN_MENU:
 			AEAudioStopGroup(bgm); AEAudioPlay(mainbgm, bgm, bgmVolume, 1.f, -1); break;
@@ -100,10 +129,15 @@ namespace SFX {
 		}
 	}
 
-	void playSFX(int sfx) {
-		switch (sfx) {
-			//
-		}
+	void playSFX(int id) {
+		// rejection cases
+		if (id >= SFX_COUNT || sfxLibrary[id].empty()) return;
+
+		// randomise which sfx in sfxtype to play
+		int idx = (int)(AERandFloat() * sfxLibrary[id].size());
+		std::cout << idx << std::endl;
+		// play sfx
+		AEAudioPlay(sfxLibrary[id][idx], sfx, sfxVolume, 1.0f, 0);
 	}
 }
 

@@ -21,4 +21,5 @@ namespace SFX {
 	void load();
 	void unload();
 	void playBGM();
+	void playSFX(int);
 }

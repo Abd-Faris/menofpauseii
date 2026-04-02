@@ -47,6 +47,8 @@ enum BossType {
 
 
 enum SFX_ID {
+	SFX_ENEMY_DEATH,
+	SFX_COUNT
 };
 
 // player upgrade flag (set to u32 so can have 32 possible flags)

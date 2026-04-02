@@ -168,6 +168,7 @@ void Animations_Free() {
 
 // ~ Brief: Finds an available slot in the pool to begin a new explosion animation.
 void TriggerExplosion(float x, float y, float size) {
+    SFX::playSFX(SFX_ENEMY_DEATH);
     for (int i = 0; i < MAX_EXPLOSIONS; i++) {
         if (explosionPool[i].active == false) {
             explosionPool[i].pos.x = x;
