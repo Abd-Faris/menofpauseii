@@ -23,11 +23,11 @@
 		};
 		// init main menu texts
 		std::vector<GfxText> mainMenuTexts{
-			{"Play",     1.f, 0, 0, 0, 255, {-400, -200}},
-			{"Credits",  1.f, 0, 0, 0, 255, {0,    -200}},
-			{"Controls", 1.f, 0, 0, 0, 255, {400,  -200}},
-			{"Settings", 1.f, 0, 0, 0, 255, {-200, -350}},
-			{"Exit",     1.f, 0, 0, 0, 255, {200,  -350}},
+			{"Play",     0.9f, 0, 0, 0, 255, {-400, -200}},
+			{"Credits",  0.9f, 0, 0, 0, 255, {0,    -200}},
+			{"Controls", 0.9f, 0, 0, 0, 255, {400,  -200}},
+			{"Settings", 0.9f, 0, 0, 0, 255, {-200, -350}},
+			{"Exit",     0.9f, 0, 0, 0, 255, {200,  -350}},
 		};
 
 		// init exit confirmation button
