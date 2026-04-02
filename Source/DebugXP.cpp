@@ -1,5 +1,5 @@
 // -----------------------------Gloomy's Revenge---------------------------- //
-// File:    DebugXP.cpp
+// File:    Debug XP.cpp
 // Authors: [Men of Pause II]
 // Brief:   Player HUD, XP/level-up logic, upgrade menu, and debug cheats.
 // ------------------------------------------------------------------------- //
@@ -243,8 +243,6 @@ namespace {
     // ~ Brief: Draw a health bar above an enemy (only when damaged)
     void DrawEnemyHealthBar(Enemies& enemy, float camX, float camY) {
         if (!enemy.alive || enemy.hp >= enemy.maxhp || enemy.hp <= 0) return;
-        (void)camX;
-		(void)camY;
 
 		// Bar width scales with enemy size, but height is constant
         float barWidth = enemy.scale;
@@ -485,8 +483,6 @@ void level_up(float xpNeeded) {
 // ~ Brief: Handle mouse clicks on the upgrade menu
 void handle_menu_input(float camX, float camY) {
     if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
-	(void)camX;
-	(void)camY;
 
     // No skill points left — close menu on any click
     if (player_init.skill_point <= 0) {
