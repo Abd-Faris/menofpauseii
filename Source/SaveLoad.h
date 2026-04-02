@@ -8,6 +8,8 @@ struct SaveData {
     float current_hp = 0.f;
     float current_xp = 0.f;
     int   player_level = 1;
+    int   skill_point = 0;
+    int   upgradeLevels[5] = { 0, 0, 0, 0, 0 };
     std::vector<std::string> shopCardIDs;
     std::vector<std::string> activeCardIDs;
     std::vector<std::string> inventoryCardIDs;
