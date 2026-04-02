@@ -241,7 +241,9 @@ void InitializeGame() {
         player_init.current_hp = data.current_hp;
         player_init.current_xp = data.current_xp;
         player_init.player_level = data.player_level;
-        player.scale = GameConfig::Tank::SCALE;
+        player_init.skill_point = data.skill_point;
+        for (int i = 0; i < 5; i++)
+            player_init.upgradeLevels[i] = data.upgradeLevels[i];
 
         // Use globals directly — no local redeclaration
         for ( auto& id : data.shopCardIDs) {
