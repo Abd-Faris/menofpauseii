@@ -105,7 +105,6 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClCompile Include="..\Source\Enemy.cpp" />
     <ClCompile Include="..\Source\Game.cpp" />
     <ClCompile Include="..\Source\Graphics.cpp" />
-    <ClCompile Include="..\Source\Input.cpp" />
     <ClCompile Include="..\Source\LevelSelect.cpp" />
     <ClCompile Include="..\Source\logo.cpp" />
     <ClCompile Include="..\Source\Main.cpp" />
@@ -131,7 +130,6 @@ xcopy "$(SolutionDir)Extern\AlphaEngine\lib\fmod.dll" "$(OutDir)" /s /r /y /q</C
     <ClInclude Include="..\Source\Game.h" />
     <ClInclude Include="..\Source\GameStateManager.h" />
     <ClInclude Include="..\Source\Graphics.h" />
-    <ClInclude Include="..\Source\Input.h" />
     <ClInclude Include="..\Source\LevelSelect.h" />
     <ClInclude Include="..\Source\logo.h" />
     <ClInclude Include="..\Source\MainMenu.h" />

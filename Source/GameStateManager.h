@@ -39,10 +39,7 @@ enum GS_STATES
 
 	// Debugging Game States
 	DEBUG1,
-	DEBUG2,
-	DEBUG3,
 	GS_CARD_SHOP,
-	DEBUG5,
 	
 
 	// Game Management States
