@@ -32,10 +32,7 @@ std::vector<GSFunctions> gamestates{
 	{LoadCredits, InitializeCredits, UpdateCredits, DrawCredits, FreeCredits, UnloadCredits},
 	// Debugging Game States
 	{LoadDebug1, nullptr, UpdateDebug1, DrawDebug1, FreeDebug1, nullptr},
-	{LoadDebug2, nullptr, nullptr, DrawDebug2, FreeDebug2, nullptr},
-	{LoadDebug3, nullptr, nullptr, DrawDebug3, FreeDebug3, nullptr},
 	{LoadCardShop, InitializeCardShop, UpdateCardShop, DrawCardShop, FreeCardShop, UnloadCardShop},
-	{LoadDebug5, nullptr, UpdateDebug5, DrawDebug5, FreeDebug5, nullptr}
 };
 // Load, Initialize, Update, Draw, Free, Unload
 // if no function of that type exists, enter nullptr
