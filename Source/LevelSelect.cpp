@@ -31,7 +31,7 @@ namespace {
         {"Back",          1.f,  0, 0, 0, 255, {0,   -350}},
     };
 
-    void drawTexturedButton(GfxButton& btn, AEVec2& mousepos, bool greyed = false) {
+    void drawTexturedButton(GfxButton& btn, AEVec2& mousepos) {
         bool hovered = Comp::collisionPointRect(mousepos, btn.pos, btn.size);
 
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);

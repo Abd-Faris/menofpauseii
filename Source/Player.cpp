@@ -191,7 +191,7 @@ void rotatePlayer(shape& player) {
 
 // ~ Brief:	Fetches inactive bullets from the object pool and calculates their 
 //          spawn positions/vectors based on active weapon upgrades.
-void SpawnBullet(shape& player, float deltaTime) {
+void SpawnBullet(shape& player) {
     // 1. Get fire rate stat and reset the cooldown timer
     bulletFireTimer = 0.0f;
 
@@ -324,7 +324,7 @@ void ShootBullet(shape& player, float deltaTime) {
 
         // Fire only when the timer has reached or exceeded the fire_rate
         if (bulletFireTimer >= fire_rate) {
-            SpawnBullet(player, deltaTime);
+            SpawnBullet(player);
         }
     }
 }

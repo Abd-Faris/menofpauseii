@@ -369,7 +369,7 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
 
         case BossState::LUNGING:
             // Spawn the ring immediately then move on
-            BossSpawnMinion(boss, player);
+            BossSpawnMinion(boss);
             boss.state = BossState::COOLDOWN;
             boss.stateTimer = 0.f;
             break;
@@ -478,9 +478,6 @@ void UpdateBossPhysics(Boss& boss, shape& player, float deltaTime) {
         return;
     }
     if (boss.bosstype == BOSS4) {
-        AEVec2 toPlayer = { player.pos_x - boss.pos.x,
-                            player.pos_y - boss.pos.y };
-        float dist = sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y);
 
         // Body slowly faces player
         if (dist > 1.f) {
@@ -811,7 +808,7 @@ void DrawBossHP(Boss& boss, AEGfxVertexList* MeshRect, AEGfxVertexList* MeshCirc
 }
 
 // Boss 2's minions
-void BossSpawnMinion(Boss& boss, shape& player) {
+void BossSpawnMinion(Boss& boss) {
     float angleStep = (2.f * PI) / boss.minionCount;
     float radius = boss.scale + GameConfig::Boss::MINION_SPAWN_RADIUS;
 

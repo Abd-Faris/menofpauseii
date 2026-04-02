@@ -3,31 +3,7 @@
 #include <cstdio>
 
 bool gamecurrrun = false;
-// Magic number to verify file isn't corrupt
-static constexpr int SAVE_MAGIC = 0x5441424B; // "TABK"
-static constexpr int SAVE_VERSION = 1;           // bump this if SaveData changes
 
-static void WriteStringVector(std::ofstream& file, const std::vector<std::string>& vec) {
-    int count = (int)vec.size();
-    file.write(reinterpret_cast<const char*>(&count), sizeof(count));
-    for (const auto& str : vec) {
-        int len = (int)str.size();
-        file.write(reinterpret_cast<const char*>(&len), sizeof(len));
-        file.write(str.c_str(), len);
-    }
-}
-
-static void ReadStringVector(std::ifstream& file, std::vector<std::string>& vec) {
-    int count = 0;
-    file.read(reinterpret_cast<char*>(&count), sizeof(count));
-    vec.resize(count);
-    for (auto& str : vec) {
-        int len = 0;
-        file.read(reinterpret_cast<char*>(&len), sizeof(len));
-        str.resize(len);
-        file.read(&str[0], len);
-    }
-}
 bool SaveGame(const SaveData& data, const char* filepath) {
     std::ofstream file(filepath);
     if (!file.is_open()) {

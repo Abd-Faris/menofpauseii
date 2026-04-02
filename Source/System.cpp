@@ -14,7 +14,7 @@ void Initialise_System(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
 	// set gamestate to "Running"
-	int gGameRunning = 1;
+	//int gGameRunning = 1;
 
 	// Initialization of your own variables go here
 

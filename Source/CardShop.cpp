@@ -252,7 +252,7 @@ void InitializeCardShop() {
 	Cards::computeCardEffects();
 
 	SFX::playBGM();
-	gamecurrrun == false;
+	gamecurrrun = false;
 }
 
 namespace { // functions for UpdateCardShop()
@@ -541,9 +541,9 @@ namespace { // functions for DrawCardShop()
 			Gfx::printText(text, boldPixels);
 		}
 		// BUGFIX: prevent shop text from displaying over the end shop screen
-		GfxText shop{ "SHOP", 0.8f, 0, 0, 0, 255, { -200, 190 } };
+		GfxText shoptxt{ "SHOP", 0.8f, 0, 0, 0, 255, { -200, 190 } };
 		if (buyable_left > 0) {
-			Gfx::printText(shop, boldPixels);
+			Gfx::printText(shoptxt, boldPixels);
 		}
 		// DYNAMIC TEXTS
 		// ACTIVE
@@ -817,6 +817,13 @@ void FreeCardShop() {
 	f32 fire_rate = calculate_max_stats(3);
 	f32 xp_mult = calculate_max_stats(4);
 	
+	// based on how calculate_max_stats work, this has to be done to avoid warnings
+	hp = hp;
+	dmg = dmg;
+	speed = speed;
+	fire_rate = fire_rate;
+	xp_mult = xp_mult;
+
 	// off tutorial
 	tutorialOn = false;
 
