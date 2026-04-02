@@ -41,7 +41,7 @@ namespace {
     // CONSTANTS
     // -------------------------------------------------------------------------
 
-    // Stat indices
+    // Stats
     constexpr int STAT_HP = 0;
     constexpr int STAT_DMG = 1;
     constexpr int STAT_SPEED = 2;
@@ -172,6 +172,7 @@ namespace {
 
     const char* kStatNames[NUM_STATS] = { "HP", "DMG", "SPEED", "FIRE RATE", "XP MULT" };
 
+	// Base stats (for display and upgrade calculations)
     float kBaseStats[NUM_STATS] = {
         player_init.baseHp,
         player_init.baseDmg,
@@ -239,13 +240,15 @@ namespace {
     // DRAW HELPERS
     // -------------------------------------------------------------------------
 
-    // Draw a health bar above an enemy (only when damaged)
+    // ~ Brief: Draw a health bar above an enemy (only when damaged)
     void DrawEnemyHealthBar(Enemies& enemy, float camX, float camY) {
         if (!enemy.alive || enemy.hp >= enemy.maxhp || enemy.hp <= 0) return;
 
+		// Bar width scales with enemy size, but height is constant
         float barWidth = enemy.scale;
         float yOffset = -(enemy.scale * ENEMY_BAR_Y_SCALE);
 
+		// Calculate health percentage (clamped between 0 and 1)
         float perc = (float)enemy.hp / (float)enemy.maxhp;
         if (perc < 0.0f) perc = 0.0f;
 
@@ -263,8 +266,9 @@ namespace {
             1.0f, 0.0f, 0.0f);
     }
 
-    // Draw the shoot-cooldown bar (static HUD position)
+    // ~ Brief: Draw the shoot-cooldown bar (static HUD position)
     void DrawShootCooldownBar(float camX, float camY, float timeSinceLast, float fireRate) {
+		// Calculate cooldown progress (clamped between 0 and 1)
         float progress = timeSinceLast / fireRate;
         if (progress > 1.0f) progress = 1.0f;
         if (progress < 0.0f) progress = 0.0f;
@@ -280,13 +284,14 @@ namespace {
         float fillW = SHOOT_BAR_WIDTH * progress;
         float shiftX = (SHOOT_BAR_WIDTH - fillW) / 2.0f;
 
+		// If fully cooled down, show a bright yellow bar. Otherwise, show the red cooldown fill
         if (progress >= 1.0f)
             DrawColorMesh(pMeshYellow, finalX, finalY, SHOOT_BAR_WIDTH, SHOOT_BAR_HEIGHT);
         else
             DrawColorMesh(pMeshRed, finalX - shiftX, finalY, fillW, SHOOT_BAR_HEIGHT);
     }
 
-    // Draw a single proportional bar (HP or XP) anchored to the HUD
+    // ~ Brief: Draw a single proportional bar (HP or XP) anchored to the HUD
     void DrawHudBar(AEGfxVertexList* mesh, float current, float maxVal,
         float anchorX, float anchorY, float relOffsetY,
         float barHeight, float maxWidth) {
@@ -302,8 +307,9 @@ namespace {
             fillW, barHeight);
     }
 
-    // Draw the five upgrade rows inside the upgrade menu
+    // ~ Brief: Draw the five upgrade rows inside the upgrade menu
     void DrawUpgradeRows(float camX, float camY) {
+		// Pre-calculate horizontal positions for the upgrade segments to simplify the loop
         constexpr float kSegmentStep = SEGMENT_WIDTH + SEGMENT_GAP;
         constexpr float kRowStartX = -(kSegmentStep * 2.0f);
 
@@ -323,6 +329,7 @@ namespace {
             for (int j = 0; j < MAX_UPGRADE_LEVEL; ++j) {
                 float segX = kRowStartX + (j * kSegmentStep);
                 if (j < player_init.upgradeLevels[i])
+					// Draw filled green segments for purchased upgrades, grey for locked segments
                     DrawColorMesh(pMeshWhite, segX + camX, rowY + camY, SEGMENT_WIDTH, SEGMENT_HEIGHT, 0.0f, 1.0f, 0.0f);  // green = upgraded
                 else
                     DrawColorMesh(pMeshWhite, segX + camX, rowY + camY, SEGMENT_WIDTH, SEGMENT_HEIGHT, 0.8f, 0.8f, 0.8f);  // grey = locked
@@ -342,6 +349,7 @@ namespace {
 // FORMULA:  (base + cardBaseMod + upgradeLevel * multiplier) * cardMultMod
 // HP is special: upgrade bonus is applied after card scaling (flat increase).
 
+// ~ Brief: Calculate the player's current effective stat value for a given stat index (HP, DMG, SPEED, FIRERATE, XP)
 float calculate_max_stats(int i) {
     switch (i) {
     case STAT_HP: return ((player_init.baseHp + cardBaseMod.hp) * cardMultMod.hp) + (player_init.upgradeLevels[0] * kStatMultiplier[STAT_HP]);
@@ -365,6 +373,8 @@ float calculate_max_stats(int i) {
     }
 }
 
+// ~ Brief: After HP upgrades, adjust current HP to account for the new max HP. If max HP increased, 
+//          give the player the difference. Always clamp current HP to the new max, and never let it drop below 1.
 void UpdateCurrentHpAfterCards(float oldMaxHp) {
     float newMaxHp = calculate_max_stats(STAT_HP);
 
@@ -392,11 +402,14 @@ float get_max_hp() {
 // GAME STATE
 // =============================================================================
 
+// ~ Brief: Trigger a floating XP popup with the given XP amount. 
+//          The popup will automatically drift upwards and fade out over time.
 void TriggerXpPopup(float xpAmount) {
     xpPopupValue = xpAmount;
     xpPopupTimer = xpPopupDuration;
 }
 
+// ~ Brief: Reset all game state to initial values for a new game or after player death.
 void reset_game() {
     // Tutorial
     tutorialOn = true;
@@ -435,20 +448,24 @@ void reset_game() {
     player_init.menu_open = false;
     for (int i = 0; i < NUM_STATS; ++i)
         player_init.upgradeLevels[i] = 0;
-    player_init.current_hp = calculate_max_stats(STAT_HP);
+    player_init.current_hp = player_init.baseHp;
 }
 
 // =============================================================================
 // LEVEL-UP LOGIC
 // =============================================================================
 
+// ~ Brief: Check if the player has enough XP to level up. If so, consume the XP, 
+//          increase the player level and skill points, and partially heal the player.
 void level_up(float xpNeeded) {
     if (player_init.current_xp < xpNeeded) return;
 
+	// Consume XP and increase level/skill points
     player_init.current_xp -= xpNeeded;
     player_init.player_level++;
     player_init.skill_point++;
 
+    // Open upgrade menu on level up
     if (player_init.player_level < MENU_LEVEL_CAP)
         player_init.menu_open = true;
 
@@ -463,7 +480,7 @@ void level_up(float xpNeeded) {
 // INPUT HANDLING
 // =============================================================================
 
-// Handle mouse clicks on the upgrade menu
+// ~ Brief: Handle mouse clicks on the upgrade menu
 void handle_menu_input(float camX, float camY) {
     if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
 
@@ -473,12 +490,15 @@ void handle_menu_input(float camX, float camY) {
         return;
     }
 
+	// Get mouse position in screen coordinates, then convert to world coordinates relative to the camera
     s32 screenX, screenY;
     AEInputGetCursorPosition(&screenX, &screenY);
 
     float mouseX = (float)screenX - (AEGfxGetWindowWidth() / 2.0f);
     float mouseY = (AEGfxGetWindowHeight() / 2.0f) - (float)screenY;
 
+	// Check each upgrade row for a click on the confirm ( + ) icon, and if valid, 
+    // apply the upgrade and consume a skill point
     for (int i = 0; i < NUM_STATS; ++i) {
         float btnX = MENU_OFFSET_MIDDLE;
         float btnY = MENU_ROW_START_Y - (i * MENU_ROW_SPACING_Y);
@@ -486,6 +506,7 @@ void handle_menu_input(float camX, float camY) {
         bool hovered = (mouseX >= btnX - MENU_CLICK_HALF && mouseX <= btnX + MENU_CLICK_HALF &&
             mouseY >= btnY - MENU_CLICK_HALF && mouseY <= btnY + MENU_CLICK_HALF);
 
+		// If they clicked the confirm icon for this stat, and it's not already maxed out, apply the upgrade
         if (hovered && player_init.upgradeLevels[i] < MAX_UPGRADE_LEVEL) {
             float oldMax = calculate_max_stats(STAT_HP);
             player_init.upgradeLevels[i]++;
@@ -498,7 +519,7 @@ void handle_menu_input(float camX, float camY) {
     }
 }
 
-// Debug / cheat key inputs
+// ~ Brief: Debug / cheat key inputs
 void debug_inputs(float xpNeeded) {
     if (!cheatsOn) return;
 
@@ -513,6 +534,7 @@ void debug_inputs(float xpNeeded) {
 // LOAD / FREE
 // =============================================================================
 
+/// ~ Brief: Load meshes and textures needed for the HUD, upgrade menu, and debug overlay.
 void LoadDebug1() {
     // Solid-colour meshes
     pMeshBlack = CreateColorMesh(0xFF000000);
@@ -539,6 +561,7 @@ void LoadDebug1() {
     pIconConfirm = AEGfxTextureLoad("Assets/plus.png");
 }
 
+// ~ Brief: Free meshes and textures used by the HUD, upgrade menu, and debug overlay to prevent memory leaks.
 void FreeDebug1() {
     // Solid-colour meshes
     AEGfxVertexList* meshes[] = { pMeshBlack, pMeshWhite, pMeshGreen, pMeshRed, pMeshYellow };
@@ -563,14 +586,19 @@ void FreeDebug1() {
 // UPDATE
 // =============================================================================
 
+// ~ Brief: Handle player input for the upgrade menu and debug cheats, and check for 
+//          level-up conditions to update player stats accordingly.
 void UpdateDebug1() {
+	// Get camera position for converting screen coordinates to world coordinates in input handling
     float camX, camY;
     AEGfxGetCamPosition(&camX, &camY);
 
+	// Calculate XP needed for next level using the formula: xp_needed = XP_BASE + level^XP_EXPONENT * XP_MULTIPLIER
     float xpNeeded = XP_BASE + (powf((float)player_init.player_level, XP_EXPONENT) * XP_MULTIPLIER);
 
     level_up(xpNeeded);
 
+	// If the upgrade menu is open, handle menu input. Otherwise, check for debug cheat inputs.
     if (player_init.menu_open)
         handle_menu_input(camX, camY);
     else
@@ -581,6 +609,8 @@ void UpdateDebug1() {
 // DRAW
 // =============================================================================
 
+// ~ Brief: Draw the player HUD (HP and XP bars), shoot-cooldown bar, enemy health bars, 
+//          floating XP popups, upgrade menu, and debug cheat overlay.
 void DrawDebug1() {
     float camX, camY;
     AEGfxGetCamPosition(&camX, &camY);
@@ -651,7 +681,7 @@ void DrawDebug1() {
                 STATS_TEXT_SCALE, 1.0f, 1.0f, 1.0f, 1.0f);
         }
 
-        // Prompt
+		// Prompt text
         const char* prompt = (player_init.skill_point > 0) ? "CLICK + TO SPEND SKILL POINT!" : "CLICK ANYWHERE TO CLOSE!";
         float       promptX = (player_init.skill_point > 0) ? -0.28f : -0.23f;
         AEGfxPrint(boldPixels, prompt, promptX, TEXT_PROMPT_Y, TEXT_SCALE_LABEL, 1.0f, 1.0f, 1.0f, 1.0f);

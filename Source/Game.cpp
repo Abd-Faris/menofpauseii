@@ -202,6 +202,7 @@ void LoadGame() {
     LoadBullets();
     LoadEnemies();
     LoadBoss();
+    LoadResults();
     Animations_Load();
     PauseScreen::LoadPause();
 	World::Load_World();
@@ -288,114 +289,74 @@ void InitializeGame() {
 // UPDATE GAME
 // ===========================================================================
 void UpdateGame() {
-	float deltaTime = (float)AEFrameRateControllerGetFrameTime();
-	
-    // Update Xp and levels
+    float deltaTime = (float)AEFrameRateControllerGetFrameTime();
     UpdateDebug1();
 
-
     if (!player_init.menu_open) {
-        // Update Wave Logic
-            PauseScreen::UpdatePause();
-           
+        PauseScreen::UpdatePause();
+
         if (!player_init.menu_open && !PauseScreen::isPaused) {
 
-            // Update Waves
+            // 1. Basic Movement & Combat Updates
             UpdateWaveSpawning(deltaTime, player);
-
             waveActiveTimer += deltaTime;
-            // Update Animations
             Animations_Update(deltaTime);
-
-            //key 3 back forth
             DualBack(player);
-
-            // --- KEY '2': TOGGLE BIG CANNON ---
             drawBigCannon(player);
-
-            // --- KEY '1': TOGGLE UPGRADE --
             drawBigTank(player);
-
-            // 1. Move Player
             movePlayer(player, deltaTime);
-
-            // 2. Rotate Player
             rotatePlayer(player);
-
-            // 3. Shooting (UPDATED FOR MULTI-BARREL)
             ShootBullet(player, deltaTime);
-
             updateOrbit(player, deltaTime);
-
-            // 4. Move Bullets
             updateBullets(player, deltaTime);
-
             updateSmoke(deltaTime);
-
-        // 5. WAVE MANAGEMENT (Final Boss & Infinite Mode Logic)
-        // =========================================================
-            if (GS_next == GS_GAME && IsWaveCleared() && waveActiveTimer > 2.0f) {
-
-                // Check if the wave we JUST cleared was the Final Boss
-                bool justBeatFinalBoss = (currentWave == (numofBosses * 5));
-
-                // Increase the wave counter
-                currentWave++;
-
-                // Only trigger Victory if it was the final boss AND we haven't won yet
-                if (justBeatFinalBoss && !gameWon) {
-                    gameWon = true;
-                    GS_next = GS_RESULTS;
-                }
-                else {
-                    // Normal waves, early bosses, or infinite mode -> Card Shop
-                    GS_next = GS_CARD_SHOP;
-                }
-            }
-
-            // =========================================================
-            // FOR DEBUGGING: Skip wave with 8
-            // =========================================================
-            if (cheatsOn && GS_next == GS_GAME && AEInputCheckTriggered(AEVK_8)) {
-
-                // Check if we are currently skipping the Final Boss
-                bool skippingFinalBoss = (currentWave == (numofBosses * 5));
-
-                skipWave(player); // Note: skipWave does currentWave++ inside it!
-
-                if (skippingFinalBoss && !gameWon) {
-                    gameWon = true;
-                    GS_next = GS_RESULTS;
-                }
-                else {
-                    GS_next = GS_CARD_SHOP;
-                }
-            }
-
-            if (playerFlashTimer > 0.0f) {
-                playerFlashTimer -= deltaTime;
-            }
-
-            // 6. Enemy Physics
             updateEnemyPhysics(player, deltaTime);
-
-            // 7. Enemy Bullets
             updateEnemyBullets(deltaTime);
-
-            // 8. Boss Updates
             UpdateBossPhysics(currentboss, player, deltaTime);
             BossCollision(currentboss, player, orbitActive, orbitPosX, orbitPosY);
             updateMinionPhysics(player, deltaTime);
 
+            if (playerFlashTimer > 0.0f) playerFlashTimer -= deltaTime;
+
+            // 2. LOSS CONDITION
             if (static_cast<int>(player_init.current_hp) <= 0) {
                 gameWon = false;
-                GS_next = GS_RESULTS;
+                GS_next = GS_RESULTS; // Exit to Results state
+                return;
             }
 
+            // 3. WAVE / WIN MANAGEMENT
+            if (GS_next == GS_GAME && IsWaveCleared() && waveActiveTimer > 2.0f) {
+                bool isFinalBoss = (currentWave == (numofBosses * 5));
+
+                if (isFinalBoss) {
+                    gameWon = true;
+                    GS_next = GS_RESULTS; // Exit to Results state
+                }
+                else {
+                    currentWave++;
+                    GS_next = GS_CARD_SHOP; // Transition to Shop
+                }
+                return;
+            }
+
+            // 4. DEBUG: Skip Wave
+            if (cheatsOn && AEInputCheckTriggered(AEVK_8)) {
+                bool isFinalBoss = (currentWave == (numofBosses * 5));
+                skipWave(player);
+                if (isFinalBoss) {
+                    gameWon = true;
+                    GS_next = GS_RESULTS;
+                }
+                else {
+                    GS_next = GS_CARD_SHOP;
+                }
+                return;
+            }
         }
-        if (!PauseScreen::isPaused) {
-            circlerectcollision();
-        }
+
+        if (!PauseScreen::isPaused) circlerectcollision();
+
         AEGfxSetCamPosition(player.pos_x, player.pos_y);
     }
 }
@@ -407,12 +368,8 @@ void UpdateGame() {
 void DrawGame() {
     if (MeshRect == nullptr || MeshCircle == nullptr) return;
 
-    
-
     AEGfxSetBackgroundColor(0.2f, 0.2f, 0.2f);
     AEGfxSetCamPosition(player.pos_x, player.pos_y);
-
-    
 
     // -- Draw World --
     World::Draw_World();
@@ -585,6 +542,7 @@ void FreeGame() {
     FreeBoss();
     FreeEnemies();
     FreeBullets();
+    FreeResults();
     Animations_Free();
     PauseScreen::FreePause();
 	World::Free_World();
