@@ -49,6 +49,7 @@
 #include "MainMenu.h"         // Primary navigation hub
 #include "LevelSelect.h"      // Level select screen
 #include "Settings.h"         // Audio and display configuration
+#include "Controls.h"		  // Controls description
 #include "Tutorial.h"         // Instructional overlay/state
 #include "Game.h"             // Main gameplay loop
 #include "Pause.h"            // Pause menu

@@ -17,7 +17,7 @@
 		std::vector<GfxButton> mainMenuButtons{
 			{{-400, -200}, {300, 100}, nullptr, GS_LEVEL_SELECT},
 			{{0, -200}, {300, 100}, nullptr, GS_CREDITS},
-			{{400, -200}, {300, 100}, nullptr, GS_MAIN_MENU},
+			{{400, -200}, {300, 100}, nullptr, GS_CONTROLS},
 			{{-200, -350}, {300, 100}, nullptr, GS_SETTINGS},
 			{{200, -350}, {300, 100}, nullptr, -1}
 		};

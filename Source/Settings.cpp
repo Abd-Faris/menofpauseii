@@ -4,6 +4,7 @@ float sfxVolume{ 1.0f };
 float bgmVolume{ 1.0f };
 
 namespace {
+    // mesh pointers
     AEGfxVertexList* rectMesh = nullptr;
     AEGfxVertexList* pBgMesh = nullptr;
     AEGfxVertexList* pBtnMesh = nullptr;
@@ -12,7 +13,7 @@ namespace {
     AEGfxTexture* pBtnNormalTex = nullptr;
     AEGfxTexture* pBtnHoverTex = nullptr;
 
-    // Slider track dimensions
+    // slider track dimensions (for volume control)
     constexpr float TRACK_W = 400.f;
     constexpr float TRACK_H = 20.f;
     constexpr float THUMB_W = 30.f;
@@ -22,10 +23,9 @@ namespace {
     constexpr float BGM_Y = 0.f;     
     constexpr float TRACK_X = -200.f; // left edge anchor
 
+    // booleans
     bool draggingSFX{ false };
     bool draggingBGM{ false };
-
-   
 
     float volumeToThumbX(float vol) {
         return TRACK_X + vol * TRACK_W;
@@ -38,6 +38,7 @@ namespace {
         return t;
     }
 
+    // slider drwaing
     void drawSlider(float centreY, float volume, AEVec2& mousepos) {
         // --- track ---
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
@@ -78,14 +79,18 @@ namespace {
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     }
 
+    // graphics on buttons
     void drawTexturedButton(GfxButton& btn, AEVec2& mousepos) {
         bool hovered = Comp::collisionPointRect(mousepos, btn.pos, btn.size);
+        
+        // AE Settings
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
         AEGfxTextureSet(hovered ? pBtnHoverTex : pBtnNormalTex, 0, 0);
         AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
         AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
         AEGfxSetBlendMode(AE_GFX_BM_BLEND);
         AEGfxSetTransparency(1.f);
+        // anon scope since we wanna trash size, transform, and final later lol
         {
             AEMtx33 s, t, f;
             AEMtx33Scale(&s, btn.size.x, btn.size.y);
@@ -97,7 +102,7 @@ namespace {
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     }
 
-
+    // texts
     std::vector<GfxButton> settingsButtons{
         {{0, -150}, {300, 100}, nullptr, -10},         // Fullscreen Button
         {{0, -280}, {300, 100}, nullptr, GS_MAIN_MENU} // Back Button
@@ -108,6 +113,7 @@ namespace {
         {"Back",            1.0f, 0, 0, 0, 255, {0,   -280}},
         {"SFX",             1.0f, 0, 0, 0, 255, {-320, 150}},
         {"BGM",             1.0f, 0, 0, 0, 255, {-320,  0}},
+        {"Volume Controls", 1.0f, 0, 0, 0, 255, {0,  300}},
     };
 
     void handleButton(int id) {
