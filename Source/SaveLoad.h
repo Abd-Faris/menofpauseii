@@ -1,6 +1,7 @@
 #pragma once
 #include "MasterHeader.h"
 
+extern bool gamecurrrun;
 
 struct SaveData {
     int   currentWave = 1;

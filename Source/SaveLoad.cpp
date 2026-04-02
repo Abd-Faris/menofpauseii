@@ -2,6 +2,7 @@
 #include <fstream>
 #include <cstdio>
 
+bool gamecurrrun = false;
 // Magic number to verify file isn't corrupt
 static constexpr int SAVE_MAGIC = 0x5441424B; // "TABK"
 static constexpr int SAVE_VERSION = 1;           // bump this if SaveData changes
@@ -28,7 +29,7 @@ static void ReadStringVector(std::ifstream& file, std::vector<std::string>& vec)
     }
 }
 bool SaveGame(const SaveData& data, const char* filepath) {
-    std::ofstream file(filepath);  // no std::ios::binary
+    std::ofstream file(filepath);
     if (!file.is_open()) {
         OutputDebugStringA("SAVE FAILED: could not open file\n");
         return false;
@@ -40,15 +41,17 @@ bool SaveGame(const SaveData& data, const char* filepath) {
     file << data.player_level << "\n";
     file << data.lastGameState << "\n";
 
-    // Write card pools — count first then each ID
+    file << "[SHOP]\n";
     file << data.shopCardIDs.size() << "\n";
     for (const auto& id : data.shopCardIDs)
         file << id << "\n";
 
+    file << "[ACTIVE]\n";
     file << data.activeCardIDs.size() << "\n";
     for (const auto& id : data.activeCardIDs)
         file << id << "\n";
 
+    file << "[INVENTORY]\n";
     file << data.inventoryCardIDs.size() << "\n";
     for (const auto& id : data.inventoryCardIDs)
         file << id << "\n";
@@ -63,7 +66,7 @@ bool SaveGame(const SaveData& data, const char* filepath) {
 }
 
 bool LoadGame(SaveData& data, const char* filepath) {
-    std::ifstream file(filepath); // no std::ios::binary
+    std::ifstream file(filepath);
     if (!file.is_open()) return false;
 
     file >> data.currentWave;
@@ -72,11 +75,12 @@ bool LoadGame(SaveData& data, const char* filepath) {
     file >> data.player_level;
     file >> data.lastGameState;
 
-    // Read card pools
     auto readStringVector = [&](std::vector<std::string>& vec) {
+        std::string label;
+        file >> label;      // consume [SHOP] / [ACTIVE] / [INVENTORY]
         int count = 0;
         file >> count;
-        file.ignore(); // consume newline after count
+        file.ignore();      // consume newline after count
         vec.resize(count);
         for (auto& id : vec)
             std::getline(file, id);

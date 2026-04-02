@@ -189,11 +189,11 @@ namespace PauseScreen {
             for (GfxButton& btn : confirmButtons) {
                 if (Comp::collisionPointRect(mousepos, btn.pos, btn.size)) {
                     if (btn.nextGS == 3) {
-                        SaveCurrentProgress(GS_GAME);
+                        SaveCurrentProgress(GS_current);
                         // "Yes" Clicked -> Do the actual quitting
                         isPaused = false;
                         isConfirmingQuit = false; // Reset for next time
-
+                        gamecurrrun = false;
                         reset_game();
                         Cards::resetCards();
                         resetTutorial();

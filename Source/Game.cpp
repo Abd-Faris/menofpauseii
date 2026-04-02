@@ -236,7 +236,7 @@ void InitializeGame() {
 
     // Initialize Wave
     SaveData data;
-    if (::LoadGame(data)) {
+    if (::LoadGame(data) && gamecurrrun == false) {
         currentWave = data.currentWave;
         player_init.current_hp = data.current_hp;
         player_init.current_xp = data.current_xp;
@@ -266,11 +266,10 @@ void InitializeGame() {
         GenerateWave(currentWave, player);
 
         std::cout << "Loaded saves\n";
+
+        gamecurrrun = true;
     }
     else {
-        player.scale = GameConfig::Tank::SCALE;
-        player.barrelCount = 1;
-        currentWave = 1;
         GenerateWave(currentWave, player);
         std::cout << "New Run\n";
     }
@@ -568,7 +567,7 @@ void DrawGame() {
 }
 
 void FreeGame() {
-    SaveCurrentProgress(GS_GAME);
+    
 
     AEGfxSetCamPosition(0.0f, 0.0f);
     if (MeshRect) { AEGfxMeshFree(MeshRect);     MeshRect = nullptr; }
