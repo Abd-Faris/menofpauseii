@@ -245,12 +245,14 @@ void InitializeCardShop() {
 	inventoryCards.reserve(15); // max cards allowed
 
 	// initializes shop cards
-	if (gamecurrrun == false)initCardShop(shopCards);
+	if (shopCards.empty())initCardShop(shopCards);
 	computeCardHomePos();
 	buyable_left = num_buyable;
 	rolls_left = num_rolls;
+	Cards::computeCardEffects();
 
 	SFX::playBGM();
+	gamecurrrun == false;
 }
 
 namespace { // functions for UpdateCardShop()

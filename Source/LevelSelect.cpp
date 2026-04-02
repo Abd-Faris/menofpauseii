@@ -1,200 +1,190 @@
 #include "MasterHeader.h"
 
-// Externs
 bool tutorialOn{ false };
 bool cheatsOn{ false };
 
 namespace {
-	// declares AE objects
-	AEGfxVertexList* rectMesh = nullptr;
-	AEGfxVertexList* pBgMesh = nullptr;
-	AEGfxVertexList* pBtnMesh = nullptr;
-	AEGfxTexture* pBgTex = nullptr;
-	AEGfxTexture* pBtnNormalTex = nullptr;
-	AEGfxTexture* pBtnHoverTex = nullptr;
-	AEGfxTexture* pBgExitTex = nullptr;
+    AEGfxVertexList* rectMesh = nullptr;
+    AEGfxVertexList* pBgMesh = nullptr;
+    AEGfxVertexList* pBtnMesh = nullptr;
+    AEGfxTexture* pBgTex = nullptr;
+    AEGfxTexture* pBtnNormalTex = nullptr;
+    AEGfxTexture* pBtnHoverTex = nullptr;
+    AEGfxTexture* pBgExitTex = nullptr;
 
-	// exiting game app boolean (to display confirmation screen)
-	bool exiting{};
+    bool hasSave = false;
 
-	// init main menu buttons
-	std::vector<GfxButton> mainMenuButtons{
-		{{0, 50}, {300, 100}, nullptr, GS_GAME},
-		{{-200, -100}, {300, 100}, nullptr, -1},
-		{{200, -100}, {300, 100}, nullptr, -2},
-		{{0, -250}, {300, 100}, nullptr, GS_MAIN_MENU}
-	};
-	// init main menu texts
-	std::vector<GfxText> mainMenuTexts{
-		{"START",			1.f, 0, 0, 0, 255, {0, 50}},
-		{"Tutorial: OFF",	.5f, 0, 0, 0, 255, {-200, -100}},
-		{"Cheats: OFF",		.5f, 0, 0, 0, 255, {200,-100}},
-		{"Back",			1.f, 0, 0, 0, 255, {0,-250}}
-	};
+    // Main buttons — Continue only shown if save exists
+    std::vector<GfxButton> mainMenuButtons{
+        {{0,   -50}, {300, 100}, nullptr, -3},  // ID -3 = New Game
+        {{0,    50}, {300, 100}, nullptr, -4},  // ID -4 = Continue (greyed out if no save)
+        {{-200,-200}, {300, 100}, nullptr, -1}, // ID -1 = Toggle Tutorial
+        {{200, -200}, {300, 100}, nullptr, -2}, // ID -2 = Toggle Cheats
+        {{0,  -350}, {300, 100}, nullptr, GS_MAIN_MENU} // Back
+    };
 
-	// draws a textured button, swapping to hover texture if mouse is over it
-	void drawTexturedButton(GfxButton& btn, AEVec2& mousepos) {
-		bool hovered = Comp::collisionPointRect(mousepos, btn.pos, btn.size);
+    std::vector<GfxText> mainMenuTexts{
+        {"New Game",      0.67f,  0, 0, 0, 255, {0,    -50}},
+        {"Continue",      0.67f,  0, 0, 0, 255, {0,     50}},
+        {"Tutorial: OFF", 0.5f, 0, 0, 0, 255, {-200, -200}},
+        {"Cheats: OFF",   0.5f, 0, 0, 0, 255, {200,  -200}},
+        {"Back",          1.f,  0, 0, 0, 255, {0,   -350}},
+    };
 
-		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-		AEGfxTextureSet(hovered ? pBtnHoverTex : pBtnNormalTex, 0, 0);
-		AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
-		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
-		AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-		AEGfxSetTransparency(1.f);
+    void drawTexturedButton(GfxButton& btn, AEVec2& mousepos, bool greyed = false) {
+        bool hovered = Comp::collisionPointRect(mousepos, btn.pos, btn.size);
 
-		AEMtx33 scale, trans, final;
-		AEMtx33Scale(&scale, btn.size.x, btn.size.y);
-		AEMtx33Trans(&trans, btn.pos.x, btn.pos.y);
-		AEMtx33Concat(&final, &trans, &scale);
-		AEGfxSetTransform(final.m);
-		AEGfxMeshDraw(pBtnMesh, AE_GFX_MDM_TRIANGLES);
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        AEGfxTextureSet(hovered ? pBtnHoverTex : pBtnNormalTex, 0, 0);
+        AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+        AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+        AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+        AEGfxSetTransparency(1.f);
 
-		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-	}
+        AEMtx33 scale, trans, final;
+        AEMtx33Scale(&scale, btn.size.x, btn.size.y);
+        AEMtx33Trans(&trans, btn.pos.x, btn.pos.y);
+        AEMtx33Concat(&final, &trans, &scale);
+        AEGfxSetTransform(final.m);
+        AEGfxMeshDraw(pBtnMesh, AE_GFX_MDM_TRIANGLES);
 
-	// prints main menu UI
-	void printMainMenuUI(AEVec2& mousepos) {
-		for (GfxButton& button : mainMenuButtons) {
-			drawTexturedButton(button, mousepos);
-		}
-		for (GfxText& text : mainMenuTexts) {
-			Gfx::printText(text, boldPixels);
-		}
-	}
+        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    }
 
-	void exitConfirmation(int id) {
-		if (id == -1) {
-			tutorialOn = !tutorialOn;
-			// update button text to reflect state
-			mainMenuTexts[1].text = tutorialOn ? "Tutorial: ON" : "Tutorial: OFF";
-		}
-		else if (id == -2) {
-			cheatsOn = !cheatsOn;
-			// update button text to reflect state
-			mainMenuTexts[2].text = cheatsOn ? "Cheats: ON" : "Cheats: OFF";
-		}
-	}
+    void printMainMenuUI(AEVec2& mousepos) {
+        for (int i = 0; i < (int)mainMenuButtons.size(); i++) {
+            // Skip Continue button entirely if no save
+            if (mainMenuButtons[i].nextGS == -4 && !hasSave) continue;
 
-	// checks if button is clicked and changes to corresponding game state
-	void clickToNextState() {
-		// skip if left click not triggered
-		if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
-		// get cursor position
-		AEVec2 mousepos{};
-		Comp::getCursorPos(mousepos);
+            drawTexturedButton(mainMenuButtons[i], mousepos);
+        }
+        for (int i = 0; i < (int)mainMenuTexts.size(); i++) {
+            // Skip Continue text entirely if no save
+            if (i == 1 && !hasSave) continue;
 
-		// for each button, check collision
-		for (GfxButton& btn : mainMenuButtons) {
+            Gfx::printText(mainMenuTexts[i], boldPixels);
+        }
+    }
 
-			// if not colliding, continue
-			if (!Comp::collisionPointRect(mousepos, btn.pos, btn.size)) continue;
+    void handleButton(int id) {
+        switch (id) {
+        case -1: // Toggle Tutorial
+            tutorialOn = !tutorialOn;
+            mainMenuTexts[2].text = tutorialOn ? "Tutorial: ON" : "Tutorial: OFF";
+            break;
 
-			// if less than 0, do non-gamestate logic
-			if (btn.nextGS < 0) {
-				exitConfirmation(btn.nextGS);
-				break;
-			}
-			// if collide, set next GS to button next GS, break loop
-			GS_next = btn.nextGS;
-			break;
-		}
-		return;
-	}
+        case -2: // Toggle Cheats
+            cheatsOn = !cheatsOn;
+            mainMenuTexts[3].text = cheatsOn ? "Cheats: ON" : "Cheats: OFF";
+            break;
+
+        case -3: // New Game — delete save and start fresh
+            DeleteSave();
+            hasSave = false;
+            GS_next = GS_GAME;
+            break;
+
+        case -4: // Continue — only if save exists
+            if (hasSave)
+                GS_next = GS_GAME;
+            break;
+        }
+    }
+
+    void clickToNextState() {
+        if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
+
+        AEVec2 mousepos{};
+        Comp::getCursorPos(mousepos);
+
+        for (GfxButton& btn : mainMenuButtons) {
+            if (!Comp::collisionPointRect(mousepos, btn.pos, btn.size)) continue;
+
+            if (btn.nextGS < 0) {
+                handleButton(btn.nextGS);
+                break;
+            }
+            GS_next = btn.nextGS;
+            break;
+        }
+    }
 }
 
 void LoadLevelSelect() {
-	// load textures
-	pBgTex = AEGfxTextureLoad("./Assets/menu.png");
-	pBtnNormalTex = AEGfxTextureLoad("./Assets/mainmenubutton1.png");
-	pBtnHoverTex = AEGfxTextureLoad("./Assets/mainmenubutton2.png");
-	pBgExitTex = AEGfxTextureLoad("./Assets/gameexit.png");
+    pBgTex = AEGfxTextureLoad("./Assets/menu.png");
+    pBtnNormalTex = AEGfxTextureLoad("./Assets/mainmenubutton1.png");
+    pBtnHoverTex = AEGfxTextureLoad("./Assets/mainmenubutton2.png");
+    pBgExitTex = AEGfxTextureLoad("./Assets/gameexit.png");
 
-	// UV mapped mesh for background
-	AEGfxMeshStart();
-	AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
-		0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
-		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-	AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
-		0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
-		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-	pBgMesh = AEGfxMeshEnd();
+    // Background mesh
+    AEGfxMeshStart();
+    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
+        0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+    AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+        0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
+        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+    pBgMesh = AEGfxMeshEnd();
 
-	// UV mapped mesh for buttons
-	AEGfxMeshStart();
-	AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
-		0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
-		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-	AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
-		0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
-		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-	pBtnMesh = AEGfxMeshEnd();
+    // Button mesh
+    AEGfxMeshStart();
+    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
+        0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+    AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+        0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
+        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+    pBtnMesh = AEGfxMeshEnd();
 
-	// creates rect mesh
-	rectMesh = Gfx::createRectMesh();
+    rectMesh = Gfx::createRectMesh();
 
-	// clears cards from game session (if any)
-	Cards::resetCards();
+    Cards::resetCards();
 }
 
 void InitializeLevelSelect() {
-	// Inits exiting boolean
-	exiting = false;
+    // Check for save file every time this screen is entered
+    hasSave = SaveExists();
 
-	// update button text based on current gloabl state
-	mainMenuTexts[1].text = tutorialOn ? "Tutorial: ON" : "Tutorial: OFF";
+    mainMenuTexts[2].text = tutorialOn ? "Tutorial: ON" : "Tutorial: OFF";
+    mainMenuTexts[3].text = cheatsOn ? "Cheats: ON" : "Cheats: OFF";
 
-	// update button text to reflect state
-	mainMenuTexts[2].text = cheatsOn ? "Cheats: ON" : "Cheats: OFF";
-
-	// Inits button meshes
-	for (GfxButton& button : mainMenuButtons) {
-		button.mesh = rectMesh;
-	}
+    for (GfxButton& button : mainMenuButtons)
+        button.mesh = rectMesh;
 }
 
 void UpdateLevelSelect() {
-	// check for change in game state
-	clickToNextState();
+    clickToNextState();
 }
 
 void DrawLevelSelect() {
-	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
-	AEGfxSetTransparency(1.f);
+    // Background
+    AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+    AEGfxTextureSet(pBgTex, 0, 0);
+    AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+    AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    AEGfxSetTransparency(1.f);
+    AEMtx33 scale, trans, final;
+    AEMtx33Scale(&scale, (float)AEGfxGetWindowWidth(), (float)AEGfxGetWindowHeight());
+    AEMtx33Trans(&trans, 0.f, 0.f);
+    AEMtx33Concat(&final, &trans, &scale);
+    AEGfxSetTransform(final.m);
+    AEGfxMeshDraw(pBgMesh, AE_GFX_MDM_TRIANGLES);
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
-	// draw background texture
-	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-	AEGfxTextureSet(exiting ? pBgExitTex : pBgTex, 0, 0);
-	AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
-	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
-	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-	AEGfxSetTransparency(1.f);
-	AEMtx33 scale, trans, final;
-	AEMtx33Scale(&scale, (float)AEGfxGetWindowWidth(), (float)AEGfxGetWindowHeight());
-	AEMtx33Trans(&trans, 0.f, 0.f);
-	AEMtx33Concat(&final, &trans, &scale);
-	AEGfxSetTransform(final.m);
-	AEGfxMeshDraw(pBgMesh, AE_GFX_MDM_TRIANGLES);
-	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-
-	// get mouse position for hover detection
-	AEVec2 mousepos{};
-	Comp::getCursorPos(mousepos);
-	printMainMenuUI(mousepos);
+    AEVec2 mousepos{};
+    Comp::getCursorPos(mousepos);
+    printMainMenuUI(mousepos);
 }
 
-void FreeLevelSelect() {
-	//
-}
+void FreeLevelSelect() {}
 
 void UnloadLevelSelect() {
-
-	if (rectMesh) { AEGfxMeshFree(rectMesh); rectMesh = nullptr; }
-	if (pBgMesh) { AEGfxMeshFree(pBgMesh); pBgMesh = nullptr; }
-	if (pBtnMesh) { AEGfxMeshFree(pBtnMesh); pBtnMesh = nullptr; }
-	if (pBgTex) { AEGfxTextureUnload(pBgTex); pBgTex = nullptr; }
-	if (pBtnNormalTex) { AEGfxTextureUnload(pBtnNormalTex); pBtnNormalTex = nullptr; }
-	if (pBtnHoverTex) { AEGfxTextureUnload(pBtnHoverTex);  pBtnHoverTex = nullptr; }
-	if (pBgExitTex) { AEGfxTextureUnload(pBgExitTex); pBgExitTex = nullptr; }
+    if (rectMesh) { AEGfxMeshFree(rectMesh);              rectMesh = nullptr; }
+    if (pBgMesh) { AEGfxMeshFree(pBgMesh);               pBgMesh = nullptr; }
+    if (pBtnMesh) { AEGfxMeshFree(pBtnMesh);              pBtnMesh = nullptr; }
+    if (pBgTex) { AEGfxTextureUnload(pBgTex);           pBgTex = nullptr; }
+    if (pBtnNormalTex) { AEGfxTextureUnload(pBtnNormalTex);    pBtnNormalTex = nullptr; }
+    if (pBtnHoverTex) { AEGfxTextureUnload(pBtnHoverTex);     pBtnHoverTex = nullptr; }
+    if (pBgExitTex) { AEGfxTextureUnload(pBgExitTex);       pBgExitTex = nullptr; }
 }

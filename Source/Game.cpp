@@ -276,13 +276,14 @@ void InitializeGame() {
 
         std::cout << "Loaded saves\n";
 
-        gamecurrrun = true;
+       
     }
     else {
         GenerateWave(currentWave, player);
         std::cout << "New Run\n";
     }
     SFX::playBGM();
+    gamecurrrun = true;
 }
 
 // ===========================================================================

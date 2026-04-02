@@ -1,5 +1,15 @@
+// -----------------------------Gloomy's Revenge---------------------------- //
+// File:	Enemy.cpp
+// Authors:	[Men of Pause II]
+// Brief:	This file defines the creation and behaviours of enemies.
+// 
+// ------------------------------------------------------------------------- //
+
+// ------INCLUDE FILES------------------------------------------------------ //
+
 #include "MasterHeader.h"
 
+// ------GLOBAL VARIABLES & POOLS------------------------------------------- //
 std::array<Enemies, GameConfig::MAX_ENEMIES_COUNT> enemyPool;
 f64 enemySpawnTimer = 0;
 extern int currentWave;
@@ -10,7 +20,7 @@ AEGfxVertexList* pEnemyMesh = nullptr;
 AEGfxTexture* pEnemyBulletTex = nullptr;
 AEGfxVertexList* pEnemyBulletMesh = nullptr;
 
-//create an array of textures
+// ------TEXTURES FILES------------------------------------------- //
 const char* enemyTextures[4] = {
     "./Assets/smallbox.png",    // PASSIVE small
     "./Assets/bigbox.png",      // PASSIVE big
@@ -18,6 +28,8 @@ const char* enemyTextures[4] = {
     "./Assets/shooter.png"   // SHOOTER
 };
 
+// ------FUNCTIONS------------------------------------------- //
+// ~ Brief:	Loads enemy meshes and textures.
 void LoadEnemies() {
     for (int i = 0; i < 4; ++i) {
         pEnemyTex[i] = AEGfxTextureLoad(enemyTextures[i]);
@@ -45,6 +57,7 @@ void LoadEnemies() {
     pEnemyBulletMesh = AEGfxMeshEnd();
 }
 
+// ~ Brief:	Resets the enemies for new waves
 void ResetEnemy(Enemies* enemyToReset) {
     enemyToReset->alive = false;
     enemyToReset->pos.x = GameConfig::OFF_SCREEN_COORD;
@@ -53,6 +66,7 @@ void ResetEnemy(Enemies* enemyToReset) {
     enemyToReset->hp = 0;
 }
 
+// ~ Brief:	Spawns Passive Enemies (Boxes)
 void SpawnOneEnemy(bool isBigEnemy, shape player) {
     f32 mult = (1 + (currentWave / 5 * 0.5f));
     for (auto& newEnemy : enemyPool) {
@@ -98,6 +112,7 @@ void SpawnOneEnemy(bool isBigEnemy, shape player) {
     }
 }
 
+// ~ Brief: Spawns the Kamikaze enemies
 void SpawnAttackEnemy(shape player) {
     f32 mult = (1 + (currentWave / 5 * 0.5f));
     for (auto& newEnemy : enemyPool) {
@@ -143,6 +158,7 @@ void SpawnAttackEnemy(shape player) {
     }
 }
 
+// ~ Brief: Spawns the shooter enemies
 void SpawnShooterEnemy(shape player) {
     f32 mult = (1 + (currentWave / 5 * 0.5f));
     for (auto& newEnemy : enemyPool) {
@@ -189,33 +205,21 @@ void SpawnShooterEnemy(shape player) {
     }
 }
 
-void EnemySpawner(shape& player, float deltaTime) {
-    enemySpawnTimer += deltaTime;
-    if (enemySpawnTimer >= GameConfig::Enemy::SPAWN_INTERVAL) {
-        bool spawnBig = (AERandFloat() * 10.0f) < 4.0f;
-        SpawnOneEnemy(spawnBig, player);
-        if (player_init.player_level >= 5)
-        {
-            SpawnAttackEnemy(player);
-            SpawnShooterEnemy(player);
-        }
-        enemySpawnTimer = 0;
-    }
-}
-
+// ~ Brief:	Implements enemy physics
 void updateEnemyPhysics(shape& player, float deltaTime) {
-    f32 mult = (1 + (currentWave / 5 * 0.5f));
+    f32 mult = (1 + (currentWave / 5 * 0.5f)); // multiplier
 
-    for (auto& currentEnemy : enemyPool) {
-        if (!currentEnemy.alive) continue;
+    for (auto& currentEnemy : enemyPool) { // for entire enemy pool
+        if (!currentEnemy.alive) continue; // skip not active enemies
 
+        // --- KAMIKAZE LOGIC ---
         if (currentEnemy.enemtype == ATTACK) {
             AEVec2 PlayerPos = { player.pos_x, player.pos_y };
             AEVec2 EnemyPos = { currentEnemy.pos };
             AEVec2 dir = {};
             AEVec2Sub(&dir, &PlayerPos, &EnemyPos);
 
-            f32 hyp = sqrt(dir.x * dir.x + dir.y * dir.y);
+            f32 hyp = sqrt(dir.x * dir.x + dir.y * dir.y); // distance towards player
 
             if (hyp <= 600) {
                 currentEnemy.detect = true;
@@ -231,11 +235,12 @@ void updateEnemyPhysics(shape& player, float deltaTime) {
                     currentEnemy.rotation += angleDifference * 0.1f;
                 }
 
-                dir.x /= hyp;
+                dir.x /= hyp; // normalize to get direction to player
                 dir.y /= hyp;
 
-                f32 speedmult = (mult <= 3 ? mult : 3);
+                f32 speedmult = (mult <= 3 ? mult : 3); // speed cap of enemy
 
+                // move enemy with friction and based on delta time
                 currentEnemy.velocity.x += dir.x * 500 * speedmult * deltaTime;
                 currentEnemy.velocity.y += dir.y * 500 * speedmult * deltaTime;
                 currentEnemy.velocity.x *= GameConfig::Enemy::FRICTION;
@@ -300,6 +305,7 @@ void updateEnemyPhysics(shape& player, float deltaTime) {
             }
         }
 
+        // Push Logic
         AEVec2 separationForce = { 0, 0 };
         for (auto& otherEnemy : enemyPool) {
             if (&currentEnemy == &otherEnemy || !otherEnemy.alive) continue;
@@ -336,6 +342,7 @@ void updateEnemyPhysics(shape& player, float deltaTime) {
     }
 }
 
+// ~ Brief:	Implements enemy bullet physics
 void updateEnemyBullets(float deltaTime) {
     for (auto& eBullet : enemyBulletList) {
         if (!eBullet.isActive) continue;
@@ -352,7 +359,7 @@ void updateEnemyBullets(float deltaTime) {
         }
     }
 }
-
+// ~ Brief:	Implements indicators to show where the enemy is off screen
 void DrawEnemyIndicators(shape& player, AEGfxVertexList* MeshTriangle) {
     float screenW = (float)AEGfxGetWindowWidth() * 0.5f;
     float screenH = (float)AEGfxGetWindowHeight() * 0.5f;
@@ -420,6 +427,7 @@ void DrawEnemyIndicators(shape& player, AEGfxVertexList* MeshTriangle) {
     }
 }
 
+// ~Brief:	Frees enemies after use
 void FreeEnemies() {
     for (int i = 0; i < 4; ++i) {
         if (pEnemyTex[i]) { AEGfxTextureUnload(pEnemyTex[i]); pEnemyTex[i] = nullptr; }
