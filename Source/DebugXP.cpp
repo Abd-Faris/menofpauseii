@@ -1,5 +1,5 @@
 // -----------------------------Gloomy's Revenge---------------------------- //
-// File:    Debug XP.cpp
+// File:    DebugXP.cpp
 // Authors: [Men of Pause II]
 // Brief:   Player HUD, XP/level-up logic, upgrade menu, and debug cheats.
 // ------------------------------------------------------------------------- //
