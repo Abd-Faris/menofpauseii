@@ -39,6 +39,9 @@ bool SaveGame(const SaveData& data, const char* filepath) {
     file << data.current_hp << "\n";
     file << data.current_xp << "\n";
     file << data.player_level << "\n";
+    file << data.skill_point << "\n";
+    for (int i = 0; i < 5; i++)
+        file << data.upgradeLevels[i] << "\n";
     file << data.lastGameState << "\n";
 
     file << "[SHOP]\n";
@@ -73,6 +76,9 @@ bool LoadGame(SaveData& data, const char* filepath) {
     file >> data.current_hp;
     file >> data.current_xp;
     file >> data.player_level;
+    file >> data.skill_point;
+    for (int i = 0; i < 5; i++)
+        file >> data.upgradeLevels[i];
     file >> data.lastGameState;
 
     auto readStringVector = [&](std::vector<std::string>& vec) {
@@ -108,6 +114,9 @@ void SaveCurrentProgress(int gameState) {
     data.current_hp = player_init.current_hp;
     data.current_xp = player_init.current_xp;
     data.player_level = player_init.player_level;
+    data.skill_point = player_init.skill_point;
+    for (int i = 0; i < 5; i++)
+        data.upgradeLevels[i] = player_init.upgradeLevels[i];
     data.lastGameState = gameState;
 
     // Save each card pool as IDs
