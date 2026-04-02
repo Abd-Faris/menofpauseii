@@ -121,7 +121,6 @@ namespace {
     }
 
     bool isOverTrack(AEVec2& mousepos, float centreY) {
-        float thumbX = volumeToThumbX(0.f); // left edge
         return (mousepos.x >= TRACK_X - THUMB_W * 0.5f &&
             mousepos.x <= TRACK_X + TRACK_W + THUMB_W * 0.5f &&
             mousepos.y >= centreY - THUMB_H * 0.5f &&
