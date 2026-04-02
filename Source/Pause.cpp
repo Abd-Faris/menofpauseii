@@ -72,7 +72,7 @@ namespace PauseScreen {
         {"No",  1.f, 0, 0, 0, 255, { 100, -50}}
     };
 
-    GfxText ConfirmTxt = { "Are you sure?", 1.5f, 255, 140, 0, 255, {0, 50} };
+    GfxText ConfirmTxt = { "Are you sure?", 1.2f, 255, 140, 0, 255, {0, 120} };
 
     // ------PAUSE SYSTEM FUNCTIONS--------------------------------------------- //
 
@@ -190,11 +190,9 @@ namespace PauseScreen {
                 if (Comp::collisionPointRect(mousepos, btn.pos, btn.size)) {
                     if (btn.nextGS == 3) {
                         SaveCurrentProgress(GS_current);
-                        // "Yes" Clicked -> Do the actual quitting
                         isPaused = false;
                         isConfirmingQuit = false; // Reset for next time
                         gamecurrrun = false;
-                        reset_game();
                         Cards::resetCards();
                         resetTutorial();
                         tutorialOn = false;
