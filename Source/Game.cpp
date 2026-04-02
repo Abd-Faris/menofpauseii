@@ -32,43 +32,36 @@ void circlerectcollision() {
     for (auto& currentEnemy : enemyPool) {
         if (!currentEnemy.alive) continue;
 
-            float differenceX = player.pos_x - currentEnemy.pos.x;
-            float differenceY = player.pos_y - currentEnemy.pos.y;
-            float distanceSquared = (differenceX * differenceX) + (differenceY * differenceY);
+        // -- Player body vs enemy --
+        float bodyDiffX = player.pos_x - currentEnemy.pos.x;
+        float bodyDiffY = player.pos_y - currentEnemy.pos.y;
+        float bodyDistSq = (bodyDiffX * bodyDiffX) + (bodyDiffY * bodyDiffY);
+        float bodyColRadius = (currentEnemy.scale * GameConfig::Enemy::HITBOX_RATIO) + player.scale;
 
-            float collisionRadius = (currentEnemy.scale * GameConfig::Enemy::HITBOX_RATIO) + player.scale;
-            float currentdmg = calculate_max_stats(1);
-
-            if (distanceSquared < (collisionRadius * collisionRadius)) {
-                player_init.current_hp -= currentEnemy.hp / 3.0f;
-                currentEnemy.hp = 0;
-                TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale);
-                playerFlashTimer = 0.15f;
-            }
-
+        if (bodyDistSq < (bodyColRadius * bodyColRadius)) {
+            player_init.current_hp -= currentEnemy.hp / 3.0f;
+            currentEnemy.hp = 0;
+            TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale);
+            playerFlashTimer = 0.15f;
+        }
         else {
-            //check for collision along the barrel
+            // -- Player barrel vs enemy --
             float barrelLen = GameConfig::Tank::BARREL_LENGTH * (player.scale / GameConfig::Tank::SCALE);
             float cosA = cosf(player.currentAngle);
             float sinA = sinf(player.currentAngle);
-
-            //3 points on the barrel
             float checkpoints[3] = { 0.5f, 0.75f, 1.0f };
 
-            //check each point for collision
             for (int p = 0; p < 3; p++) {
-                //get worldposition of the checkpoint
                 float checkX = player.pos_x + (0.0f * cosA - (barrelLen * checkpoints[p]) * sinA);
                 float checkY = player.pos_y + (0.0f * sinA + (barrelLen * checkpoints[p]) * cosA);
-                //check distance from bullet to checkpoint
-                float diffX = currentEnemy.pos.x - checkX;
-                float diffY = currentEnemy.pos.y - checkY;
-                float distSq = (diffX * diffX) + (diffY * diffY);
+                float barrelDiffX = currentEnemy.pos.x - checkX;
+                float barrelDiffY = currentEnemy.pos.y - checkY;
+                float barrelDistSq = (barrelDiffX * barrelDiffX) + (barrelDiffY * barrelDiffY);
                 float enemyRadius = currentEnemy.scale * GameConfig::Enemy::HITBOX_RATIO;
-
                 float barrelWidth = 22.0f;
-                float collisionThreshold = (barrelWidth / 2.0f) + enemyRadius;
-                if (distSq < (collisionThreshold * collisionThreshold)) {
+                float barrelThreshold = (barrelWidth / 2.0f) + enemyRadius;
+
+                if (barrelDistSq < (barrelThreshold * barrelThreshold)) {
                     player_init.current_hp -= currentEnemy.hp / 3.0f;
                     currentEnemy.hp = 0;
                     TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale);
@@ -77,117 +70,113 @@ void circlerectcollision() {
                 }
             }
         }
+
+        // -- Orbit vs enemy --
         if (orbitActive) {
-            float diffX = orbitPosX - currentEnemy.pos.x;
-            float diffY = orbitPosY - currentEnemy.pos.y;
-            float distanceSquared = (diffX * diffX) + (diffY * diffY);
+            float orbitDiffX = orbitPosX - currentEnemy.pos.x;
+            float orbitDiffY = orbitPosY - currentEnemy.pos.y;
+            float orbitDistSq = (orbitDiffX * orbitDiffX) + (orbitDiffY * orbitDiffY);
+            float orbitSize = 20.0f;
+            float orbitRadius = (currentEnemy.scale * GameConfig::Enemy::HITBOX_RATIO) + orbitSize;
 
-            float orbitSize = 20.0f; // Radius of the ball
-            float collisionRadius = (currentEnemy.scale * GameConfig::Enemy::HITBOX_RATIO) + orbitSize;
-
-            if (distanceSquared < (collisionRadius * collisionRadius)) {
+            if (orbitDistSq < (orbitRadius * orbitRadius)) {
                 currentEnemy.hp = 0;
                 TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale);
             }
         }
+
+        // -- Player bullets vs enemy --
+        float currentdmg = calculate_max_stats(1);
         for (auto& boolet : bulletList) {
             if (!boolet.isActive) continue;
 
-            float differenceX = boolet.posX - currentEnemy.pos.x;
-            float differenceY = boolet.posY - currentEnemy.pos.y;
-            float distanceSquared = (differenceX * differenceX) + (differenceY * differenceY);
+            float bulletDiffX = boolet.posX - currentEnemy.pos.x;
+            float bulletDiffY = boolet.posY - currentEnemy.pos.y;
+            float bulletDistSq = (bulletDiffX * bulletDiffX) + (bulletDiffY * bulletDiffY);
+            float bulletRadius = (currentEnemy.scale * GameConfig::Enemy::HITBOX_RATIO) + boolet.size;
 
-            float collisionRadius = (currentEnemy.scale * GameConfig::Enemy::HITBOX_RATIO) + boolet.size;
-            float currentdmg = calculate_max_stats(1);
-
-            if (distanceSquared < (collisionRadius * collisionRadius)) {
+            if (bulletDistSq < (bulletRadius * bulletRadius)) {
                 TriggerBulletImpact(boolet.posX, boolet.posY, boolet.directionX, boolet.directionY);
-                currentEnemy.hp -= (int)(currentdmg*boolet.damagemul);
+                currentEnemy.hp -= (int)(currentdmg * boolet.damagemul);
                 boolet.isActive = false;
-                
-                if (currentEnemy.hp <= 0 && currentEnemy.alive) {
-					//triggers explosion animation at enemy position
+
+                if (currentEnemy.hp <= 0 && currentEnemy.alive)
                     TriggerExplosion(currentEnemy.pos.x, currentEnemy.pos.y, currentEnemy.scale);
-                }
             }
         }
+
+        // -- Enemy bullets vs player --
         for (auto& enBullet : enemyBulletList) {
             if (!enBullet.isActive) continue;
 
-            float differenceX = enBullet.posX - player.pos_x;
-            float differenceY = enBullet.posY - player.pos_y;
-            float distanceSquared = (differenceX * differenceX) + (differenceY * differenceY);
+            float enBulletDiffX = enBullet.posX - player.pos_x;
+            float enBulletDiffY = enBullet.posY - player.pos_y;
+            float enBulletDistSq = (enBulletDiffX * enBulletDiffX) + (enBulletDiffY * enBulletDiffY);
+            float enBulletRadius = player.scale + enBullet.size;
 
-            // Calculate collision radius (Player scale + bullet size)
-            float collisionRadius = player.scale + enBullet.size;
+            bool hit = (enBulletDistSq < (enBulletRadius * enBulletRadius));
 
-			bool hit = (distanceSquared < (collisionRadius * collisionRadius));
-            
             if (!hit) {
-                //check for collision along the barrel
-				float barrelLen = GameConfig::Tank::BARREL_LENGTH * (player.scale / GameConfig::Tank::SCALE); 
-				float cosA = cosf(player.currentAngle);
-				float sinA = sinf(player.currentAngle);
+                float barrelLen = GameConfig::Tank::BARREL_LENGTH * (player.scale / GameConfig::Tank::SCALE);
+                float cosA = cosf(player.currentAngle);
+                float sinA = sinf(player.currentAngle);
+                float checkpoints[3] = { 0.5f, 0.75f, 1.0f };
 
-                //3 points on the barrel
-				float checkpoints[3] = { 0.5f, 0.75f, 1.0f };
-
-				//check each point for collision
-				for (int p = 0; p < 3; p++) {
-					//get worldposition of the checkpoint
+                for (int p = 0; p < 3; p++) {
                     float checkX = player.pos_x + (0.0f * cosA - (barrelLen * checkpoints[p]) * sinA);
                     float checkY = player.pos_y + (0.0f * sinA + (barrelLen * checkpoints[p]) * cosA);
-					//check distance from bullet to checkpoint
-                    float diffX = enBullet.posX - checkX;
-                    float diffY = enBullet.posY - checkY;
-                    float distSq = (diffX * diffX) + (diffY * diffY);
+                    float ebDiffX = enBullet.posX - checkX;
+                    float ebDiffY = enBullet.posY - checkY;
+                    float ebDistSq = (ebDiffX * ebDiffX) + (ebDiffY * ebDiffY);
                     float checkRadius = enBullet.size;
-                    if (distSq < (checkRadius * checkRadius)) {
+
+                    if (ebDistSq < (checkRadius * checkRadius)) {
                         hit = true;
                         break;
                     }
                 }
             }
 
-            if (hit){
+            if (hit) {
                 TriggerBulletImpact(enBullet.posX, enBullet.posY, enBullet.directionX, enBullet.directionY);
-                player_init.current_hp -= 10; // player
-                enBullet.isActive = false;     // Destroy the enemy bullet
+                player_init.current_hp -= 10;
+                enBullet.isActive = false;
                 playerFlashTimer = 0.15f;
             }
         }
     }
 
+    // -- Minions --
     for (auto& minion : minionPool) {
         if (!minion.alive) continue;
 
-        // Player body collision
-        float dx = player.pos_x - minion.pos.x;
-        float dy = player.pos_y - minion.pos.y;
-        float distSq = (dx * dx) + (dy * dy);
-        float radius = (minion.scale * GameConfig::Enemy::HITBOX_RATIO) + player.scale;
-        if (distSq < radius * radius) {
+        float minionDiffX = player.pos_x - minion.pos.x;
+        float minionDiffY = player.pos_y - minion.pos.y;
+        float minionDistSq = (minionDiffX * minionDiffX) + (minionDiffY * minionDiffY);
+        float minionRadius = (minion.scale * GameConfig::Enemy::HITBOX_RATIO) + player.scale;
+
+        if (minionDistSq < minionRadius * minionRadius) {
             player_init.current_hp -= minion.hp / 3.0f;
             minion.hp = 0;
             TriggerExplosion(minion.pos.x, minion.pos.y, minion.scale);
             playerFlashTimer = 0.15f;
         }
 
-        // Bullet collision
+        float minionDmg = calculate_max_stats(1);
         for (auto& boolet : bulletList) {
             if (!boolet.isActive) continue;
-            float bdx = boolet.posX - minion.pos.x;
-            float bdy = boolet.posY - minion.pos.y;
-            float bdistSq = (bdx * bdx) + (bdy * bdy);
-            float bradius = (minion.scale * GameConfig::Enemy::HITBOX_RATIO) + boolet.size;
-            if (bdistSq < bradius * bradius) {
+
+            float mbDiffX = boolet.posX - minion.pos.x;
+            float mbDiffY = boolet.posY - minion.pos.y;
+            float mbDistSq = (mbDiffX * mbDiffX) + (mbDiffY * mbDiffY);
+            float mbRadius = (minion.scale * GameConfig::Enemy::HITBOX_RATIO) + boolet.size;
+
+            if (mbDistSq < mbRadius * mbRadius) {
                 TriggerBulletImpact(boolet.posX, boolet.posY, boolet.directionX, boolet.directionY);
-                float dmg = calculate_max_stats(1);
-                minion.hp -= (int)(dmg * boolet.damagemul);
+                minion.hp -= (int)(minionDmg * boolet.damagemul);
                 boolet.isActive = false;
-                if (minion.hp <= 0 && minion.alive) {
+                if (minion.hp <= 0 && minion.alive)
                     TriggerExplosion(minion.pos.x, minion.pos.y, minion.scale);
-                }
             }
         }
     }
@@ -283,6 +272,7 @@ void InitializeGame() {
     }
     SFX::playBGM();
     gamecurrrun = true;
+    Cards::computeCardEffects();
 }
 
 // ===========================================================================

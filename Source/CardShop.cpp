@@ -252,7 +252,7 @@ void InitializeCardShop() {
 	Cards::computeCardEffects();
 
 	SFX::playBGM();
-	gamecurrrun = false;
+	//gamecurrrun = false;
 }
 
 namespace { // functions for UpdateCardShop()
