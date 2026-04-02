@@ -30,6 +30,11 @@ void Initialise_System(_In_ HINSTANCE hInstance,
 	printf("Hello World\n");
 }
 
+void updateFullScreen() {
+	if (fullscreen) AESysSetFullScreen(1);
+	else if (!fullscreen) AESysSetFullScreen(0);
+}
+
 void Load_Global_Assets() {
 	// Load Cards from JSON
 	Cards::Load_Cards("../../Data/Cards.json");
@@ -84,13 +89,13 @@ namespace SFX {
 	void playBGM() {
 		switch (GS_current) {
 		case GS_MAIN_MENU:
-			AEAudioStopGroup(bgm); AEAudioPlay(mainbgm, bgm, 1.f, 1.f, -1); break;
+			AEAudioStopGroup(bgm); AEAudioPlay(mainbgm, bgm, bgmVolume, 1.f, -1); break;
 		case GS_GAME:
-			AEAudioStopGroup(bgm); AEAudioPlay(gamebgm, bgm, 2.f, 1.f, -1); break;
+			AEAudioStopGroup(bgm); AEAudioPlay(gamebgm, bgm, bgmVolume, 1.f, -1); break;
 		case GS_CARD_SHOP:
-			AEAudioStopGroup(bgm); AEAudioPlay(shopbgm, bgm, 2.f, 1.f, -1); break;
+			AEAudioStopGroup(bgm); AEAudioPlay(shopbgm, bgm, bgmVolume, 1.f, -1); break;
 		case GS_CREDITS:
-			AEAudioStopGroup(bgm); AEAudioPlay(credbgm, bgm, 2.f, 1.f, -1); break;
+			AEAudioStopGroup(bgm); AEAudioPlay(credbgm, bgm, bgmVolume, 1.f, -1); break;
 		default: break;
 		}
 	}

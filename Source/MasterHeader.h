@@ -33,6 +33,7 @@
 #include "DebugMenus.h"
 #include "LevelSelect.h"
 #include "Credits.h"
+#include "Settings.h"
 
 // Graphics & Animations
 #include "Animations.h"

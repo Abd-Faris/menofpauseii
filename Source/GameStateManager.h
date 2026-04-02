@@ -36,6 +36,7 @@ enum GS_STATES
 	GS_RESULTS,
 	GS_LEVEL_SELECT,
 	GS_CREDITS,
+	GS_SETTINGS,
 
 	// Debugging Game States
 	DEBUG1,

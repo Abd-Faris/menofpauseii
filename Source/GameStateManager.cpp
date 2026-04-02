@@ -30,6 +30,7 @@ std::vector<GSFunctions> gamestates{
 	{LoadResults, nullptr, UpdateResults, DrawResults, FreeResults, nullptr},
 	{LoadLevelSelect, InitializeLevelSelect, UpdateLevelSelect, DrawLevelSelect, FreeLevelSelect, UnloadLevelSelect},
 	{LoadCredits, InitializeCredits, UpdateCredits, DrawCredits, FreeCredits, UnloadCredits},
+	{LoadSettings, InitializeSettings, UpdateSettings, DrawSettings, FreeSettings, UnloadSettings},
 	// Debugging Game States
 	{LoadDebug1, nullptr, UpdateDebug1, DrawDebug1, FreeDebug1, nullptr},
 	{LoadCardShop, InitializeCardShop, UpdateCardShop, DrawCardShop, FreeCardShop, UnloadCardShop},

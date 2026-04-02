@@ -11,6 +11,8 @@ void Initialise_System(_In_ HINSTANCE hInstance,
 	_In_ LPWSTR    lpCmdLine,
 	_In_ int       nCmdShow);
 
+void updateFullScreen();
+
 void Load_Global_Assets();
 
 void Unload_Global_Assets();
