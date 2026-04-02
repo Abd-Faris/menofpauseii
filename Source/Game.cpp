@@ -206,7 +206,6 @@ void LoadGame() {
     Animations_Load();
     PauseScreen::LoadPause();
 	World::Load_World();
-    //!AEInputCheckCurr(AEVK_LBUTTON);
     
     // Create Meshes
     MeshCircle = Gfx::createCircleMesh(0xFFFFFFFF);
@@ -225,7 +224,7 @@ void InitializeGame() {
     player.pos_y = 0;
     player.currentAngle = 0;
     player.scale = GameConfig::Tank::SCALE;
-    player.barrelCount = 1; // Default to Single Barrel
+    player.barrelCount = 1; 
 
     bulletFireTimer = 0;
     enemySpawnTimer = 0;
