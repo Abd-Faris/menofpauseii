@@ -34,6 +34,8 @@ void InitializeCredits() {
 	for (int i = 0; i < CreditTexts.size(); i++) {
 		CreditTexts[i].pos = init[i];
 	}
+
+	SFX::playBGM();
 }
 void UpdateCredits() {
 	float deltaTime = (float)AEFrameRateControllerGetFrameTime();

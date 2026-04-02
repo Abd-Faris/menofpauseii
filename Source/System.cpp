@@ -56,6 +56,7 @@ namespace SFX {
 	AEAudio gamebgm{ nullptr };
 	AEAudio mainbgm{ nullptr };
 	AEAudio shopbgm{ nullptr };
+	AEAudio credbgm{ nullptr };
 	AEAudioGroup bgm{ nullptr };
 
 	void load() {
@@ -66,6 +67,7 @@ namespace SFX {
 		mainbgm = AEAudioLoadMusic("Assets/audio/bgm/main_bgm.mp3");
 		gamebgm = AEAudioLoadMusic("Assets/audio/bgm/game_bgm.mp3");
 		shopbgm = AEAudioLoadMusic("Assets/audio/bgm/shop_bgm.mp3");
+		credbgm = AEAudioLoadMusic("Assets/audio/bgm/cred_bgm.mp3");
 	}
 
 	void unload() {
@@ -76,6 +78,7 @@ namespace SFX {
 		AEAudioUnloadAudio(mainbgm);
 		AEAudioUnloadAudio(gamebgm);
 		AEAudioUnloadAudio(shopbgm);
+		AEAudioUnloadAudio(credbgm);
 	}
 
 	void playBGM() {
@@ -86,6 +89,8 @@ namespace SFX {
 			AEAudioStopGroup(bgm); AEAudioPlay(gamebgm, bgm, 2.f, 1.f, -1); break;
 		case GS_CARD_SHOP:
 			AEAudioStopGroup(bgm); AEAudioPlay(shopbgm, bgm, 2.f, 1.f, -1); break;
+		case GS_CREDITS:
+			AEAudioStopGroup(bgm); AEAudioPlay(credbgm, bgm, 2.f, 1.f, -1); break;
 		default: break;
 		}
 	}
