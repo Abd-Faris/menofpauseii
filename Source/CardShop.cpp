@@ -245,7 +245,7 @@ void InitializeCardShop() {
 	inventoryCards.reserve(15); // max cards allowed
 
 	// initializes shop cards
-	initCardShop(shopCards);
+	if (gamecurrrun == false)initCardShop(shopCards);
 	computeCardHomePos();
 	buyable_left = num_buyable;
 	rolls_left = num_rolls;
@@ -1066,7 +1066,8 @@ namespace Cards {
 		// iterate thru entire cardPool
 		for (int i{}; i < NUM_OF_RARITIES; i++) {
 			for (CardStats stat : cardPool[i]) {
-				if (stat.ID == search) return stat;
+				if (stat.ID == search) 
+					return stat;
 			}
 		}
 		// default return first card in common card pool
