@@ -249,22 +249,22 @@ void InitializeGame() {
         // Use globals directly — no local redeclaration
         for ( auto& id : data.shopCardIDs) {
             Card card;
-            card.info = Cards::GetCardByID(id);
-            card.info.ID = id;
+            Cards::GetCardByID(id, card);
+            //card.info.ID = id;
             card.from = DECK::SHOP;
             allCards[0].push_back(card);
         }
         for ( auto& id : data.activeCardIDs) {
             Card card;
-            card.info = Cards::GetCardByID(id);
-            card.info.ID = id;
+            Cards::GetCardByID(id, card);
+            //card.info.ID = id;
             card.from = DECK::ACTIVE;
             allCards[1].push_back(card);
         }
         for ( auto& id : data.inventoryCardIDs) {
             Card card;
-            card.info = Cards::GetCardByID(id);
-            card.info.ID = id;
+            Cards::GetCardByID(id, card);
+            //card.info.ID = id;
             card.from = DECK::BAG;
             allCards[2].push_back(card);
         }

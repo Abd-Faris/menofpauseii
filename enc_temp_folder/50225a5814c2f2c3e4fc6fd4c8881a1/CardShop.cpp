@@ -1068,7 +1068,6 @@ namespace Cards {
 			for (CardStats stat : cardPool[i]) {
 				if (stat.ID == search) {
 					card.info = stat;
-					return;
 				}
 			}
 		}
