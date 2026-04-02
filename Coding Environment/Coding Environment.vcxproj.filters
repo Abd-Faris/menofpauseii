@@ -30,7 +30,7 @@
     <ClCompile Include="..\Source\Graphics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\Debug XP.cpp">
+    <ClCompile Include="..\Source\DebugXP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\CardShop.cpp">
@@ -81,6 +81,12 @@
     <ClCompile Include="..\Source\SaveLoad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\Controls.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\GameStateManager.h">
@@ -98,7 +104,7 @@
     <ClInclude Include="..\Source\Graphics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\DebugMenus.h">
+    <ClInclude Include="..\Source\DebugXP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\Computation.h">
@@ -150,6 +156,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\SaveLoad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Controls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

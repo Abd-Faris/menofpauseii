@@ -749,6 +749,7 @@ void BossCollision(Boss& boss, shape &player, bool orbitActive, float orbitPosX,
 // Drawing bosses
 void DrawBoss(Boss& boss, AEGfxVertexList* MeshRect, AEGfxVertexList* MeshCircle) {
     if (!boss.alive) return;
+	(void)MeshCircle;
 
     float rotRad = boss.rotation * (PI / 180.f);
 
@@ -791,6 +792,7 @@ void DrawBoss(Boss& boss, AEGfxVertexList* MeshRect, AEGfxVertexList* MeshCircle
 
 // Boss's hp indicator
 void DrawBossHP(Boss& boss, AEGfxVertexList* MeshRect, AEGfxVertexList* MeshCircle, shape& player) {
+    (void)MeshCircle;
 
     // HP bar above boss
     float hpPct = (float)boss.hp / (float)boss.maxhp;

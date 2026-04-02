@@ -8,6 +8,7 @@ namespace {
     AEGfxVertexList* pBgMesh = nullptr;
     AEGfxVertexList* pBtnMesh = nullptr;
     AEGfxTexture* pBgTex = nullptr;
+
     AEGfxTexture* pBtnNormalTex = nullptr;
     AEGfxTexture* pBtnHoverTex = nullptr;
 
@@ -17,22 +18,19 @@ namespace {
     constexpr float THUMB_W = 30.f;
     constexpr float THUMB_H = 50.f;
 
-    // Slider centres (x is the left edge anchor; y is vertical centre)
-    constexpr float SFX_Y = 50.f;
-    constexpr float BGM_Y = -100.f;
-    constexpr float TRACK_X = -200.f;   // left edge of both tracks
+    constexpr float SFX_Y = 150.f;    
+    constexpr float BGM_Y = 0.f;     
+    constexpr float TRACK_X = -200.f; // left edge anchor
 
     bool draggingSFX{ false };
     bool draggingBGM{ false };
 
-    // ------------------------------------------------------------------ helpers
+   
 
-    // Returns thumb centre-x for a given volume [0,1]
     float volumeToThumbX(float vol) {
         return TRACK_X + vol * TRACK_W;
     }
 
-    // Returns volume [0,1] clamped from a raw cursor x
     float thumbXToVolume(float cursorX) {
         float t = (cursorX - TRACK_X) / TRACK_W;
         if (t < 0.f) t = 0.f;
@@ -40,7 +38,6 @@ namespace {
         return t;
     }
 
-    // Draws one slider track (coloured rect) + thumb (textured button)
     void drawSlider(float centreY, float volume, AEVec2& mousepos) {
         // --- track ---
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
@@ -81,7 +78,6 @@ namespace {
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     }
 
-    // Draws a labelled textured button, returns true if currently hovered
     void drawTexturedButton(GfxButton& btn, AEVec2& mousepos) {
         bool hovered = Comp::collisionPointRect(mousepos, btn.pos, btn.size);
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
@@ -90,32 +86,33 @@ namespace {
         AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
         AEGfxSetBlendMode(AE_GFX_BM_BLEND);
         AEGfxSetTransparency(1.f);
-        AEMtx33 s, t, f;
-        AEMtx33Scale(&s, btn.size.x, btn.size.y);
-        AEMtx33Trans(&t, btn.pos.x, btn.pos.y);
-        AEMtx33Concat(&f, &t, &s);
-        AEGfxSetTransform(f.m);
-        AEGfxMeshDraw(pBtnMesh, AE_GFX_MDM_TRIANGLES);
+        {
+            AEMtx33 s, t, f;
+            AEMtx33Scale(&s, btn.size.x, btn.size.y);
+            AEMtx33Trans(&t, btn.pos.x, btn.pos.y);
+            AEMtx33Concat(&f, &t, &s);
+            AEGfxSetTransform(f.m);
+            AEGfxMeshDraw(pBtnMesh, AE_GFX_MDM_TRIANGLES);
+        }
         AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     }
 
-    // ------------------------------------------------------------------ buttons
+
     std::vector<GfxButton> settingsButtons{
-        {{0, -250}, {300, 100}, nullptr, -10},  // ID -10 = Toggle Fullscreen
-        {{0, -380}, {300, 100}, nullptr, GS_MAIN_MENU} // Back
-    };
-    std::vector<GfxText> settingsTexts{
-        {"Fullscreen: OFF", 0.5f, 0, 0, 0, 255, {0,   -250}},
-        {"Back",            1.0f, 0, 0, 0, 255, {0,   -380}},
-        {"SFX",             1.0f, 0, 0, 0, 255, {-320,  50}},  // label left of track
-        {"BGM",             1.0f, 0, 0, 0, 255, {-320, -100}},
+        {{0, -150}, {300, 100}, nullptr, -10},         // Fullscreen Button
+        {{0, -280}, {300, 100}, nullptr, GS_MAIN_MENU} // Back Button
     };
 
-    // ------------------------------------------------------------------ input
+    std::vector<GfxText> settingsTexts{
+        {"Fullscreen: OFF", 0.5f, 0, 0, 0, 255, {0,   -150}},
+        {"Back",            1.0f, 0, 0, 0, 255, {0,   -280}},
+        {"SFX",             1.0f, 0, 0, 0, 255, {-320, 150}},
+        {"BGM",             1.0f, 0, 0, 0, 255, {-320,  0}},
+    };
+
     void handleButton(int id) {
         if (id == -10) {
             fullscreen = !fullscreen;
-            // updates full screen mode
             updateFullScreen();
         }
     }
@@ -128,25 +125,16 @@ namespace {
     }
 
     void handleSliderInput(AEVec2& mousepos) {
-        // Begin drag
         if (AEInputCheckTriggered(AEVK_LBUTTON)) {
             if (isOverTrack(mousepos, SFX_Y)) draggingSFX = true;
             if (isOverTrack(mousepos, BGM_Y)) draggingBGM = true;
         }
-        // Release drag
         if (!AEInputCheckCurr(AEVK_LBUTTON)) {
             draggingSFX = false;
             draggingBGM = false;
         }
-        // Apply drag
-        if (draggingSFX) {
-            sfxVolume = thumbXToVolume(mousepos.x);
-            // Hook your SFX volume call here, e.g.: SFX::setSFXVolume(sfxVolume);
-        }
-        if (draggingBGM) {
-            bgmVolume = thumbXToVolume(mousepos.x);
-            // Hook your BGM volume call here, e.g.: SFX::setBGMVolume(bgmVolume);
-        }
+        if (draggingSFX) sfxVolume = thumbXToVolume(mousepos.x);
+        if (draggingBGM) bgmVolume = thumbXToVolume(mousepos.x);
     }
 
     void clickButtons(AEVec2& mousepos) {
@@ -160,20 +148,17 @@ namespace {
     }
 }
 
-// ------------------------------------------------------------------ lifecycle
 
 void LoadSettings() {
-    pBgTex = AEGfxTextureLoad("./Assets/menu.png");
+    pBgTex = AEGfxTextureLoad("./Assets/sandbg.png");
     pBtnNormalTex = AEGfxTextureLoad("./Assets/mainmenubutton1.png");
     pBtnHoverTex = AEGfxTextureLoad("./Assets/mainmenubutton2.png");
 
-    // Background mesh
     AEGfxMeshStart();
     AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f, 0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f, -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
     AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f, 0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f, -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
     pBgMesh = AEGfxMeshEnd();
 
-    // Button mesh
     AEGfxMeshStart();
     AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f, 0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f, -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
     AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f, 0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f, -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
@@ -198,11 +183,10 @@ void UpdateSettings() {
 }
 
 void DrawSettings() {
-    // Background
+    // 1. Draw Background
     AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
     AEGfxTextureSet(pBgTex, 0, 0);
     AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
-    AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
     AEGfxSetBlendMode(AE_GFX_BM_BLEND);
     AEGfxSetTransparency(1.f);
     {
@@ -213,47 +197,43 @@ void DrawSettings() {
         AEGfxSetTransform(f.m);
         AEGfxMeshDraw(pBgMesh, AE_GFX_MDM_TRIANGLES);
     }
-    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
     AEVec2 mousepos{};
     Comp::getCursorPos(mousepos);
 
-    // Sliders
+    // 2. Draw Sliders
     drawSlider(SFX_Y, sfxVolume, mousepos);
     drawSlider(BGM_Y, bgmVolume, mousepos);
 
-    // Buttons
+    // 3. Draw Buttons
     for (GfxButton& btn : settingsButtons)
         drawTexturedButton(btn, mousepos);
 
-    // All text labels (SFX, BGM, Fullscreen state, Back)
+    // 4. Draw Text
     for (GfxText& txt : settingsTexts)
         Gfx::printText(txt, boldPixels);
 
-    // Percentage readouts next to each slider thumb
+    // 5. Draw Percentages
     char sfxBuf[16], bgmBuf[16];
     sprintf_s(sfxBuf, "%d%%", (int)(sfxVolume * 100.f));
     sprintf_s(bgmBuf, "%d%%", (int)(bgmVolume * 100.f));
 
-    GfxText sfxPct{ sfxBuf, 0.5f, 0, 0, 0, 255,
-        {TRACK_X + TRACK_W + 60.f, SFX_Y} };
-    GfxText bgmPct{ bgmBuf, 0.5f, 0, 0, 0, 255,
-        {TRACK_X + TRACK_W + 60.f, BGM_Y} };
+    GfxText sfxPct{ sfxBuf, 0.5f, 0, 0, 0, 255, {TRACK_X + TRACK_W + 60.f, SFX_Y} };
+    GfxText bgmPct{ bgmBuf, 0.5f, 0, 0, 0, 255, {TRACK_X + TRACK_W + 60.f, BGM_Y} };
 
     Gfx::printText(sfxPct, boldPixels);
     Gfx::printText(bgmPct, boldPixels);
-    
-    // fullscreen button text
+
     settingsTexts[0].text = fullscreen ? "Fullscreen: ON" : "Fullscreen: OFF";
 }
 
 void FreeSettings() {}
 
 void UnloadSettings() {
-    if (rectMesh) { AEGfxMeshFree(rectMesh);              rectMesh = nullptr; }
-    if (pBgMesh) { AEGfxMeshFree(pBgMesh);               pBgMesh = nullptr; }
-    if (pBtnMesh) { AEGfxMeshFree(pBtnMesh);              pBtnMesh = nullptr; }
-    if (pBgTex) { AEGfxTextureUnload(pBgTex);           pBgTex = nullptr; }
-    if (pBtnNormalTex) { AEGfxTextureUnload(pBtnNormalTex);    pBtnNormalTex = nullptr; }
-    if (pBtnHoverTex) { AEGfxTextureUnload(pBtnHoverTex);     pBtnHoverTex = nullptr; }
+    if (rectMesh) { AEGfxMeshFree(rectMesh); rectMesh = nullptr; }
+    if (pBgMesh) { AEGfxMeshFree(pBgMesh); pBgMesh = nullptr; }
+    if (pBtnMesh) { AEGfxMeshFree(pBtnMesh); pBtnMesh = nullptr; }
+    if (pBgTex) { AEGfxTextureUnload(pBgTex); pBgTex = nullptr; }
+    if (pBtnNormalTex) { AEGfxTextureUnload(pBtnNormalTex); pBtnNormalTex = nullptr; }
+    if (pBtnHoverTex) { AEGfxTextureUnload(pBtnHoverTex); pBtnHoverTex = nullptr; }
 }
