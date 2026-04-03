@@ -1,13 +1,30 @@
+// ----------------------------- Gloomy's Revenge ----------------------------- //
+// File:    SaveLoad.cpp
+// Authors: [Men of Pause II]
+// Brief:   Handles persistent data by saving and loading player stats, 
+//          wave progress, upgrade levels, and card inventory to external files.
+// ------------------------------------------------------------------------- //
+
 #include "SaveLoad.h"
 #include <fstream>
 #include <cstdio>
 
+// =============================================================================
+// GLOBALS
+// =============================================================================
+
+// ~ Brief: Tracks whether a valid game session is currently active.
 bool gamecurrrun = false;
 
+// =============================================================================
+// FUNCTIONS
+// =============================================================================
+
+// ~ Brief: Writes the provided SaveData struct to a text file at the specified path.
+//          Returns true if the write operation was successful.
 bool SaveGame(const SaveData& data, const char* filepath) {
     std::ofstream file(filepath);
     if (!file.is_open()) {
-        OutputDebugStringA("SAVE FAILED: could not open file\n");
         return false;
     }
 
@@ -36,14 +53,14 @@ bool SaveGame(const SaveData& data, const char* filepath) {
         file << id << "\n";
 
     if (!file.good()) {
-        OutputDebugStringA("SAVE FAILED: write error\n");
         return false;
     }
 
-    OutputDebugStringA("SAVE SUCCESS\n");
     return true;
 }
 
+// ~ Brief: Reads data from a text file and populates the provided SaveData struct.
+//          Uses a lambda to parse categorized string vectors (Cards).
 bool LoadGame(SaveData& data, const char* filepath) {
     std::ifstream file(filepath);
     if (!file.is_open()) return false;
@@ -75,15 +92,19 @@ bool LoadGame(SaveData& data, const char* filepath) {
     return file.good();
 }
 
+// ~ Brief: Checks if a save file exists and can be opened for reading.
 bool SaveExists(const char* filepath) {
     std::ifstream file(filepath);
     return file.is_open();
 }
 
+// ~ Brief: Deletes the save file from the local file system.
 void DeleteSave(const char* filepath) {
     std::remove(filepath);
 }
 
+// ~ Brief: Captures current global player/game instances, converts them to 
+//          ID-based SaveData, and triggers the file write.
 void SaveCurrentProgress(int gameState) {
     SaveData data;
     data.currentWave = currentWave;

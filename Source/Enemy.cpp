@@ -1,26 +1,39 @@
-// -----------------------------Gloomy's Revenge---------------------------- //
-// File:	Enemy.cpp
-// Authors:	[Men of Pause II]
-// Brief:	This file defines the creation and behaviours of enemies.
-// 
+// ----------------------------- Gloomy's Revenge ----------------------------- //
+// File:    Enemy.cpp
+// Authors: [Men of Pause II]
+// Brief:   This file defines the creation and behaviours of enemies, including
+//          spawning, physics, bullet handling, and off-screen indicators.
 // ------------------------------------------------------------------------- //
+
 
 // ------INCLUDE FILES------------------------------------------------------ //
 
 #include "MasterHeader.h"
 
-// ------GLOBAL VARIABLES & POOLS------------------------------------------- //
+// =============================================================================
+// GLOBAL VARIABLES & POOLS
+// =============================================================================
+
+// ~Brief: Object pool for all active enemies.Fixed size matches MAX_ENEMIES_COUNT
+//          to avoid dynamic allocation during gameplay.
 std::array<Enemies, GameConfig::MAX_ENEMIES_COUNT> enemyPool;
+
+// ~ Brief: Accumulates time between enemy spawns during wave spawning.
 f64 enemySpawnTimer = 0;
+
 extern int currentWave;
+
+// ~ Brief: Pool of enemy-fired bullets. Shared across all enemy types and the boss.
 BulletObj enemyBulletList[GameConfig::MAX_BULLETS_COUNT];
 
+// ~ Brief: Textures for each enemy variant — indexed by enemy type.
+//          [0] = PASSIVE small, [1] = PASSIVE big, [2] = ATTACK (kamikaze), [3] = SHOOTER.
 AEGfxTexture* pEnemyTex[4] = { nullptr, nullptr, nullptr, nullptr };
 AEGfxVertexList* pEnemyMesh = nullptr;
 AEGfxTexture* pEnemyBulletTex = nullptr;
 AEGfxVertexList* pEnemyBulletMesh = nullptr;
 
-// ------TEXTURES FILES------------------------------------------- //
+// ~ Brief: File paths for enemy textures — order must match pEnemyTex index convention.
 const char* enemyTextures[4] = {
     "./Assets/smallbox.png",    // PASSIVE small
     "./Assets/bigbox.png",      // PASSIVE big
@@ -29,7 +42,13 @@ const char* enemyTextures[4] = {
 };
 
 // ------FUNCTIONS------------------------------------------- //
-// ~ Brief:	Loads enemy meshes and textures.
+
+// =============================================================================
+// LOAD / FREE
+// =============================================================================
+
+// ~ Brief: Load all enemy textures and build the shared UV-mapped unit quad mesh
+//          used to render all enemy types and their bullets.
 void LoadEnemies() {
     for (int i = 0; i < 4; ++i) {
         pEnemyTex[i] = AEGfxTextureLoad(enemyTextures[i]);
@@ -57,7 +76,23 @@ void LoadEnemies() {
     pEnemyBulletMesh = AEGfxMeshEnd();
 }
 
-// ~ Brief:	Resets the enemies for new waves
+// ~ Brief: Unload all enemy and bullet textures and free their meshes.
+//          All pointers are set to nullptr after freeing to prevent double-free.
+void FreeEnemies() {
+    for (int i = 0; i < 4; ++i) {
+        if (pEnemyTex[i]) { AEGfxTextureUnload(pEnemyTex[i]); pEnemyTex[i] = nullptr; }
+    }
+    if (pEnemyMesh) { AEGfxMeshFree(pEnemyMesh); pEnemyMesh = nullptr; }
+    if (pEnemyBulletTex) { AEGfxTextureUnload(pEnemyBulletTex);  pEnemyBulletTex = nullptr; }
+    if (pEnemyBulletMesh) { AEGfxMeshFree(pEnemyBulletMesh);      pEnemyBulletMesh = nullptr; }
+}
+
+// =============================================================================
+// SPAWN FUNCTIONS
+// =============================================================================
+
+// ~ Brief: Reset an enemy slot back to its default inactive state.
+//          Moves the enemy off-screen so it won't be drawn or collided with.
 void ResetEnemy(Enemies* enemyToReset) {
     enemyToReset->alive = false;
     enemyToReset->pos.x = GameConfig::OFF_SCREEN_COORD;
@@ -66,7 +101,8 @@ void ResetEnemy(Enemies* enemyToReset) {
     enemyToReset->hp = 0;
 }
 
-// ~ Brief:	Spawns Passive Enemies (Boxes)
+// ~ Brief: Spawn a passive box enemy (small or big) at a safe world position.
+//          HP scales with the current wave multiplier.
 void SpawnOneEnemy(bool isBigEnemy, shape player) {
     f32 mult = (1 + (currentWave / 5 * 0.5f));
     for (auto& newEnemy : enemyPool) {
@@ -112,7 +148,9 @@ void SpawnOneEnemy(bool isBigEnemy, shape player) {
     }
 }
 
-// ~ Brief: Spawns the Kamikaze enemies
+// ~ Brief: Spawn a kamikaze (ATTACK) enemy at a safe world position.
+//          Kamikazes detect the player at range and charge directly at them.
+//          HP scales with the current wave multiplier.
 void SpawnAttackEnemy(shape player) {
     f32 mult = (1 + (currentWave / 5 * 0.5f));
     for (auto& newEnemy : enemyPool) {
@@ -158,7 +196,9 @@ void SpawnAttackEnemy(shape player) {
     }
 }
 
-// ~ Brief: Spawns the shooter enemies
+// ~ Brief: Spawn a shooter enemy at a safe world position.
+//          Shooters maintain engagement distance and fire projectiles at the player.
+//          Starts with a 2-second initial fire cooldown. HP scales with wave multiplier.
 void SpawnShooterEnemy(shape player) {
     f32 mult = (1 + (currentWave / 5 * 0.5f));
     for (auto& newEnemy : enemyPool) {
@@ -205,7 +245,17 @@ void SpawnShooterEnemy(shape player) {
     }
 }
 
-// ~ Brief:	Implements enemy physics
+// =============================================================================
+// PHYSICS
+// =============================================================================
+
+// ~ Brief: Update physics for all active enemies each frame.
+//          ATTACK (kamikaze) enemies detect and chase the player once in range,
+//          decelerating toward them with a wave-scaled speed cap.
+//          SHOOTER enemies maintain a preferred distance and fire on a cooldown.
+//          All enemies apply separation forces to prevent stacking,
+//          are pushed out of walls each frame, and are reset when HP reaches zero,
+//          awarding XP proportional to their size and the wave multiplier.
 void updateEnemyPhysics(shape& player, float deltaTime) {
     f32 mult = (1 + (currentWave / 5 * 0.5f)); // multiplier
 
@@ -343,7 +393,9 @@ void updateEnemyPhysics(shape& player, float deltaTime) {
     }
 }
 
-// ~ Brief:	Implements enemy bullet physics
+// ~ Brief: Move all active enemy bullets along their direction each frame.
+//          Deactivates bullets that collide with world geometry (walls or trees),
+//          triggering a bullet impact effect at the point of contact.
 void updateEnemyBullets(float deltaTime) {
     for (auto& eBullet : enemyBulletList) {
         if (!eBullet.isActive) continue;
@@ -360,14 +412,23 @@ void updateEnemyBullets(float deltaTime) {
         }
     }
 }
-// ~ Brief:	Implements indicators to show where the enemy is off screen
+
+// =============================================================================
+// HUD / INDICATORS
+// =============================================================================
+
+// ~ Brief: Draw a small colored arrow at the screen edge pointing toward each
+//          off-screen enemy, minion, and boss. The arrow is clamped to the nearest
+//          screen edge with padding, and color-coded by enemy type:
+//          purple = PASSIVE/minion, blue = ATTACK, red = SHOOTER, orange = boss.
 void DrawEnemyIndicators(shape& player, AEGfxVertexList* MeshTriangle) {
     float screenW = (float)AEGfxGetWindowWidth() * 0.5f;
     float screenH = (float)AEGfxGetWindowHeight() * 0.5f;
     float padding = 30.f; // distance from screen edge
     float arrowSize = 30.f;
 
-    // Helper to draw one indicator
+    // ~ Brief: Draw one off-screen indicator for a given world position and color.
+    //          Returns early if the target is already visible on screen.
     auto DrawIndicator = [&](AEVec2 enemyPos, float r, float g, float b) {
         float dx = enemyPos.x - player.pos_x;
         float dy = enemyPos.y - player.pos_y;
@@ -428,12 +489,3 @@ void DrawEnemyIndicators(shape& player, AEGfxVertexList* MeshTriangle) {
     }
 }
 
-// ~Brief:	Frees enemies after use
-void FreeEnemies() {
-    for (int i = 0; i < 4; ++i) {
-        if (pEnemyTex[i]) { AEGfxTextureUnload(pEnemyTex[i]); pEnemyTex[i] = nullptr; }
-    }
-    if (pEnemyMesh) { AEGfxMeshFree(pEnemyMesh); pEnemyMesh = nullptr; }
-    if (pEnemyBulletTex) { AEGfxTextureUnload(pEnemyBulletTex);  pEnemyBulletTex = nullptr; }
-    if (pEnemyBulletMesh) { AEGfxMeshFree(pEnemyBulletMesh);      pEnemyBulletMesh = nullptr; }
-}
