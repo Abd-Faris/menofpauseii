@@ -1,5 +1,5 @@
 // -----------------------------Gloomy's Revenge---------------------------- //
-// File:    Tutorial.cpp
+// File:    Tutorial.h
 // Authors: [Men of Pause II]
 // Brief:   Tutorial overlay — displays context-sensitive prompt text during
 //          Wave 1 (movement and shooting hints) and Wave 2 (card shop guide).
