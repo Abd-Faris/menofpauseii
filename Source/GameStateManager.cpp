@@ -1,64 +1,63 @@
-/*****************************************************************************/
-/*!
-\file	GameStateManager.cpp
-\author Men of Pause II
-\brief	This file defines the GSM of the program and controls its flow
-
-Copyright (C) 2026 DigiPen Institute of Technology.
-Reproduction or disclosure of this file or its contents
-without the prior written consent of DigiPen Institute of
-Technology is prohibited.
-*/
-/*****************************************************************************/
+// -----------------------------Gloomy's Revenge---------------------------- //
+// File:    GameStateManager.cpp
+// Authors: [Men of Pause II]
+// Brief:   Defines the Game State Manager (GSM) — maintains current, previous,
+//          and next game states, maps each state to its function pointers, and
+//          drives state transitions each frame.
+// ------------------------------------------------------------------------- //
 
 #include <iostream>
-
 #include "MasterHeader.h"
 
-int GS_current = 0, GS_previous = 0, GS_next = 0;
+// =============================================================================
+// GLOBALS
+// =============================================================================
 
-// function pointer array of CURRENT gamestate
-GSFunctions GS_Functions;
+int GS_current = 0;  // currently executing game state
+int GS_previous = 0;  // game state that was active last frame
+int GS_next = 0;  // game state to transition to at end of frame
 
-// Array of Gamestate Function Pointers
-// ENSURE THE ORDER MATCHES THE ENUM IN GameStateManager.h!!!
+GSFunctions GS_Functions;  // function pointer set for the current game state
+
+// =============================================================================
+// GAME STATE TABLE
+// =============================================================================
+
+// Each entry maps a game state (by enum index) to its six lifecycle functions:
+// { Load, Initialize, Update, Draw, Free, Unload }
+// nullptr is used where a lifecycle function is not needed for that state.
+// ENSURE THE ORDER MATCHES THE ENUM IN GameStateManager.h!
 std::vector<GSFunctions> gamestates{
-	// Game States
-	{LoadDPLogo, InitializeDPLogo, UpdateDPLogo, DrawDPLogo, FreeDPLogo, UnloadDPLogo},
-	{LoadMainMenu, InitializeMainMenu, UpdateMainMenu, DrawMainMenu, nullptr, UnloadMainMenu},
-	{LoadGame, InitializeGame, UpdateGame, DrawGame, FreeGame, UnloadGame},
-	{LoadResults, nullptr, UpdateResults, DrawResults, FreeResults, nullptr},
-	{LoadLevelSelect, InitializeLevelSelect, UpdateLevelSelect, DrawLevelSelect, FreeLevelSelect, UnloadLevelSelect},
-	{LoadCredits, InitializeCredits, UpdateCredits, DrawCredits, FreeCredits, UnloadCredits},
-	{LoadSettings, InitializeSettings, UpdateSettings, DrawSettings, FreeSettings, UnloadSettings},
-	{LoadControls, InitializeControls, UpdateControls, DrawControls, FreeControls, UnloadControls},
-	// Debugging Game States
-	{LoadDebug1, nullptr, UpdateDebug1, DrawDebug1, FreeDebug1, nullptr},
-	{LoadCardShop, InitializeCardShop, UpdateCardShop, DrawCardShop, FreeCardShop, UnloadCardShop},
+
+    // ---- Standard game states ----
+    {LoadDPLogo,      InitializeDPLogo,      UpdateDPLogo,      DrawDPLogo,      FreeDPLogo,      UnloadDPLogo     },
+    {LoadMainMenu,    InitializeMainMenu,    UpdateMainMenu,    DrawMainMenu,    nullptr,          UnloadMainMenu   },
+    {LoadGame,        InitializeGame,        UpdateGame,        DrawGame,        FreeGame,        UnloadGame       },
+    {LoadResults,     nullptr,               UpdateResults,     DrawResults,     FreeResults,     nullptr          },
+    {LoadLevelSelect, InitializeLevelSelect, UpdateLevelSelect, DrawLevelSelect, FreeLevelSelect, UnloadLevelSelect},
+    {LoadCredits,     InitializeCredits,     UpdateCredits,     DrawCredits,     FreeCredits,     UnloadCredits    },
+    {LoadSettings,    InitializeSettings,    UpdateSettings,    DrawSettings,    FreeSettings,    UnloadSettings   },
+    {LoadControls,    InitializeControls,    UpdateControls,    DrawControls,    FreeControls,    UnloadControls   },
+
+    // ---- Debugging game states ----
+    {LoadDebug1,      nullptr,               UpdateDebug1,      DrawDebug1,      FreeDebug1,      nullptr          },
+    {LoadCardShop,    InitializeCardShop,    UpdateCardShop,    DrawCardShop,    FreeCardShop,    UnloadCardShop   },
 };
-// Load, Initialize, Update, Draw, Free, Unload
-// if no function of that type exists, enter nullptr
 
-//FP fpLoad = nullptr, fpInitialize = nullptr, fpUpdate = nullptr, fpDraw = nullptr, fpFree = nullptr, fpUnload = nullptr;
+// =============================================================================
+// GSM FUNCTIONS
+// =============================================================================
 
-//-----------------------------------------------------------//
-// This function initialises the game state manager with a
-// default start game state
-//-----------------------------------------------------------//
-void GSM_Initialize(int GS_startingState)
-{
-	GS_current = GS_previous = GS_next = GS_startingState;
-
-	//some additional code
-	printf("GSM:Initialize\n");
+// ~ Brief: Initialise the GSM with a starting game state.
+//          Sets current, previous, and next to the same state so the first
+//          frame loads and enters cleanly without a spurious transition.
+void GSM_Initialize(int GS_startingState) {
+    GS_current = GS_previous = GS_next = GS_startingState;
+    printf("GSM:Initialize\n");
 }
 
-//-----------------------------------------------------------//
-// This function updates the game state manager should the
-// game state be different
-//-----------------------------------------------------------//
-void GSM_Update()
-{
-	// Switch Game States
-	GS_Functions = gamestates[GS_current];
+// ~ Brief: Resolve the function pointer set for the current game state.
+//          Called once per frame before the lifecycle functions are dispatched.
+void GSM_Update() {
+    GS_Functions = gamestates[GS_current];  // bind lifecycle functions for this state
 }

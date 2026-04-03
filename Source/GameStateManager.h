@@ -1,13 +1,17 @@
-#pragma once
-/*****************************************************************************/
-/*!
-\file	GameStateManager.h
-\author Men of Pause II
-\brief	This file declares the GSM of the program and controls its flow
-*/
-/*****************************************************************************/
+// -----------------------------Gloomy's Revenge---------------------------- //
+// File:    GameStateManager.h
+// Authors: [Men of Pause II]
+// Brief:   Defines the Game State Manager (GSM) — maintains current, previous,
+//          and next game states, maps each state to its function pointers, and
+//          drives state transitions each frame.
+// ------------------------------------------------------------------------- //
 
+#pragma once
 #include "MasterHeader.h" // for function access
+
+// =============================================================================
+// GAME STATE TABLE
+// =============================================================================
 
 // Function Pointer Type Declaration
 typedef void(*FP)(void);
@@ -23,10 +27,8 @@ struct GSFunctions {
 	FP Free;
 	FP Unload;
 };
-// GS Function Pointer Storage of CURRENT gamestate
-extern GSFunctions GS_Functions;
 
-// Game States Enum
+// Game State Enum
 enum GS_STATES
 {
 	// Main Game States
@@ -49,7 +51,23 @@ enum GS_STATES
 	GS_RESTART
 };
 
-// GameState Manager Functions
+// =============================================================================
+// EXTERNS
+// =============================================================================
+
+// GS Function Pointer Storage of CURRENT gamestate
+extern GSFunctions GS_Functions;
+
+// =============================================================================
+// GSM FUNCTIONS
+// =============================================================================
+
+// ~ Brief: Initialise the GSM with a starting game state.
+//          Sets current, previous, and next to the same state so the first
+//          frame loads and enters cleanly without a spurious transition.
 void GSM_Initialize(int GS_startingState);
+
+// ~ Brief: Resolve the function pointer set for the current game state.
+//          Called once per frame before the lifecycle functions are dispatched.
 void GSM_Update();
 
