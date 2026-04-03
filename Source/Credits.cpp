@@ -1,4 +1,4 @@
-// ---------------------------- - Gloomy's Escape----------------------------- //
+// ----------------------------- Gloomy's Revenge----------------------------- //
 // File:	credits.cpp
 // Authors:	[Men of Pause II]
 // Brief:	This file contains and displays the credits
