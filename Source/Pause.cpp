@@ -172,6 +172,7 @@ namespace PauseScreen {
             // NORMAL PAUSE MENU LOGIC
             for (GfxButton& btn : pauseButtons) {
                 if (Comp::collisionPointRect(mousepos, btn.pos, btn.size)) {
+                    SFX::playSFX(SFX_UI_BUTTON_SELECT);
                     if (btn.nextGS == 0) {
                         // Resume
                         isPaused = false;
@@ -188,6 +189,7 @@ namespace PauseScreen {
             // CONFIRM QUIT MENU LOGIC
             for (GfxButton& btn : confirmButtons) {
                 if (Comp::collisionPointRect(mousepos, btn.pos, btn.size)) {
+                    SFX::playSFX(SFX_UI_BUTTON_SELECT);
                     if (btn.nextGS == 3) {
                         SaveCurrentProgress(GS_current);
                         isPaused = false;

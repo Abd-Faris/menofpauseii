@@ -54,6 +54,10 @@ enum SFX_ID {
 	SFX_PLAYER_HIT,
 	SFX_UI_BUTTON_HOVER,
 	SFX_UI_BUTTON_SELECT,
+	SFX_UI_CARD_HOVER,
+	SFX_UI_CARD_PICKUP,
+	SFX_UI_CARD_PLACE,
+	SFX_UI_CARD_TRASH,
 	SFX_COUNT
 };
 
@@ -98,6 +102,7 @@ struct Card {
 	AABB boundingBox{}; // collision bounding box
 	CardStats info;
 	DECK from{}; // to be updated every time card is shifted
+	bool hovered{ false };
 };
 
 // modifier based on cards

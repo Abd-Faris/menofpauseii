@@ -13,9 +13,6 @@ void Initialise_System(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-	// set gamestate to "Running"
-	//int gGameRunning = 1;
-
 	// Initialization of your own variables go here
 
 	// Using custom window procedure
@@ -68,6 +65,8 @@ namespace SFX {
 	std::vector<std::vector<AEAudio>> sfxLibrary;
 	AEAudioGroup sfx{ nullptr };
 
+	// sfx file paths to be loaded sorted int sfx type
+	// one row = one sfx type. multiple paths = random sfx played
 	const std::vector<std::vector<std::string>> sfxPaths = {
 		{ "Assets/audio/sfx/Enemy_Death1.mp3", "Assets/audio/sfx/Enemy_Death2.mp3" }, // SFX_ENEMY_DEATH
 		{ "Assets/audio/sfx/Enemy_Shoot.mp3"}, // SFX_ENEMY_SHOOT
@@ -76,9 +75,15 @@ namespace SFX {
 		{ "Assets/audio/sfx/Player_TakeDamage1.mp3", "Assets/audio/sfx/Player_TakeDamage2.mp3" }, // SFX_ENEMY_HIT
 		{ "Assets/audio/sfx/UI_Button_Hover.mp3"}, // SFX_UI_BUTTON_HOVER
 		{ "Assets/audio/sfx/UI_Button_Select.mp3"}, // SFX_UI_BUTTON_SELECT
+		{ "Assets/audio/sfx/UI_Card_Hover.mp3"}, // SFX_UI_CARD_HOVER
+		{ "Assets/audio/sfx/UI_Card_Pickup.mp3"}, // SFX_UI_CARD_PICKUP
+		{ "Assets/audio/sfx/UI_Card_Place.mp3"}, // SFX_UI_CARD_PLACE
+		{ "Assets/audio/sfx/UI_Card_Trash.mp3"}, // SFX_UI_CARD_TRASH
 	};
 
-	// per-type volume normalisation multiplier (tweak these values)
+	// uhhh some sfx are really annoying and loud even with sfx volume slider setting
+	// this is a per-type volume normalisation multiplier
+	// tweak these values to change specific sfx vol
 	const std::vector<float> sfxNorm = {
 		1.0f,  // SFX_ENEMY_DEATH
 		0.8f,  // SFX_ENEMY_SHOOT
@@ -86,7 +91,11 @@ namespace SFX {
 		0.6f,  // SFX_PLAYER_SHOOT
 		0.6f,  // SFX_PLAYER_HIT
 		1.0f,  // SFX_UI_BUTTON_HOVER
-		2.0f,  // SFX_UI_BUTTON_SELECT
+		1.5f,  // SFX_UI_BUTTON_SELECT
+		1.0f,  // SFX_UI_CARD_HOVER
+		1.0f,  // SFX_UI_CARD_PICKUP
+		1.0f,  // SFX_UI_CARD_PLACE
+		1.0f,  // SFX_UI_CARD_TRASH
 	};
 
 	void load() {

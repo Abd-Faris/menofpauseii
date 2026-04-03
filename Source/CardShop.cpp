@@ -320,6 +320,7 @@ namespace { // functions for UpdateCardShop()
 
 			removeFromSource(card);
 			computeCardHomePos();
+			SFX::playSFX(SFX_UI_CARD_PLACE);
 		}
 		// else if dropped in active
 		else if (Comp::collisionPointRect(card.pos, { -125, -300 }, { 950, 200 })) {
@@ -339,9 +340,10 @@ namespace { // functions for UpdateCardShop()
 
 			removeFromSource(card);
 			computeCardHomePos();
+			SFX::playSFX(SFX_UI_CARD_PLACE);
 		}
 		// trash
-		else if (Comp::collisionPointRect(card.pos, { -700, -300 }, { 100, 100 })) {
+		else if (Comp::collisionPointRect(card.pos, { -700, -370 }, { 100, 100 })) {
 			// only trigger if not from shop
 			if (card.from == DECK::SHOP) return;
 
@@ -351,6 +353,7 @@ namespace { // functions for UpdateCardShop()
 			// trash card
 			removeFromSource(card);
 			computeCardHomePos();
+			SFX::playSFX(SFX_UI_CARD_TRASH);
 		}
 	}
 
@@ -379,6 +382,7 @@ namespace { // functions for UpdateCardShop()
 	}
 
 	// checks card collision with boxes of other decks
+	bool cardsfx{ false };
 	void checkCardCollision() {
 		// get cursor position
 		AEVec2 cursorpos{};
@@ -387,32 +391,56 @@ namespace { // functions for UpdateCardShop()
 		// for every card in ALL arrays, check for a hit
 		// if hit, assign card to ptr IF left button is triggered
 		for (Card& card : activeCards) {
-			if (Comp::collisionPointRect(cursorpos, card.boundingBox)) {
+			bool hovered = Comp::collisionPointRect(cursorpos, card.boundingBox);
+			if (hovered) {
+				if (!card.hovered) {
+					SFX::playSFX(SFX_UI_BUTTON_HOVER);
+				}
 				// set card to display description
 				pHoveredCard = &card;
-				if (AEInputCheckTriggered(AEVK_LBUTTON)) pSelectedCard = &card;
-				return;
+				if (AEInputCheckTriggered(AEVK_LBUTTON)) {
+					SFX::playSFX(SFX_UI_CARD_PICKUP);
+					pSelectedCard = &card;
+				}
 			}
+			card.hovered = hovered;
+			if (hovered) return;
 		}
 		for (Card& card : inventoryCards) {
-			if (Comp::collisionPointRect(cursorpos, card.boundingBox)) {
+			bool hovered = Comp::collisionPointRect(cursorpos, card.boundingBox);
+			if (hovered) {
+				if (!card.hovered) {
+					SFX::playSFX(SFX_UI_BUTTON_HOVER);
+				}
 				// set card to display description
 				pHoveredCard = &card;
-				if (AEInputCheckTriggered(AEVK_LBUTTON)) pSelectedCard = &card;
-				return;
+				if (AEInputCheckTriggered(AEVK_LBUTTON)) {
+					SFX::playSFX(SFX_UI_CARD_PICKUP);
+					pSelectedCard = &card;
+				}
 			}
+			card.hovered = hovered;
+			if (hovered) return;
 		}
 		// if user cannot buy cards, return
 		if (buyable_left <= 0) return;
 		
 		// print shop cards
 		for (Card& card : shopCards) {
-			if (Comp::collisionPointRect(cursorpos, card.boundingBox)) {
+			bool hovered = Comp::collisionPointRect(cursorpos, card.boundingBox);
+			if (hovered) {
+				if (!card.hovered) {
+					SFX::playSFX(SFX_UI_BUTTON_HOVER);
+				}
 				// set card to display description
 				pHoveredCard = &card;
-				if (AEInputCheckTriggered(AEVK_LBUTTON)) pSelectedCard = &card;
-				return;
+				if (AEInputCheckTriggered(AEVK_LBUTTON)) {
+					SFX::playSFX(SFX_UI_CARD_PICKUP);
+					pSelectedCard = &card;
+				}
 			}
+			card.hovered = hovered;
+			if (hovered) return;
 		}
 		// else return no hit at all
 		pHoveredCard = nullptr;
@@ -430,6 +458,7 @@ namespace { // functions for UpdateCardShop()
 		AEVec2 mousepos{};
 		Comp::getCursorPos(mousepos);
 		if (Comp::collisionPointRect(mousepos, { -200, 325 }, { 1100, 150 })) {
+			SFX::playSFX(SFX_UI_BUTTON_SELECT);
 			// reroll shop cards
 			shopCards.clear();
 			initCardShop(shopCards);
@@ -444,6 +473,8 @@ void UpdateCardShop() {
 
 	// checks if Next Round button is clicked
 	if (AEInputCheckTriggered(AEVK_LBUTTON)) {
+		SFX::playSFX(SFX_UI_BUTTON_SELECT);
+		// get cursor pos
 		AEVec2 mousepos{};
 		Comp::getCursorPos(mousepos);
 		for (GfxButton& btn : shopButtons) {
@@ -492,7 +523,7 @@ namespace { // functions for DrawCardShop()
 
 		AEGfxTextureSet(pTrashTex, 0, 0);
 		Gfx::printMesh(pPanelMesh, { -700, -370 }, { 100, 100 }, 0.f, { 0.f, 0.f }, true);    // trash
-
+	
 		// -- desc panel --
 		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
@@ -552,8 +583,14 @@ namespace { // functions for DrawCardShop()
 	}
 
 	// draws a textured button, swapping to hover texture if mouse is over it
+	bool btnsfx{ false };
 	void drawTexturedButton(GfxButton& btn, AEVec2& mousepos) {
 		bool hovered = Comp::collisionPointRect(mousepos, btn.pos, btn.size);
+
+		if (hovered && !btn.hovered) {
+			SFX::playSFX(SFX_UI_BUTTON_HOVER);
+		}
+		btn.hovered = hovered;
 
 		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 		AEGfxTextureSet(hovered ? pBtnHoverTex : pBtnNormalTex, 0, 0);
