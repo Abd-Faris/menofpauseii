@@ -43,8 +43,15 @@
 		};
 
 		// draws a textured button, swapping to hover texture if mouse is over it
+		bool btnsfx{ false };
 		void drawTexturedButton(GfxButton& btn, AEVec2& mousepos) {
 			bool hovered = Comp::collisionPointRect(mousepos, btn.pos, btn.size);
+
+			if (hovered && !btn.hovered) {
+				SFX::playSFX(SFX_UI_BUTTON_HOVER);
+			}
+			btn.hovered = hovered;
+
 
 			AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
 			AEGfxTextureSet(hovered ? pBtnHoverTex : pBtnNormalTex, 0, 0);
@@ -65,6 +72,7 @@
 
 		// prints main menu UI
 		void printMainMenuUI(AEVec2& mousepos) {
+			btnsfx = false;
 			for (GfxButton& button : mainMenuButtons) {
 				drawTexturedButton(button, mousepos);
 			}
@@ -107,6 +115,7 @@
 
 				// if not colliding, continue
 				if (!Comp::collisionPointRect(mousepos, btn.pos, btn.size)) continue;
+				SFX::playSFX(SFX_UI_BUTTON_SELECT);
 
 				// if less than 0, do exit screen logic
 				if (btn.nextGS < 0) {

@@ -12,6 +12,7 @@ struct GfxButton {
 	AEVec2 pos, size;
 	AEGfxVertexList* mesh;
 	int nextGS{}; // if not set, defaults to main menu 
+	bool hovered{ false }; // for SFX triggers
 };
 
 namespace Graphics {

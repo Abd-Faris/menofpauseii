@@ -31,8 +31,14 @@ namespace {
         {"Back",          1.f,  0, 0, 0, 255, {0,   -350}},
     };
 
+    bool btnsfx{ false };
     void drawTexturedButton(GfxButton& btn, AEVec2& mousepos) {
         bool hovered = Comp::collisionPointRect(mousepos, btn.pos, btn.size);
+
+        if (hovered && !btn.hovered) {
+            SFX::playSFX(SFX_UI_BUTTON_HOVER);
+        }
+        btn.hovered = hovered;
 
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
         AEGfxTextureSet(hovered ? pBtnHoverTex : pBtnNormalTex, 0, 0);
@@ -99,6 +105,7 @@ namespace {
 
         for (GfxButton& btn : mainMenuButtons) {
             if (!Comp::collisionPointRect(mousepos, btn.pos, btn.size)) continue;
+            SFX::playSFX(SFX_UI_BUTTON_SELECT);
 
             if (btn.nextGS < 0) {
                 handleButton(btn.nextGS);

@@ -80,9 +80,15 @@ namespace {
     }
 
     // graphics on buttons
+    bool btnsfx{ false };
     void drawTexturedButton(GfxButton& btn, AEVec2& mousepos) {
         bool hovered = Comp::collisionPointRect(mousepos, btn.pos, btn.size);
         
+        if (hovered && !btn.hovered) {
+            SFX::playSFX(SFX_UI_BUTTON_HOVER);
+        }
+        btn.hovered = hovered;
+
         // AE Settings
         AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
         AEGfxTextureSet(hovered ? pBtnHoverTex : pBtnNormalTex, 0, 0);
@@ -147,6 +153,7 @@ namespace {
         if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
         for (GfxButton& btn : settingsButtons) {
             if (!Comp::collisionPointRect(mousepos, btn.pos, btn.size)) continue;
+            SFX::playSFX(SFX_UI_BUTTON_SELECT);
             if (btn.nextGS < 0) { handleButton(btn.nextGS); break; }
             GS_next = btn.nextGS;
             break;

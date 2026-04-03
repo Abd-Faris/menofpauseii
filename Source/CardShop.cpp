@@ -33,8 +33,8 @@ namespace { // functions for InitializeCardShop()
 	AEGfxTexture* pTrashTex = nullptr; // trash.png
 	AEGfxTexture* pBtnNormalTex = nullptr; // button default texture
 	AEGfxTexture* pBtnHoverTex = nullptr; // button on hover texture
-	AEGfxVertexList* pPanelMesh = nullptr; // shared UV mesh for panels
 	AEGfxVertexList* pBtnMesh = nullptr; // button mesh
+	AEGfxVertexList* pPanelMesh = nullptr; // shared UV mesh for panels
 
 
 	// spritesheet constants
@@ -437,21 +437,6 @@ namespace { // functions for UpdateCardShop()
 			--rolls_left;
 		}
 	}
-
-	void checkContinue() {
-		// skip if left click not clicked
-		if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
-
-		// get cursor position
-		AEVec2 mousepos{};
-		Comp::getCursorPos(mousepos);
-
-		// if user clicked within shop bounds
-		if (Comp::collisionPointRect(mousepos, { -200, 40 }, { 1100, 380 })) {
-			// set next gs back to GS_GAME
-			GS_next = GS_GAME;
-		}
-	}
 }
 
 void UpdateCardShop() {
@@ -479,11 +464,7 @@ void UpdateCardShop() {
 	else {
 		checkCardCollision();
 		if (rolls_left > 0) checkReroll();
-	} // endif
-
-	// if player cant buy any more cards, check if player selected to continue
-	if (buyable_left <= 0) checkContinue();
-	
+	} // endif	
 }
 
 namespace { // functions for DrawCardShop()
@@ -681,15 +662,6 @@ namespace { // functions for DrawCardShop()
 		if (Comp::collisionPointRect(card.pos, { 575, 0 }, { 350,800 })) {
 			// dont display if selectedCard was from the bag deck
 			if ((card.from == DECK::BAG)) return;
-			// display bag deck prompt with texture
-			//AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-			//AEGfxTextureSet(pShopTex, 0, 0);
-			//AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
-			//AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
-			//AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-			//AEGfxSetTransparency(1.f);
-			//Gfx::printMesh(pPanelMesh, { 575, 0 }, { 350, 800 }, 0.f, { 0.f, 0.f }, true);
-			//AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 			GfxText text{ "Add to Bag", 0.8f };
 			text.pos = { 575, 120 };
 			Gfx::printText(text, boldPixels);
@@ -698,15 +670,6 @@ namespace { // functions for DrawCardShop()
 		else if (Comp::collisionPointRect(card.pos, { -125, -300 }, { 950, 200 })) {
 			// dont display if selectedCard was from the active deck
 			if ((card.from == DECK::ACTIVE)) return;
-			// display active deck prompt with texture
-			//AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-			//AEGfxTextureSet(pSlotsTex, 0, 0);
-			//AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
-			//AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
-			//AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-			//AEGfxSetTransparency(1.f);
-			//Gfx::printMesh(pPanelMesh, { -125, -300 }, { 950, 200 }, 0.f, { 0.f, 0.f }, true);
-			//AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 			GfxText text{ "Add to Active Cards", 0.6f };
 			text.pos = { -125, -260 };
 			Gfx::printText(text, boldPixels);
@@ -810,7 +773,7 @@ namespace { // functions for DrawCardShop()
 		text.pos = { -200, 180 };
 
 		text.text += "Current Wave: " + std::to_string(currentWave) + "\n\n\n\n\n";
-		text.text += "CLICK ANYWHERE HERE TO CONTINUE\n\n\n\n\n";
+		text.text += "CLICK NEXT ROUND TO CONTINUE\n\n\n\n\n";
 
 		int nextBoss{ 6 - (currentWave % 5) };
 		// if boss spawns next wave, wish them luck
@@ -860,13 +823,7 @@ void DrawCardShop() {
 }
 
 void FreeCardShop() {
-	// free meshes
-	AEGfxMeshFree(rectMesh);
-	AEGfxMeshFree(bag);
-	AEGfxMeshFree(shop);
-	AEGfxMeshFree(desc);
-	AEGfxMeshFree(cardSlots);
-	AEGfxMeshFree(trash);
+
 	PauseScreen::FreePause();
 
 	shopCards.clear(); // clear shop array
@@ -910,8 +867,18 @@ void UnloadCardShop() {
 	if (pBgTex) { AEGfxTextureUnload(pBgTex);     pBgTex = nullptr; }
 	if (pShopTex) { AEGfxTextureUnload(pShopTex);   pShopTex = nullptr; }
 	if (pSlotsTex) { AEGfxTextureUnload(pSlotsTex);  pSlotsTex = nullptr; }
+	if (pBtnNormalTex) { AEGfxTextureUnload(pBtnNormalTex);  pBtnNormalTex = nullptr; }
+	if (pBtnHoverTex) { AEGfxTextureUnload(pBtnHoverTex);  pBtnHoverTex = nullptr; }
 	if (pTrashTex) { AEGfxTextureUnload(pTrashTex);  pTrashTex = nullptr; }
 	if (pPanelMesh) { AEGfxMeshFree(pPanelMesh);      pPanelMesh = nullptr; }
+	// free meshes
+	AEGfxMeshFree(rectMesh);
+	AEGfxMeshFree(bag);
+	AEGfxMeshFree(shop);
+	AEGfxMeshFree(desc);
+	AEGfxMeshFree(cardSlots);
+	AEGfxMeshFree(trash);
+	AEGfxMeshFree(pBtnMesh);
 }
 
 namespace Cards {

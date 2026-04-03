@@ -71,6 +71,22 @@ namespace SFX {
 	const std::vector<std::vector<std::string>> sfxPaths = {
 		{ "Assets/audio/sfx/Enemy_Death1.mp3", "Assets/audio/sfx/Enemy_Death2.mp3" }, // SFX_ENEMY_DEATH
 		{ "Assets/audio/sfx/Enemy_Shoot.mp3"}, // SFX_ENEMY_SHOOT
+		{ "Assets/audio/sfx/Enemy_TakeDamage1.mp3", "Assets/audio/sfx/Enemy_TakeDamage2.mp3" }, // SFX_ENEMY_HIT
+		{ "Assets/audio/sfx/Player_Shoot.mp3"}, // SFX_PLAYER_SHOOT
+		{ "Assets/audio/sfx/Player_TakeDamage1.mp3", "Assets/audio/sfx/Player_TakeDamage2.mp3" }, // SFX_ENEMY_HIT
+		{ "Assets/audio/sfx/UI_Button_Hover.mp3"}, // SFX_UI_BUTTON_HOVER
+		{ "Assets/audio/sfx/UI_Button_Select.mp3"}, // SFX_UI_BUTTON_SELECT
+	};
+
+	// per-type volume normalisation multiplier (tweak these values)
+	const std::vector<float> sfxNorm = {
+		1.0f,  // SFX_ENEMY_DEATH
+		0.8f,  // SFX_ENEMY_SHOOT
+		1.0f,  // SFX_ENEMY_HIT
+		0.6f,  // SFX_PLAYER_SHOOT
+		0.6f,  // SFX_PLAYER_HIT
+		1.0f,  // SFX_UI_BUTTON_HOVER
+		2.0f,  // SFX_UI_BUTTON_SELECT
 	};
 
 	void load() {
@@ -136,9 +152,11 @@ namespace SFX {
 
 		// randomise which sfx in sfxtype to play
 		int idx = (int)(AERandFloat() * sfxLibrary[id].size());
-		std::cout << idx << std::endl;
+		//std::cout << idx << std::endl;
+		// compute volume
+		float volume = sfxVolume * sfxNorm[id];
 		// play sfx
-		AEAudioPlay(sfxLibrary[id][idx], sfx, sfxVolume, 1.0f, 0);
+		AEAudioPlay(sfxLibrary[id][idx], sfx, volume, 1.0f, 0);
 	}
 }
 

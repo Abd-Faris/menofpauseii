@@ -324,6 +324,7 @@ void ShootBullet(shape& player, float deltaTime) {
 
         // Fire only when the timer has reached or exceeded the fire_rate
         if (bulletFireTimer >= fire_rate) {
+            SFX::playSFX(SFX_PLAYER_SHOOT);
             SpawnBullet(player);
         }
     }

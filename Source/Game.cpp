@@ -96,6 +96,7 @@ void circlerectcollision() {
             float bulletRadius = (currentEnemy.scale * GameConfig::Enemy::HITBOX_RATIO) + boolet.size;
 
             if (bulletDistSq < (bulletRadius * bulletRadius)) {
+                SFX::playSFX(SFX_ENEMY_HIT);
                 TriggerBulletImpact(boolet.posX, boolet.posY, boolet.directionX, boolet.directionY);
                 currentEnemy.hp -= (int)(currentdmg * boolet.damagemul);
                 boolet.isActive = false;
@@ -138,6 +139,7 @@ void circlerectcollision() {
             }
 
             if (hit) {
+                SFX::playSFX(SFX_PLAYER_HIT);
                 TriggerBulletImpact(enBullet.posX, enBullet.posY, enBullet.directionX, enBullet.directionY);
                 player_init.current_hp -= 10;
                 enBullet.isActive = false;
