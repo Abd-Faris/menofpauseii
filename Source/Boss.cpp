@@ -774,9 +774,9 @@ void DrawBoss(Boss& boss, AEGfxVertexList* MeshRect, AEGfxVertexList* MeshCircle
     );
 
     Gfx::printMesh(pBossMesh, boss.pos, { boss.scale, boss.scale }, rotRad, { 0.f, 0.f }, true);
-
-    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    
 
     // BOSS4 extras
     if (boss.bosstype == BOSS4) {

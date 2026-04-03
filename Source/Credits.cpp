@@ -13,11 +13,11 @@ static AEGfxVertexList* pSandMesh = nullptr;
 
 std::vector<GfxText> CreditTexts{
 		{"Men of Pause Production",    1.f, 0, 0, 0, 255, {0, -200}},
-		{"Digipen Executives\n\nPresident Claude Comair\n\nPrasanna Ghali", 1.f, 0, 0, 0, 255, {0, 0}},
-		{"Instructors\n\nGerald\n\nTommy\n\nDr. Sooroor\n",    1.f, 0, 0, 0, 255, {0, 200}},
-		{"Our Team\nFaris\nIzzat the goat\nShao Wei\nZi Hao\n",    1.f, 0, 0, 0, 255, {0, 400}},
-		{"Assets\n\nGraphics\nPiskel\nFontMeme\nKenney\n",    1.f, 0, 0, 0, 255, {0, 600}},
-		{"Audio\nBosca Ceoil\nSoundly\n",    1.f, 0, 0, 0, 255, {0, 800}},
+		{"Digipen Executives\n\nPresident Claude Comair\n\nPrasanna Ghali", 1.f, 0, 0, 0, 255},
+		{"Instructors\n\nGerald\n\nTommy\n\nDr. Sooroor\n",    1.f, 0, 0, 0, 255},
+		{"Our Team\n\nFaris\n\nIzzat the goat\n\nShao Wei\n\nZi Hao\n",    1.f, 0, 0, 0, 255},
+		{"Assets\n\n\nGraphics\n\nPiskel\n\nFontMeme\n\nKenney\n",    1.f, 0, 0, 0, 255},
+		{"Audio\n\nBosca Ceoil\n\nSoundly\n",    1.f, 0, 0, 0, 255},
 };
 
 void LoadCredits() {
@@ -37,13 +37,12 @@ void LoadCredits() {
 
 void InitializeCredits() {
 	struct AEVec2 init[] = {
-		{ 0, 0 },  // Men of Pause
-		// Executives
+		{ 0, 0 }, 
 		{ 0, -400 },
 		{ 0, -800 },
-		{ 0, -1200 }, // Instructors
-		{ 0, -1600 },
-		{ 0, -2000 },
+		{ 0, -1300 }, 
+		{ 0, -1900 },
+		{ 0, -2500 },
 
 	};
 	for (int i = 0; i < CreditTexts.size(); i++) {
