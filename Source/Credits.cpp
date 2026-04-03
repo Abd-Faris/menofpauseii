@@ -14,13 +14,17 @@
 // ~ Brief: Texture and mesh used for the credits menu background.
 static AEGfxTexture* pSandTex = nullptr;
 static AEGfxVertexList* pSandMesh = nullptr;
+static double Timer = 0.0;        // Tracks how long the logo has been on screen
+AEGfxTexture* dpLogo = nullptr;  // Pointer to the loaded logo image data
+AEGfxVertexList* dpLogoMesh = nullptr;       // 2D square mesh to paint the texture onto
 
+static float logoYPos = 0.0f;
 // ~ Brief: Collection of credit strings, styling, and initial position offsets.
 std::vector<GfxText> CreditTexts{
 		{"Men of Pause Production",    1.f, 0, 0, 0, 255},
 		{"Digipen Executives\n\nPresident Claude Comair\n\nPrasanna Ghali", 1.f, 0, 0, 0, 255},
 		{"Instructors\n\nGerald\n\nTommy\n\nDr. Sooroor\n",    1.f, 0, 0, 0, 255},
-		{"Our Team\n\nFaris\n\nIzzat the goat\n\nShao Wei\n\nZi Hao\n",    1.f, 0, 0, 0, 255},
+		{"\nOur Team\n\nFaris\n\nIzzat the goat\n\nShao Wei\n\nZi Hao\n",    1.f, 0, 0, 0, 255},
 		{"Assets\n\n\nGraphics\n\nPiskel\n\nFontMeme\n\nKenney\n",    1.f, 0, 0, 0, 255},
 		{"Audio\n\nBosca Ceoil\n\nSoundly\n",    1.f, 0, 0, 0, 255},
 };
@@ -43,27 +47,52 @@ void LoadCredits() {
 		0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
 		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
 	pSandMesh = AEGfxMeshEnd();
+
+	// Load the Digipen Textire
+	dpLogo = AEGfxTextureLoad("./Assets/DigiPen_Singapore_WEB_RED.png");
+
+	if (dpLogo == nullptr) {
+		std::cout << "ERROR: Failed to load DP Logo texture!" << std::endl;
+	}
+
+	// Create a UV-mapped mesh for the logo
+	AEGfxMeshStart();
+	AEGfxTriAdd(
+		-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
+		0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+	AEGfxTriAdd(
+		0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+		0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
+		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+	dpLogoMesh = AEGfxMeshEnd();
 }
 
 // ~ Brief: Reset the positions of all credit text blocks to their starting scroll values.
 void InitializeCredits() {
 	struct AEVec2 init[] = {
-		{ 0, 0 },
-		{ 0, -400 },
-		{ 0, -800 },
-		{ 0, -1300 },
-		{ 0, -1900 },
-		{ 0, -2500 },
+		{ 0, 100 },
+		{ 0, -100 },
+		{ 0, -500 },
+		{ 0, -900 },
+		{ 0, -1500 },
+		{ 0, -2100 },
 
 	};
 	for (int i = 0; i < CreditTexts.size(); i++) {
 		CreditTexts[i].pos = init[i];
 	}
+
+	logoYPos = 300.0f;
 }
 
 // ~ Brief: Update scroll positions and handle input for skipping or exiting the credits.
 void UpdateCredits() {
 	float deltaTime = (float)AEFrameRateControllerGetFrameTime();
+	Timer += (double)deltaTime;
+
+	if (Timer >= 2) {
+	logoYPos += 200.f * deltaTime;
 
 	// Scroll up each frame
 	for (GfxText& c : CreditTexts) // reference not copy
@@ -72,7 +101,7 @@ void UpdateCredits() {
 	// Go back to main menu when done
 	if (CreditTexts[5].pos.y > 800.f)
 		GS_next = GS_MAIN_MENU;
-
+	}
 	// Or press any key to skip
 	if (AEInputCheckTriggered(AEVK_ESCAPE))
 		GS_next = GS_MAIN_MENU;
@@ -98,14 +127,41 @@ void DrawCredits() {
 	for (GfxText& c : CreditTexts)
 		Gfx::printMultiline(c, boldPixels);
 
+	if (dpLogo && dpLogoMesh) {
+		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+		AEGfxTextureSet(dpLogo, 0, 0);
+
+		AEMtx33 scale, trans, final;
+
+		// Keep your scaling logic (or make it static if you don't want it to grow)
+		AEMtx33Scale(&scale, 600.0f, 200.0f);
+
+		// USE THE SCROLLING Y POSITION HERE
+		AEMtx33Trans(&trans, 0.0f, logoYPos);
+
+		AEMtx33Concat(&final, &trans, &scale);
+		AEGfxSetTransform(final.m);
+		AEGfxMeshDraw(dpLogoMesh, AE_GFX_MDM_TRIANGLES);
+	}
 }
 
 // ~ Brief: Free the background mesh from memory.
 void FreeCredits() {
 	if (pSandMesh) { AEGfxMeshFree(pSandMesh); pSandMesh = nullptr; }
+
+	Timer = 0;
 }
 
 // ~ Brief: Unload the background texture from memory.
 void UnloadCredits() {
 	if (pSandTex) { AEGfxTextureUnload(pSandTex); pSandTex = nullptr; }
+
+	if (dpLogo != nullptr) {
+		AEGfxTextureUnload(dpLogo);
+		dpLogo = nullptr;
+	}
+	if (dpLogoMesh != nullptr) {
+		AEGfxMeshFree(dpLogoMesh);
+		dpLogoMesh = nullptr;
+	}
 }
