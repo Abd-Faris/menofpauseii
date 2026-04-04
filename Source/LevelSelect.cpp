@@ -135,6 +135,8 @@ namespace {
 
         case -3:  // New Game — wipe save and start fresh
             DeleteSave();
+            reset_game();
+            Cards::resetCards();
             hasSave = false;
             GS_next = GS_GAME;
             break;
