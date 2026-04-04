@@ -1,167 +1,210 @@
+// ----------------------------- Gloomy's Revenge ----------------------------- //
+// File:    Results.cpp
+// Authors: [Men of Pause II]
+// Brief:   Implements the results screen shown after a win or loss.
+//          Displays a victory or game over background with appropriate buttons,
+//          and handles navigation back to the main menu or card shop.
+// ------------------------------------------------------------------------- //
+
 #include "MasterHeader.h"
 
-// Global flag to determine screen state
+// ~ Brief: Global flag set by the game state before transitioning to results.
+//          true = player won, false = player lost. Drives which UI is shown.
 bool gameWon = false;
 
 namespace {
-	// declares AE objects
-	AEGfxVertexList* pBgMesh = nullptr;
-	AEGfxVertexList* pBtnMesh = nullptr;
-	AEGfxTexture* pBgWinTex = nullptr;
-	AEGfxTexture* pBgLoseTex = nullptr;
-	AEGfxTexture* pBtnNormalTex = nullptr;
-	AEGfxTexture* pBtnHoverTex = nullptr;
+    // ~ Brief: Shared meshes and textures for the results screen background and buttons.
+    AEGfxVertexList* pBgMesh = nullptr;
+    AEGfxVertexList* pBtnMesh = nullptr;
+    AEGfxTexture* pBgWinTex = nullptr;
+    AEGfxTexture* pBgLoseTex = nullptr;
+    AEGfxTexture* pBtnNormalTex = nullptr;
+    AEGfxTexture* pBtnHoverTex = nullptr;
 
-	// --- VICTORY UI ---
-	std::vector<GfxButton> winButtons{
-		{{-200, -200}, {300, 100}, nullptr, GS_CARD_SHOP},
-		{{200, -200}, {300, 100}, nullptr, GS_MAIN_MENU}
-	};
-	std::vector<GfxText> winButtonTexts{
-		{"Continue",  0.75f, 0, 0, 0, 255, {-200, -200}},
-		{"Main Menu", 0.75f, 0, 0, 0, 255, {200,  -200}},
-		{"VICTORY!",  2.5f, 0, 255, 0, 255, {0, 50}}
-	};
+    // -------------------------------------------------------------------------
+    // VICTORY UI
+    // -------------------------------------------------------------------------
 
-	// --- DEFEAT UI ---
-	std::vector<GfxButton> loseButtons{
-		{{0, -200}, {300, 100}, nullptr, GS_MAIN_MENU}
-	};
-	std::vector<GfxText> loseButtonTexts{
-		{"Main Menu", 0.75f, 0, 0, 0, 255, {0, -200}},
-		{"GAME OVER", 2.5f, 255, 0, 0, 255, {0, 50}}
-	};
+    // ~ Brief: Buttons shown on the victory screen.
+    //          Continue advances to the card shop; Main Menu returns to the main menu.
+    std::vector<GfxButton> winButtons{
+        {{-200, -200}, {300, 100}, nullptr, GS_CARD_SHOP},
+        {{ 200, -200}, {300, 100}, nullptr, GS_MAIN_MENU}
+    };
 
-	// draws a textured button, swapping to hover texture if mouse is over it
-	void drawTexturedButton(GfxButton& btn, AEVec2& mousepos) {
-		bool hovered = Comp::collisionPointRect(mousepos, btn.pos, btn.size);
+    // ~ Brief: Text labels for the victory screen buttons and title.
+    std::vector<GfxText> winButtonTexts{
+        {"Continue",  0.75f, 0,   0,   0,   255, {-200, -200}},
+        {"Main Menu", 0.75f, 0,   0,   0,   255, { 200, -200}},
+        {"VICTORY!",  2.5f,  0,   255, 0,   255, {0,     50}}
+    };
 
-		AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-		AEGfxTextureSet(hovered ? pBtnHoverTex : pBtnNormalTex, 0, 0);
-		AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
-		AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
-		AEGfxSetBlendMode(AE_GFX_BM_BLEND);
-		AEGfxSetTransparency(1.f);
+    // -------------------------------------------------------------------------
+    // DEFEAT UI
+    // -------------------------------------------------------------------------
 
-		AEMtx33 scale, trans, final;
-		AEMtx33Scale(&scale, btn.size.x, btn.size.y);
-		AEMtx33Trans(&trans, btn.pos.x, btn.pos.y);
-		AEMtx33Concat(&final, &trans, &scale);
-		AEGfxSetTransform(final.m);
-		AEGfxMeshDraw(pBtnMesh, AE_GFX_MDM_TRIANGLES);
+    // ~ Brief: Buttons shown on the defeat screen.
+    //          Only option is to return to the main menu.
+    std::vector<GfxButton> loseButtons{
+        {{0, -200}, {300, 100}, nullptr, GS_MAIN_MENU}
+    };
 
-		AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-	}
+    // ~ Brief: Text labels for the defeat screen button and title.
+    std::vector<GfxText> loseButtonTexts{
+        {"Main Menu", 0.75f, 0,   0, 0, 255, {0, -200}},
+        {"GAME OVER", 2.5f,  255, 0, 0, 255, {0,    50}}
+    };
 
-	void printResultsUI(AEVec2& mousepos) {
-		std::vector<GfxButton>& buttons = gameWon ? winButtons : loseButtons;
-		std::vector<GfxText>& texts = gameWon ? winButtonTexts : loseButtonTexts;
+    // -------------------------------------------------------------------------
+    // DRAW HELPERS
+    // -------------------------------------------------------------------------
 
-		for (GfxButton& button : buttons) {
-			drawTexturedButton(button, mousepos);
-		}
-		for (GfxText& text : texts) {
-			Gfx::printText(text, boldPixels);
-		}
-	}
+    // ~ Brief: Draw a single textured button, swapping to the hover texture
+    //          when the mouse cursor is over it.
+    void drawTexturedButton(GfxButton& btn, AEVec2& mousepos) {
+        bool hovered = Comp::collisionPointRect(mousepos, btn.pos, btn.size);
 
-	void clickToNextState() {
-		if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        AEGfxTextureSet(hovered ? pBtnHoverTex : pBtnNormalTex, 0, 0);
+        AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+        AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+        AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+        AEGfxSetTransparency(1.f);
 
-		AEVec2 mousepos{};
-		Comp::getCursorPos(mousepos);
+        AEMtx33 scale, trans, final;
+        AEMtx33Scale(&scale, btn.size.x, btn.size.y);
+        AEMtx33Trans(&trans, btn.pos.x, btn.pos.y);
+        AEMtx33Concat(&final, &trans, &scale);
+        AEGfxSetTransform(final.m);
+        AEGfxMeshDraw(pBtnMesh, AE_GFX_MDM_TRIANGLES);
 
-		std::vector<GfxButton>& buttons = gameWon ? winButtons : loseButtons;
+        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    }
 
-		for (GfxButton& btn : buttons) {
-			if (!Comp::collisionPointRect(mousepos, btn.pos, btn.size)) continue;
+    // ~ Brief: Draw all buttons and text for the current result screen.
+    //          Selects win or lose UI based on the gameWon flag.
+    void printResultsUI(AEVec2& mousepos) {
+        std::vector<GfxButton>& buttons = gameWon ? winButtons : loseButtons;
+        std::vector<GfxText>& texts = gameWon ? winButtonTexts : loseButtonTexts;
 
-			// Logic for resetting game data when returning to menu
-			if (btn.nextGS == GS_MAIN_MENU) {
-				reset_game();
-				Cards::resetCards();
-				resetTutorial();
-				if (!gameWon) DeleteSave();
-				gamecurrrun = false;
-			}
+        for (GfxButton& button : buttons)
+            drawTexturedButton(button, mousepos);
+        for (GfxText& text : texts)
+            Gfx::printText(text, boldPixels);
+    }
 
-			GS_next = btn.nextGS;
-			break;
-		}
-	}
-}
+    // -------------------------------------------------------------------------
+    // INPUT HANDLING
+    // -------------------------------------------------------------------------
 
+    // ~ Brief: Check for button clicks and transition to the appropriate game state.
+    //          When returning to the main menu, resets all game and card state,
+    //          clears the tutorial flag, and deletes the save file on a loss.
+    void clickToNextState() {
+        if (!AEInputCheckTriggered(AEVK_LBUTTON)) return;
+
+        AEVec2 mousepos{};
+        Comp::getCursorPos(mousepos);
+
+        std::vector<GfxButton>& buttons = gameWon ? winButtons : loseButtons;
+
+        for (GfxButton& btn : buttons) {
+            if (!Comp::collisionPointRect(mousepos, btn.pos, btn.size)) continue;
+
+            // Clean up all run state before returning to the main menu
+            if (btn.nextGS == GS_MAIN_MENU) {
+                reset_game();
+                Cards::resetCards();
+                resetTutorial();
+                if (!gameWon) DeleteSave(); // only delete save on loss — win save handled elsewhere
+                gamecurrrun = false;
+            }
+
+            GS_next = btn.nextGS;
+            break;
+        }
+    }
+
+} // namespace
+
+// =============================================================================
+// LOAD / FREE
+// =============================================================================
+
+// ~ Brief: Load win and loss background textures, button textures, and build
+//          the UV-mapped unit quad meshes for the background and buttons.
 void LoadResults() {
-	// Load textures
-	pBgWinTex = AEGfxTextureLoad("./Assets/victory.png");
-	pBgLoseTex = AEGfxTextureLoad("./Assets/lose.png");
-	pBtnNormalTex = AEGfxTextureLoad("./Assets/mainmenubutton1.png");
-	pBtnHoverTex = AEGfxTextureLoad("./Assets/mainmenubutton2.png");
+    pBgWinTex = AEGfxTextureLoad("./Assets/victory.png");
+    pBgLoseTex = AEGfxTextureLoad("./Assets/lose.png");
+    pBtnNormalTex = AEGfxTextureLoad("./Assets/mainmenubutton1.png");
+    pBtnHoverTex = AEGfxTextureLoad("./Assets/mainmenubutton2.png");
 
-	// UV mapped mesh for background
-	AEGfxMeshStart();
-	AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
-		0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
-		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-	AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
-		0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
-		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-	pBgMesh = AEGfxMeshEnd();
+    // Background mesh
+    AEGfxMeshStart();
+    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
+        0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+    AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+        0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
+        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+    pBgMesh = AEGfxMeshEnd();
 
-	// UV mapped mesh for buttons
-	AEGfxMeshStart();
-	AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
-		0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
-		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-	AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
-		0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
-		-0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
-	pBtnMesh = AEGfxMeshEnd();
+    // Button mesh
+    AEGfxMeshStart();
+    AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
+        0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+    AEGfxTriAdd(0.5f, -0.5f, 0xFFFFFFFF, 1.0f, 1.0f,
+        0.5f, 0.5f, 0xFFFFFFFF, 1.0f, 0.0f,
+        -0.5f, 0.5f, 0xFFFFFFFF, 0.0f, 0.0f);
+    pBtnMesh = AEGfxMeshEnd();
 }
 
+// ~ Brief: Assign the button mesh to all win and lose buttons.
+//          Called each time the results state is entered.
 void InitializeResults() {
-	// Assign meshes to buttons
-	for (GfxButton& button : winButtons) {
-		button.mesh = pBtnMesh;
-	}
-	for (GfxButton& button : loseButtons) {
-		button.mesh = pBtnMesh;
-	}
+    for (GfxButton& button : winButtons)  button.mesh = pBtnMesh;
+    for (GfxButton& button : loseButtons) button.mesh = pBtnMesh;
 }
 
+// ~ Brief: Poll for button clicks and handle state transitions.
 void UpdateResults() {
-	clickToNextState();
+    clickToNextState();
 }
 
+// ~ Brief: Draw the win or lose background texture scaled to fill the window,
+//          then draw the appropriate buttons and text on top.
 void DrawResults() {
-	AEGfxSetRenderMode(AE_GFX_RM_COLOR);
-	AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
-	AEGfxSetTransparency(1.f);
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
+    AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
+    AEGfxSetTransparency(1.f);
 
-	// Draw Background based on win/loss
-	AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
-	AEGfxTextureSet(gameWon ? pBgWinTex : pBgLoseTex, 0, 0);
-	AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
-	AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    // Full-screen background — victory or defeat texture based on outcome
+    AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+    AEGfxTextureSet(gameWon ? pBgWinTex : pBgLoseTex, 0, 0);
+    AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
 
-	AEMtx33 scale, trans, final;
-	AEMtx33Scale(&scale, (float)AEGfxGetWindowWidth(), (float)AEGfxGetWindowHeight());
-	AEMtx33Trans(&trans, 0.f, 0.f);
-	AEMtx33Concat(&final, &trans, &scale);
-	AEGfxSetTransform(final.m);
-	AEGfxMeshDraw(pBgMesh, AE_GFX_MDM_TRIANGLES);
+    AEMtx33 scale, trans, final;
+    AEMtx33Scale(&scale, (float)AEGfxGetWindowWidth(), (float)AEGfxGetWindowHeight());
+    AEMtx33Trans(&trans, 0.f, 0.f);
+    AEMtx33Concat(&final, &trans, &scale);
+    AEGfxSetTransform(final.m);
+    AEGfxMeshDraw(pBgMesh, AE_GFX_MDM_TRIANGLES);
 
-	AEVec2 mousepos{};
-	Comp::getCursorPos(mousepos);
-
-	printResultsUI(mousepos);
+    // Buttons and text
+    AEVec2 mousepos{};
+    Comp::getCursorPos(mousepos);
+    printResultsUI(mousepos);
 }
 
+// ~ Brief: Free all meshes and unload all textures used by the results screen.
+//          All pointers are set to nullptr after freeing to prevent double-free.
 void FreeResults() {
-	if (pBgMesh) { AEGfxMeshFree(pBgMesh);            pBgMesh = nullptr; }
-	if (pBtnMesh) { AEGfxMeshFree(pBtnMesh);           pBtnMesh = nullptr; }
-	if (pBgWinTex) { AEGfxTextureUnload(pBgWinTex);      pBgWinTex = nullptr; }
-	if (pBgLoseTex) { AEGfxTextureUnload(pBgLoseTex);     pBgLoseTex = nullptr; }
-	if (pBtnNormalTex) { AEGfxTextureUnload(pBtnNormalTex);  pBtnNormalTex = nullptr; }
-	if (pBtnHoverTex) { AEGfxTextureUnload(pBtnHoverTex);   pBtnHoverTex = nullptr; }
+    if (pBgMesh) { AEGfxMeshFree(pBgMesh);              pBgMesh = nullptr; }
+    if (pBtnMesh) { AEGfxMeshFree(pBtnMesh);             pBtnMesh = nullptr; }
+    if (pBgWinTex) { AEGfxTextureUnload(pBgWinTex);       pBgWinTex = nullptr; }
+    if (pBgLoseTex) { AEGfxTextureUnload(pBgLoseTex);      pBgLoseTex = nullptr; }
+    if (pBtnNormalTex) { AEGfxTextureUnload(pBtnNormalTex);   pBtnNormalTex = nullptr; }
+    if (pBtnHoverTex) { AEGfxTextureUnload(pBtnHoverTex);    pBtnHoverTex = nullptr; }
 }
