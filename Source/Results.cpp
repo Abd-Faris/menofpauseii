@@ -82,6 +82,7 @@ namespace {
 				Cards::resetCards();
 				resetTutorial();
 				if (!gameWon) DeleteSave();
+				gamecurrrun = false;
 			}
 
 			GS_next = btn.nextGS;
