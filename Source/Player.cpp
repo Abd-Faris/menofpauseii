@@ -22,6 +22,7 @@ float orbitPosX = 0.0f;       // World X position of the shield
 float orbitPosY = 0.0f;       // World Y position of the shield
 SmokeParticle smokes[100];    // Object pool for damage smoke effect
 AEGfxTexture* pBulletTex = nullptr;
+AEGfxTexture* pOrbitTex = nullptr;
 AEGfxVertexList* pBulletMesh = nullptr;
 
 // ------WEAPON DRAWING LOGIC----------------------------------------------- //
@@ -29,6 +30,7 @@ AEGfxVertexList* pBulletMesh = nullptr;
 // ~ Brief:	Loads the texture and generates the mesh data for player bullets.
 void LoadBullets() {
     pBulletTex = AEGfxTextureLoad("Assets/bulletgreen.png");
+    pOrbitTex = AEGfxTextureLoad("./Assets/orbit.png");
 
     AEGfxMeshStart();
     AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
@@ -350,7 +352,7 @@ void updateOrbit(shape& player, float deltaTime) {
     // ACTIVE STATE MATH (Runs every frame if active)
     if (orbitActive) {
         float orbitSpeed = 4.0f;
-        float orbitRadius = 150.0f * (player.scale / GameConfig::Tank::SCALE);
+        float orbitRadius = 180.0f * (player.scale / GameConfig::Tank::SCALE);
 
         orbitAngle += orbitSpeed * deltaTime;
         if (orbitAngle > TWO_PI) orbitAngle -= TWO_PI;
@@ -359,6 +361,24 @@ void updateOrbit(shape& player, float deltaTime) {
         orbitPosX = player.pos_x + cosf(orbitAngle) * orbitRadius;
         orbitPosY = player.pos_y + sinf(orbitAngle) * orbitRadius;
     }
+}
+// ~ Brief:	Draws the orbiting shield sprite at its calculated position
+void DrawOrbit(float playerScale) {
+    if (!orbitActive || pOrbitTex == nullptr || pBulletMesh == nullptr) {
+        return;
+    }
+
+    AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+    AEGfxTextureSet(pOrbitTex, 0, 0);
+    AEGfxSetColorToMultiply(1.0f, 1.0f, 1.0f, 1.0f);
+    AEGfxSetColorToAdd(0.0f, 0.0f, 0.0f, 0.0f);
+    AEGfxSetBlendMode(AE_GFX_BM_BLEND);
+    AEGfxSetTransparency(1.0f);
+
+    float orbitSize = 100.0f * (playerScale / GameConfig::Tank::SCALE);
+
+    Gfx::printMesh(pBulletMesh, { orbitPosX, orbitPosY }, { orbitSize, orbitSize }, orbitAngle, { 0.f, 0.f }, true);
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 }
 
 // ~ Brief:	Handles input and state tracking to toggle the Big Cannon upgrade.
@@ -477,5 +497,6 @@ void updateSmoke(float deltaTime) {
 // ~ Brief:	Unloads bullet textures and frees mesh memory to prevent memory leaks.
 void FreeBullets() {
     if (pBulletTex) { AEGfxTextureUnload(pBulletTex);  pBulletTex = nullptr; }
+    if (pOrbitTex) { AEGfxTextureUnload(pOrbitTex);   pOrbitTex = nullptr; }
     if (pBulletMesh) { AEGfxMeshFree(pBulletMesh);      pBulletMesh = nullptr; }
 }

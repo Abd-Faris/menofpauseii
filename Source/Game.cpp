@@ -393,11 +393,9 @@ void DrawGame() {
     }
     AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 
-    if (orbitActive) {
-        AEGfxSetColorToMultiply(0.0f, 1.0f, 1.0f, 1.0f); // Bright Cyan
-        float orbitSize = 40.0f;
-        Gfx::printMesh(MeshCircle, { orbitPosX, orbitPosY }, { orbitSize, orbitSize }, orbitAngle);
-    }
+    // -- orbit --
+    DrawOrbit(player.scale);
+
     // -- smokes--
     AEGfxSetColorToMultiply(0.4f, 0.4f, 0.4f, 1.0f); // Dark Grey color
     for (const auto& s : smokes) {

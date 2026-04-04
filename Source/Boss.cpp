@@ -18,6 +18,8 @@ extern int currentWave;
 AEGfxTexture* pBossTex = nullptr;
 AEGfxTexture* pMinionTex = nullptr;
 AEGfxVertexList* pBossMesh = nullptr;
+AEGfxTexture* pBossArmTex = nullptr;
+AEGfxTexture* pLaserTex = nullptr;
 
 // ~ Brief: The single active boss instance. Only one boss is alive at a time.
 Boss currentboss;
@@ -31,6 +33,8 @@ Boss currentboss;
 void LoadBoss() {
     pBossTex = AEGfxTextureLoad("./Assets/boss.png");
     pMinionTex = AEGfxTextureLoad("./Assets/minion.png");
+    pBossArmTex = AEGfxTextureLoad("./Assets/bossarm.png");
+    pLaserTex = AEGfxTextureLoad("./Assets/laser.png");
 
     AEGfxMeshStart();
     AEGfxTriAdd(-0.5f, -0.5f, 0xFFFFFFFF, 0.0f, 1.0f,
@@ -48,6 +52,8 @@ void FreeBoss() {
     if (pBossTex) { AEGfxTextureUnload(pBossTex);   pBossTex = nullptr; }
     if (pMinionTex) { AEGfxTextureUnload(pMinionTex);  pMinionTex = nullptr; }
     if (pBossMesh) { AEGfxMeshFree(pBossMesh);        pBossMesh = nullptr; }
+    if (pBossArmTex) { AEGfxTextureUnload(pBossArmTex); pBossArmTex = nullptr; }
+    if (pLaserTex) { AEGfxTextureUnload(pLaserTex);   pLaserTex = nullptr; }
 }
 
 // =============================================================================
@@ -285,6 +291,7 @@ void Boss4ShootGuns(Boss& boss, shape& player, float deltaTime) {
 //          During the active attack the beam is wide and orange.
 //          Returns early if the current attack is not LASER or the laser is inactive.
 void DrawBossLaser(Boss& boss, AEGfxVertexList* MeshRect) {
+	(void)MeshRect;
     if (boss.state == BossState::TELEGRAPHING && boss.currentAttack != Boss3Attack::LASER) return;
     if (!boss.laserActive && boss.state != BossState::TELEGRAPHING) return;
 
@@ -294,18 +301,16 @@ void DrawBossLaser(Boss& boss, AEGfxVertexList* MeshRect) {
         ? GameConfig::Boss::LASER_WIDTH_ACTIVE
         : GameConfig::Boss::LASER_WIDTH_TELEGRAPH;
 
+    AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+    AEGfxTextureSet(pLaserTex, 0, 0);
+    AEGfxSetColorToMultiply(1.f, 1.f, 1.f, boss.laserActive ? 1.f : 0.2f);
+    AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
     for (int i = 0; i < 2; i++) {
-        // Center the rectangle along the beam direction starting from the gun tip
         float midX = guns[i].x + cosf(boss.laserAngle) * laserLength * 0.5f;
         float midY = guns[i].y + sinf(boss.laserAngle) * laserLength * 0.5f;
-
-        if (boss.laserActive)
-            AEGfxSetColorToMultiply(1.0f, 0.2f, 0.0f, 1.f);  // orange — active laser
-        else
-            AEGfxSetColorToMultiply(0.60f, 0.0f, 0.0f, 0.2f); // faint red — telegraph warning
-
-        Gfx::printMesh(MeshRect, { midX, midY }, { laserLength, laserWidth }, boss.laserAngle);
+        Gfx::printMesh(pBossMesh, { midX, midY }, { laserLength, laserWidth }, boss.laserAngle, { 0.f, 0.f }, true);
     }
+    AEGfxSetRenderMode(AE_GFX_RM_COLOR);
 }
 
 // ~ Brief: Draw the boss body texture with a telegraph flash effect.
@@ -347,10 +352,14 @@ void DrawBoss(Boss& boss, AEGfxVertexList* MeshRect, AEGfxVertexList* MeshCircle
         DrawBossLaser(boss, MeshRect);
 
         // Draw gun barrels as dark grey rectangles aligned to gun angle
-        AEGfxSetColorToMultiply(0.3f, 0.3f, 0.3f, 1.f);
+        AEGfxSetRenderMode(AE_GFX_RM_TEXTURE);
+        AEGfxTextureSet(pBossArmTex, 0, 0);
+        AEGfxSetColorToMultiply(1.f, 1.f, 1.f, 1.f);
+        AEGfxSetColorToAdd(0.f, 0.f, 0.f, 0.f);
         for (int i = 0; i < 2; i++) {
-            Gfx::printMesh(MeshRect, guns[i], { boss.scale * 0.4f, boss.scale * 0.15f }, gunRotRad);
+            Gfx::printMesh(pBossMesh, guns[i], { boss.scale * 0.4f, boss.scale * 0.15f }, gunRotRad, { 0.f, 0.f }, true);
         }
+        AEGfxSetRenderMode(AE_GFX_RM_COLOR);
     }
 }
 

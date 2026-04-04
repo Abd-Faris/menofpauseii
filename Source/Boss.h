@@ -15,6 +15,8 @@
 // ~ Brief: Textures used for the boss entity and its summoned minions.
 extern AEGfxTexture* pBossTex;
 extern AEGfxTexture* pMinionTex;
+extern AEGfxTexture* pBossArmTex;
+extern AEGfxTexture* pLaserTex;
 
 // ~ Brief: Shared mesh for rendering the boss sprite.
 extern AEGfxVertexList* pBossMesh;
