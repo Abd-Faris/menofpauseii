@@ -11,7 +11,7 @@ bool mousereleased = false;
 int currentWave = 1;
 float playerFlashTimer = 0.0f;
 float waveActiveTimer = 0.0f;
-
+u32 prevUpgradeFlag = UPGRADE_NONE;
 
 namespace {
     // -- Assets --
@@ -288,6 +288,23 @@ void UpdateGame() {
         PauseScreen::UpdatePause();
 
         if (!player_init.menu_open && !PauseScreen::isPaused) {
+            if (cheatsOn) {
+                // Only sync when a new card upgrade is detected
+                if (upgradeFlag != prevUpgradeFlag) {
+                    Cards::computeCardEffects();
+                    // Force sync new upgrades onto cheat state
+                    if ((upgradeFlag & UPGRADE_BIG_CANNON) && !(prevUpgradeFlag & UPGRADE_BIG_CANNON))
+                        bigcannon = true;
+                    if ((upgradeFlag & UPGRADE_CANNON_180) && !(prevUpgradeFlag & UPGRADE_CANNON_180))
+                        dualback = true;
+                    if ((upgradeFlag & UPGRADE_DUAL_CANNON) && !(prevUpgradeFlag & UPGRADE_DUAL_CANNON))
+                        player.barrelCount = 2;
+                    if ((upgradeFlag & UPGRADE_ORBIT) && !(prevUpgradeFlag & UPGRADE_ORBIT))
+                        orbitActive = true;
+
+                    prevUpgradeFlag = upgradeFlag; // update tracker
+                }
+            }
 
             // 1. Basic Movement & Combat Updates
             UpdateWaveSpawning(deltaTime, player);

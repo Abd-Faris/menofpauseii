@@ -79,32 +79,25 @@ void DrawMultiBarrels(int count, float gap, float pivotOffset, float tankRot, fl
 
 // ------PLAYER INPUT & UPGRADES-------------------------------------------- //
 
-// ~ Brief:	Handles input and state tracking to toggle the dual-barrel upgrade.
+// ~ Brief: Handles input and state tracking to toggle the dual-barrel upgrade.
 void drawBigTank(shape& player) {
-
-    // LEGIT: force dual cannon on if upgrade is active
-    if (upgradeFlag & UPGRADE_DUAL_CANNON) {
-        player.barrelCount = 2;
-        bigcannon = false; // force off big cannon to prevent clashing
-        dualback = false; // Add this!
-        return;
-    }
-    else if (!cheatsOn) {
-        player.barrelCount = 1; // reset if upgrade not active
-    }
-
-    // CHEATS: Toggle double-barrel mode on/off when '4' is pressed
+	// LEGIT: Enable Big Cannon weapon mode when card is present in passive desk
     if (cheatsOn && AEInputCheckTriggered(AEVK_4)) {
         if (player.barrelCount == 1) {
-            // Turn Dual ON
             player.barrelCount = 2;
-            bigcannon = false; // Force turn off big cannon to prevent overlapping visual states
+            bigcannon = false;
             dualback = false;
         }
-        else {
-            // Turn Dual OFF
-            player.barrelCount = 1;
+        else player.barrelCount = 1;
+    }
+	// LEGIT: Enable if card is present in passive deck
+    if (!cheatsOn) {
+        if (upgradeFlag & UPGRADE_DUAL_CANNON) {
+            player.barrelCount = 2;
+            bigcannon = false;
+            dualback = false;
         }
+        else player.barrelCount = 1;
     }
 }
 
@@ -283,26 +276,22 @@ void SpawnBullet(shape& player) {
 // ~ Brief:	Handles input and state tracking to toggle the front-and-back 
 //          shooting upgrade.
 void DualBack(shape& player) {
-
-    // LEGIT: Enable if card is present in passive deck
-    if (upgradeFlag & UPGRADE_CANNON_180) {
-        dualback = true;
-        // Turn off other modes to prevent visual/math glitches
-        player.barrelCount = 1;
-        bigcannon = false;
-        return;
-    }
-    else if (!cheatsOn) { dualback = false; }
-
-    // CHEATS: Toggle front-and-back shooting mode when '6' is pressed
+	// CHEATS: Toggle dual front/back firing mode when '6' is pressed
     if (cheatsOn && AEInputCheckTriggered(AEVK_6)) {
         dualback = !dualback;
-
         if (dualback) {
-            // Turn off other modes to prevent visual/math glitches
             player.barrelCount = 1;
             bigcannon = false;
         }
+    }
+	// LEGIT: Enable if card is present in passive deck
+    if (!cheatsOn) {
+        if (upgradeFlag & UPGRADE_CANNON_180) {
+            dualback = true;
+            player.barrelCount = 1;
+            bigcannon = false;
+        }
+        else dualback = false;
     }
 }
 
@@ -335,21 +324,16 @@ void ShootBullet(shape& player, float deltaTime) {
 // ~ Brief:	Calculates the continuous rotation and positional offsets for the 
 //          orbital shield upgrade.
 void updateOrbit(shape& player, float deltaTime) {
-    // LEGIT Check
-    if (upgradeFlag & UPGRADE_ORBIT) {
-        orbitActive = true;
-    }
-    // If no card, and cheats are OFF, kill the orbit
-    else if (!cheatsOn) {
-        orbitActive = false;
-    }
-
-    // CHEAT Toggle
+	// CHEATS: Toggle orbiting shield when '7' is pressed
     if (cheatsOn && AEInputCheckTriggered(AEVK_7)) {
         orbitActive = !orbitActive;
     }
-
-    // ACTIVE STATE MATH (Runs every frame if active)
+	// LEGIT: Enable if card is present in passive deck, but only if cheats are OFF (prevents conflicts with cheat toggling)
+    if (!cheatsOn) {
+        if (upgradeFlag & UPGRADE_ORBIT) orbitActive = true;
+        else orbitActive = false;
+    }
+	// If the orbit is active, update its angle and calculate its new position around the player
     if (orbitActive) {
         float orbitSpeed = 4.0f;
         float orbitRadius = 180.0f * (player.scale / GameConfig::Tank::SCALE);
@@ -357,11 +341,12 @@ void updateOrbit(shape& player, float deltaTime) {
         orbitAngle += orbitSpeed * deltaTime;
         if (orbitAngle > TWO_PI) orbitAngle -= TWO_PI;
 
-        // Calculate world position based on player center
         orbitPosX = player.pos_x + cosf(orbitAngle) * orbitRadius;
         orbitPosY = player.pos_y + sinf(orbitAngle) * orbitRadius;
     }
 }
+
+
 // ~ Brief:	Draws the orbiting shield sprite at its calculated position
 void DrawOrbit(float playerScale) {
     if (!orbitActive || pOrbitTex == nullptr || pBulletMesh == nullptr) {
@@ -383,28 +368,18 @@ void DrawOrbit(float playerScale) {
 
 // ~ Brief:	Handles input and state tracking to toggle the Big Cannon upgrade.
 void drawBigCannon(shape& player) {
-    // LEGIT: Enable Big Cannon weapon mode when card is present in passive desk
-    if (upgradeFlag & UPGRADE_BIG_CANNON) {
-        bigcannon = true;
-        // Turn Big Cannon ON and force off dual barrels to prevent stat clashing
-        player.barrelCount = 1;
-        return;
-    } // If no card, and cheats are OFF, reset to normal
-    else if (!cheatsOn) {
-        bigcannon = false;
-    }
-
-    // CHEATS: Toggle Big Cannon weapon mode when '5' is pressed
+	// CHEATS: Toggle Big Cannon mode when '5' is pressed
     if (cheatsOn && AEInputCheckTriggered(AEVK_5)) {
         bigcannon = !bigcannon;
-
-        if (bigcannon) {
-            // Turn Big Cannon ON and force off dual barrels to prevent stat clashing
+        if (bigcannon) player.barrelCount = 1;
+    }
+	// LEGIT: Enable if card is present in passive deck, but only if cheats are OFF (prevents conflicts with cheat toggling)
+    if (!cheatsOn) {
+        if (upgradeFlag & UPGRADE_BIG_CANNON) {
+            bigcannon = true;
             player.barrelCount = 1;
         }
-        else {
-            // Turn Big Cannon OFF
-        }
+        else bigcannon = false;
     }
 }
 
