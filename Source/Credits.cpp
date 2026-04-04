@@ -29,6 +29,9 @@ std::vector<GfxText> CreditTexts{
 		{"Audio\n\nBosca Ceoil\n\nSoundly\n",    1.f, 0, 0, 0, 255},
 };
 
+// ~ Brief: Escape instructions
+GfxText Esc{ "Press Esc to leave",    0.5f, 0, 0, 0, 255 };
+
 // =============================================================================
 // FUNCTIONS
 // =============================================================================
@@ -83,6 +86,8 @@ void InitializeCredits() {
 		CreditTexts[i].pos = init[i];
 	}
 
+	Esc.pos = { -640, 425 };
+
 	logoYPos = 300.0f;
 }
 
@@ -90,6 +95,9 @@ void InitializeCredits() {
 void UpdateCredits() {
 	float deltaTime = (float)AEFrameRateControllerGetFrameTime();
 	Timer += (double)deltaTime;
+
+	// Makes escape text fade in and out
+	Esc.a = (u8)(200 + 55 * sinf(Timer * 3.0f));
 
 	if (Timer >= 2) {
 	logoYPos += 200.f * deltaTime;
@@ -123,6 +131,10 @@ void DrawCredits() {
 		AEGfxSetTransform(final.m);
 		AEGfxMeshDraw(pSandMesh, AE_GFX_MDM_TRIANGLES);
 	}
+
+
+	// Prints escape instructions
+	Gfx::printMultiline(Esc, boldPixels);
 
 	for (GfxText& c : CreditTexts)
 		Gfx::printMultiline(c, boldPixels);
