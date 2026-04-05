@@ -14,7 +14,7 @@
 // ~ Brief: Texture and mesh used for the credits menu background.
 static AEGfxTexture* pSandTex = nullptr;
 static AEGfxVertexList* pSandMesh = nullptr;
-static double Timer = 0.0;        // Tracks how long the logo has been on screen
+static f32 Timer = 0.0;        // Tracks how long the logo has been on screen
 AEGfxTexture* dpLogo = nullptr;  // Pointer to the loaded logo image data
 AEGfxVertexList* dpLogoMesh = nullptr;       // 2D square mesh to paint the texture onto
 
@@ -94,7 +94,7 @@ void InitializeCredits() {
 // ~ Brief: Update scroll positions and handle input for skipping or exiting the credits.
 void UpdateCredits() {
 	float deltaTime = (float)AEFrameRateControllerGetFrameTime();
-	Timer += (double)deltaTime;
+	Timer += deltaTime;
 
 	// Makes escape text fade in and out
 	Esc.a = (u8)(200 + 55 * sinf(Timer * 3.0f));

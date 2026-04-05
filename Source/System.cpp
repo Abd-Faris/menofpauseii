@@ -151,8 +151,8 @@ namespace SFX {
         sfxLibrary.resize(SFX_COUNT);
         for (int i = 0; i < SFX_COUNT; ++i) {
             for (const std::string& path : sfxPaths[i]) {
-                AEAudio sfx = AEAudioLoadSound(path.c_str());
-                sfxLibrary[i].push_back(sfx);
+                AEAudio indivsfx = AEAudioLoadSound(path.c_str());
+                sfxLibrary[i].push_back(indivsfx);
             }
         }
     }
@@ -169,8 +169,8 @@ namespace SFX {
 
         // Unload every SFX variant across all types
         for (auto& sfxtype : sfxLibrary)
-            for (AEAudio& sfx : sfxtype)
-                AEAudioUnloadAudio(sfx);
+            for (AEAudio& indivsfx : sfxtype)
+                AEAudioUnloadAudio(indivsfx);
 
         sfxLibrary.clear();
     }
