@@ -1,5 +1,5 @@
 // -----------------------------Gloomy's Revenge---------------------------- //
-// File:	WaveGeneration.cpp
+// File:	Wave.cpp
 // Authors:	[Men of Pause II]
 // Brief:	Handles procedural wave scaling, boss spawning, and enemy weighting.
 // ------------------------------------------------------------------------- //
@@ -118,6 +118,7 @@ void UpdateWaveSpawning(float dt, shape& player) {
 		float cumulativeWeight = 0.0f;
 		int pickedIndex = -1;
 
+		// Iterate through the choices to find which enemy type corresponds to the roll
 		for (int i = 0; i < (int)currentWaveChoices.size(); ++i) {
 			cumulativeWeight += currentWaveChoices[i].weight;
 			if (roll <= cumulativeWeight) {

@@ -1,5 +1,5 @@
 // -----------------------------Gloomy's Revenge---------------------------- //
-// File:	DigiPenLogo.h
+// File:	logo.h
 // Authors:	[Men of Pause II]
 // Brief:	Header for the DigiPen logo screen and opening credits.
 // ------------------------------------------------------------------------- //

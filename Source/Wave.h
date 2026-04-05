@@ -1,5 +1,5 @@
 // -----------------------------Gloomy's Revenge---------------------------- //
-// File:	WaveSystem.h
+// File:	Wave.h
 // Authors:	[Men of Pause II]
 // Brief:	Header for the wave spawning logic and enemy population management.
 // ------------------------------------------------------------------------- //

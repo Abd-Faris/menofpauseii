@@ -1,5 +1,5 @@
 // -----------------------------Gloomy's Revenge---------------------------- //
-// File:	Main.cpp
+// File:	Pause.cpp
 // Authors:	[Men of Pause II]
 // Brief:	This file defines the pause screen logic, UI elements, and 
 //          state management including the quit confirmation menu.
