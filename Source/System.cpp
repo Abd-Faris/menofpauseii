@@ -31,7 +31,7 @@ void Initialise_System(_In_     HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // Initialise the Alpha Engine: 1600×900, vsync on, 60 Hz target, windowed
-    AESysInit(hInstance, nCmdShow, 1600, 900, 1, 60, false, NULL);
+    AESysInit(hInstance, nCmdShow, 1600, 900, 0, 60, false, NULL);
 
     AESysSetWindowTitle("Men of Pause II: Gloomy's Revenge");
 
