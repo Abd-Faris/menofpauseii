@@ -28,14 +28,21 @@ bool SaveGame(const SaveData& data, const char* filepath) {
         return false;
     }
 
-    file << data.currentWave << "\n";
-    file << data.current_hp << "\n";
-    file << data.current_xp << "\n";
-    file << data.player_level << "\n";
-    file << data.skill_point << "\n";
-    for (int i = 0; i < 5; i++)
-        file << data.upgradeLevels[i] << "\n";
-    file << data.lastGameState << "\n";
+    file << "# Gloomy's Revenge Save File\n";
+    file << "# Do not edit manually\n";
+    file << "#\n";
+
+    file << "wave:         " << data.currentWave << "\n";
+    file << "hp:           " << data.current_hp << "\n";
+    file << "xp:           " << data.current_xp << "\n";
+    file << "level:        " << data.player_level << "\n";
+    file << "skill_points: " << data.skill_point << "\n";
+    file << "upgrade_hp:   " << data.upgradeLevels[0] << "\n";
+    file << "upgrade_dmg:  " << data.upgradeLevels[1] << "\n";
+    file << "upgrade_spd:  " << data.upgradeLevels[2] << "\n";
+    file << "upgrade_fr:   " << data.upgradeLevels[3] << "\n";
+    file << "upgrade_xp:   " << data.upgradeLevels[4] << "\n";
+    file << "last_state:   " << data.lastGameState << "\n";
 
     file << "[SHOP]\n";
     file << data.shopCardIDs.size() << "\n";
@@ -65,21 +72,34 @@ bool LoadGame(SaveData& data, const char* filepath) {
     std::ifstream file(filepath);
     if (!file.is_open()) return false;
 
-    file >> data.currentWave;
-    file >> data.current_hp;
-    file >> data.current_xp;
-    file >> data.player_level;
-    file >> data.skill_point;
-    for (int i = 0; i < 5; i++)
-        file >> data.upgradeLevels[i];
-    file >> data.lastGameState;
+    // Skip comment lines
+    std::string line;
+    while (file.peek() == '#') std::getline(file, line);
+
+    // Helper to skip "label: " and read the value
+    auto readLabelled = [&](auto& value) {
+        std::string label;
+        file >> label >> value;
+        };
+
+    readLabelled(data.currentWave);
+    readLabelled(data.current_hp);
+    readLabelled(data.current_xp);
+    readLabelled(data.player_level);
+    readLabelled(data.skill_point);
+    readLabelled(data.upgradeLevels[0]);
+    readLabelled(data.upgradeLevels[1]);
+    readLabelled(data.upgradeLevels[2]);
+    readLabelled(data.upgradeLevels[3]);
+    readLabelled(data.upgradeLevels[4]);
+    readLabelled(data.lastGameState);
 
     auto readStringVector = [&](std::vector<std::string>& vec) {
         std::string label;
         file >> label;      // consume [SHOP] / [ACTIVE] / [INVENTORY]
         int count = 0;
         file >> count;
-        file.ignore();      // consume newline after count
+        file.ignore();
         vec.resize(count);
         for (auto& id : vec)
             std::getline(file, id);
