@@ -55,7 +55,7 @@ void updateFullScreen() {
 // ~ Brief: Load all assets shared across every game state: card data, font, and SFX.
 //          Called once at startup before the GSM loop begins.
 void Load_Global_Assets() {
-    Cards::Load_Cards("../../Data/Cards.json");
+    Cards::Load_Cards("Assets/Data/Cards.json");
     boldPixels = AEGfxCreateFont("Assets/BoldPixels.ttf", 72);
     SFX::load();
 }
