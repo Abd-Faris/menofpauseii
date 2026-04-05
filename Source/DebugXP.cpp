@@ -413,7 +413,7 @@ void TriggerXpPopup(float xpAmount) {
 // ~ Brief: Reset all game state to initial values for a new game or after player death.
 void reset_game() {
     // Tutorial
-    tutorialOn = true;
+    tutorialOn = false;
 
     // Wave
     currentWave = 1;

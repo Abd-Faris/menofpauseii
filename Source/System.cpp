@@ -117,11 +117,11 @@ namespace SFX {
     // Multiplied against sfxVolume at playback time — use to balance individual SFX
     // without affecting the global volume slider.
     const std::vector<float> sfxNorm = {
-        1.0f,  // SFX_ENEMY_DEATH
-        0.8f,  // SFX_ENEMY_SHOOT
-        1.0f,  // SFX_ENEMY_HIT
-        0.6f,  // SFX_PLAYER_SHOOT
-        0.6f,  // SFX_PLAYER_HIT
+        0.2f,  // SFX_ENEMY_DEATH
+        0.2f,  // SFX_ENEMY_SHOOT
+        0.4f,  // SFX_ENEMY_HIT
+        0.2f,  // SFX_PLAYER_SHOOT
+        0.2f,  // SFX_PLAYER_HIT
         1.0f,  // SFX_UI_BUTTON_HOVER
         1.5f,  // SFX_UI_BUTTON_SELECT
         1.0f,  // SFX_UI_CARD_HOVER
