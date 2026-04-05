@@ -294,12 +294,12 @@ void InitializeGame() {
             GS_next = GS_CARD_SHOP;
 
         GenerateWave(currentWave, player);
-        std::cout << "Loaded saves\n";
+        //std::cout << "Loaded saves\n";
     }
     else {
         // No save or mid-session restart — begin a fresh run
         GenerateWave(currentWave, player);
-        std::cout << "New Run\n";
+        //std::cout << "New Run\n";
     }
 
     SFX::playBGM();

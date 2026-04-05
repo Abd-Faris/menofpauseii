@@ -31,7 +31,7 @@ void LoadDPLogo() {
     dpLogoTexture = AEGfxTextureLoad("./Assets/DigiPen_Singapore_WEB_RED.png");
 
     if (dpLogoTexture == nullptr) {
-        std::cout << "ERROR: Failed to load DP Logo texture!" << std::endl;
+        //std::cout << "ERROR: Failed to load DP Logo texture!" << std::endl;
     }
 
     AEGfxMeshStart();

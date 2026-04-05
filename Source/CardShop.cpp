@@ -263,7 +263,7 @@ namespace {
 void LoadCardShop() {
     // Card spritesheet
     cardSpriteSheet = AEGfxTextureLoad("Assets/cards.png");
-    if (!cardSpriteSheet) std::cout << "[ ERROR ] cards.png failed to load!\n";
+    //if (!cardSpriteSheet) std::cout << "[ ERROR ] cards.png failed to load!\n";
 
     // Panel and button textures
     pBgTex = AEGfxTextureLoad("./Assets/sandbg.png");
@@ -637,10 +637,10 @@ namespace {
         f32 uMax = uMin + (1.0f / NUM_COLS);
         f32 vMax = vMin + (1.0f / NUM_ROWS);
 
-        std::cout << "Card: " << card.info.ID
+        /*std::cout << "Card: " << card.info.ID
             << " row:" << card.info.row
             << " col:" << card.info.col
-            << " UV: (" << uMin << "," << vMin << ") -> (" << uMax << "," << vMax << ")\n";
+            << " UV: (" << uMin << "," << vMin << ") -> (" << uMax << "," << vMax << ")\n";*/
 
         return Gfx::createRectMesh(0xFFFFFFFF, uMin, vMin, uMax, vMax);
     }
@@ -979,7 +979,7 @@ namespace Cards {
 
         std::ifstream file{ filename };
         if (!file.is_open()) {
-            std::cout << "[ ERROR ] " << filename << " failed to open!!\n";
+            //std::cout << "[ ERROR ] " << filename << " failed to open!!\n";
             return;
         }
 
@@ -991,8 +991,8 @@ namespace Cards {
         rapidjson::Document doc;
         rapidjson::ParseResult ok = doc.Parse(json.c_str());
         if (ok.IsError()) {
-            std::cout << "[ ERROR ] JSON Parse Error: " << GetParseError_En(ok.Code())
-                << " at offset " << ok.Offset() << '\n';
+            /*std::cout << "[ ERROR ] JSON Parse Error: " << GetParseError_En(ok.Code())
+                << " at offset " << ok.Offset() << '\n';*/
             return;
         }
 

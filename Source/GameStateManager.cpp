@@ -53,7 +53,7 @@ std::vector<GSFunctions> gamestates{
 //          frame loads and enters cleanly without a spurious transition.
 void GSM_Initialize(int GS_startingState) {
     GS_current = GS_previous = GS_next = GS_startingState;
-    printf("GSM:Initialize\n");
+    //printf("GSM:Initialize\n");
 }
 
 // ~ Brief: Resolve the function pointer set for the current game state.

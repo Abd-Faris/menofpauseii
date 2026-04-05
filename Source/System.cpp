@@ -37,7 +37,7 @@ void Initialise_System(_In_     HINSTANCE hInstance,
 
     AESysReset();
 
-    printf("Hello World\n");
+    //printf("Hello World\n");
 }
 
 // ~ Brief: Apply the current fullscreen state to the Alpha Engine window.
