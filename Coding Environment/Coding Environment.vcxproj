@@ -16,6 +16,7 @@
     <ProjectGuid>{9a649a84-8dea-4463-b891-a25786f61d50}</ProjectGuid>
     <RootNamespace>CodingEnvironment</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>GloomysRevenge</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">

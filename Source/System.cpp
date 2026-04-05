@@ -35,6 +35,8 @@ void Initialise_System(_In_     HINSTANCE hInstance,
 
     AESysSetWindowTitle("Men of Pause II: Gloomy's Revenge");
 
+    AESysSetWindowIcon("Assets/icon.ico", 64, 64);
+
     AESysReset();
 
     //printf("Hello World\n");
