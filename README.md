@@ -9,7 +9,7 @@ stronger. This game is a sequel to our first game, Gloomy's Escape from GAM100.
 Made in AlphaEngine
 
 -----
-### Names and Roles
+### Members
 | Name | Role |
 | --- | --- |
 | Abdul Faris Bin Abdul Samir | Project Lead, Programmer |
