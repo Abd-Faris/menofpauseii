@@ -8,7 +8,6 @@ stronger. This game is a sequel to our first game, Gloomy's Escape from GAM100.
 
 -----
 ### Names and Roles
------
 | Name | Role |
 | --- | --- |
 | Abdul Faris Bin Abdul Samir | Project Lead, Programmer |
