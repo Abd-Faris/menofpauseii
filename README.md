@@ -7,6 +7,15 @@ Gloomy's Revenge is a vampire survival roguelike where after each wave, you get 
 stronger. This game is a sequel to our first game, Gloomy's Escape from GAM100.
 
 -----
+### Names and Roles
+-----
+
+| Abdul Faris Bin Abdul Samir | Project Lead, Programmer |
+| Wong Shao Wei | Programming Lead |
+| Muhammad Nur Izzat Bin Shimree | Programmer |
+| Oon Zi Hao | Asset Manager, Programmer |
+
+-----
 
 ### Method of Installation
 
