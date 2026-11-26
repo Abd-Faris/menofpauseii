@@ -6,6 +6,8 @@
 Gloomy's Revenge is a vampire survival roguelike where after each wave, you get to select a card to make yourself 
 stronger. This game is a sequel to our first game, Gloomy's Escape from GAM100.
 
+Made in AlphaEngine
+
 -----
 ### Names and Roles
 | Name | Role |
